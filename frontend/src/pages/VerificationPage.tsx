@@ -116,15 +116,15 @@ export default function VerificationPage() {
       </div>
 
       {/* Header Banner */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-6 border-b border-[var(--color-line)]">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 sm:pb-6 border-b border-[var(--color-line)]">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <SevBadge sev={finding.severity} />
-            <h1 className="text-3xl font-extrabold text-[var(--color-ink)] tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-extrabold text-[var(--color-ink)] tracking-tight break-words">
               VERIFICATION <span className="text-[var(--color-ink-3)] font-normal">/ {finding.title}</span>
             </h1>
           </div>
-          <p className="mono text-[12px] text-[var(--color-ink-3)]">
+          <p className="mono text-[11.5px] sm:text-[12px] text-[var(--color-ink-3)] break-all">
             {finding.cwe_id} • {finding.file_path}:{finding.line_number}
           </p>
         </div>
@@ -135,17 +135,17 @@ export default function VerificationPage() {
       </div>
 
       {/* BEFORE VS AFTER PROOF CARDS */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         
         {/* BEFORE CARD */}
-        <div className="p-6 rounded-xl bg-white border border-red-200 shadow-xs space-y-3">
+        <div className="p-4 sm:p-6 rounded-xl bg-white border border-red-200 shadow-xs space-y-3">
           <div className="mono text-[11px] font-bold text-red-600 uppercase tracking-wider">
             BEFORE (BASELINE BUILD)
           </div>
 
           <div className="flex items-center gap-3">
             <XCircle className="w-6 h-6 text-red-600 shrink-0" />
-            <div className="font-bold text-[16px] text-red-700">
+            <div className="font-bold text-[15px] sm:text-[16px] text-red-700">
               {before ? '✕ Payload Reproduced' : 'Testing Baseline Probe…'}
             </div>
           </div>
@@ -156,14 +156,14 @@ export default function VerificationPage() {
         </div>
 
         {/* AFTER CARD */}
-        <div className="p-6 rounded-xl bg-white border border-emerald-200 shadow-xs space-y-3">
+        <div className="p-4 sm:p-6 rounded-xl bg-white border border-emerald-200 shadow-xs space-y-3">
           <div className="mono text-[11px] font-bold text-[#0F8A5A] uppercase tracking-wider">
             AFTER (PATCHED BUILD)
           </div>
 
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-6 h-6 text-[#0F8A5A] shrink-0" />
-            <div className="font-bold text-[16px] text-[#0F8A5A]">
+            <div className="font-bold text-[15px] sm:text-[16px] text-[#0F8A5A]">
               {after ? '✓ Payload Blocked' : 'Testing Patched Build…'}
             </div>
           </div>
@@ -176,10 +176,10 @@ export default function VerificationPage() {
       </div>
 
       {/* REGRESSION & SANDBOX STATUS */}
-      <div className="p-6 rounded-xl bg-white border border-[var(--color-line)] shadow-xs flex flex-wrap items-center justify-between gap-6">
+      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[var(--color-line)] shadow-xs flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div className="space-y-1">
           <div className="mono text-[10.5px] font-bold text-[var(--color-ink-3)] uppercase tracking-wider">REGRESSION TEST SUITE</div>
-          <div className="text-[14px] font-bold text-[var(--color-ink)] flex items-center gap-2">
+          <div className="text-[13.5px] sm:text-[14px] font-bold text-[var(--color-ink)] flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-[#0F8A5A]" />
             ✓ 12 / 12 Tests Passed
           </div>
@@ -187,9 +187,9 @@ export default function VerificationPage() {
 
         <div className="space-y-1">
           <div className="mono text-[10.5px] font-bold text-[var(--color-ink-3)] uppercase tracking-wider">SANDBOX CONTAINER</div>
-          <div className="text-[14px] font-bold text-[var(--color-ink)] flex items-center gap-2">
+          <div className="text-[13.5px] sm:text-[14px] font-bold text-[var(--color-ink)] flex items-center gap-2 flex-wrap">
             <Check className="w-4 h-4 text-[#0F8A5A]" />
-            ✓ Container Destroyed &amp; Purged
+            <span>✓ Container Destroyed &amp; Purged</span>
             <span className="mono text-[10.5px] text-[var(--color-ink-3)]">({logs.length} probe events)</span>
           </div>
         </div>
@@ -197,15 +197,15 @@ export default function VerificationPage() {
 
       {/* HUGE GREEN RESULT BANNER */}
       {isComplete && (
-        <div className="p-8 rounded-xl bg-[#16C784] text-white shadow-md space-y-3 fade-in">
+        <div className="p-5 sm:p-8 rounded-xl bg-[#16C784] text-white shadow-md space-y-3 fade-in">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-8 h-8 text-white" />
-            <h2 className="text-3xl font-extrabold tracking-tight">VERIFIED</h2>
+            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-white shrink-0" />
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">VERIFIED</h2>
           </div>
-          <p className="text-[15px] font-medium leading-relaxed max-w-[800px] text-white/95">
+          <p className="text-[14px] sm:text-[15px] font-medium leading-relaxed max-w-[800px] text-white/95">
             &ldquo;Vulnerability could not be reproduced against the patched build.&rdquo;
           </p>
-          <div className="mono text-[11.5px] text-white/80 pt-2 border-t border-white/20">
+          <div className="mono text-[11px] sm:text-[11.5px] text-white/80 pt-2 border-t border-white/20">
             Audit proof recorded for assessment snapshot. Vulnerability status set to VERIFIED.
           </div>
         </div>

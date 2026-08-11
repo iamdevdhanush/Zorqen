@@ -52,11 +52,11 @@ export default function RemediationPage() {
       </div>
 
       {/* Header Banner */}
-      <div className="p-6 rounded-xl bg-white border border-[var(--color-line)] shadow-xs space-y-4">
+      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[var(--color-line)] shadow-xs space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <SevBadge sev={finding.severity} />
-            <h1 className="text-2xl font-extrabold text-[var(--color-ink)] tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--color-ink)] tracking-tight break-words">
               REMEDIATION <span className="text-[var(--color-ink-3)] font-normal">/ {finding.title}</span>
             </h1>
             <StatusBadge s={finding.status} />
@@ -71,7 +71,7 @@ export default function RemediationPage() {
 
       {/* BEFORE VS AFTER Code Diff Editor */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div className="mono text-[11px] font-bold text-[var(--color-ink-3)] uppercase tracking-wider">
             BEFORE vs AFTER PROPOSED PATCH DIFF
           </div>
@@ -91,7 +91,7 @@ export default function RemediationPage() {
       </div>
 
       {/* WHY THIS FIX + RISK + VALIDATION + ACTION CONTROLS */}
-      <div className="grid md:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-start">
         
         {/* Why this fix */}
         <div className="p-6 rounded-xl bg-white border border-[var(--color-line)] shadow-xs space-y-2 md:col-span-2">

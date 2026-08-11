@@ -72,8 +72,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
 
   return (
     <div
-      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-hard-lg bg-white border-l border-[#111111] slide-right"
-      style={{ width: 420 }}
+      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-hard-lg bg-white border-l border-[#111111] slide-right w-full max-w-full sm:w-[420px] sm:max-w-[420px]"
     >
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3.5 border-b border-[#111111] bg-[#FAFAFA]">

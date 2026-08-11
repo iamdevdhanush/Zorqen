@@ -19,23 +19,23 @@ const RepositoryCard = memo(function RepositoryCard({
   const findingsCount = r.name === DEMO_REPO.name ? 30 : 27;
 
   return (
-    <div className="p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-6 hover:bg-[#FAFAFA] transition-all">
-      <div className="flex items-center gap-4 min-w-0">
-        <div className="w-12 h-12 rounded-lg bg-[#111111] text-white border border-[#111111] flex items-center justify-center shrink-0">
-          <GithubIcon className="w-6 h-6 text-[#C5F82A]" />
+    <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 hover:bg-[#FAFAFA] transition-all">
+      <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[#111111] text-white border border-[#111111] flex items-center justify-center shrink-0">
+          <GithubIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#C5F82A]" />
         </div>
 
-        <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="mono text-[16px] font-extrabold text-[#111111]">
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="mono text-[14.5px] sm:text-[16px] font-extrabold text-[#111111] break-all">
               {r.owner}/{r.name}
             </span>
-            <span className="chip uppercase font-bold">{r.private ? 'PRIVATE' : 'PUBLIC'}</span>
-            <span className="chip font-bold">{r.language}</span>
-            {isLoaded && <span className="chip ok font-bold">LOADED TARGET</span>}
+            <span className="chip uppercase font-bold text-[9.5px] sm:text-[10.5px]">{r.private ? 'PRIVATE' : 'PUBLIC'}</span>
+            <span className="chip font-bold text-[9.5px] sm:text-[10.5px]">{r.language}</span>
+            {isLoaded && <span className="chip ok font-bold text-[9.5px] sm:text-[10.5px]">LOADED TARGET</span>}
           </div>
 
-          <div className="mono text-[11.5px] text-[#555555] flex items-center gap-2 font-medium">
+          <div className="mono text-[10.5px] sm:text-[11.5px] text-[#555555] flex items-center gap-2 font-medium flex-wrap">
             <span>branch: <strong className="text-[#111111]">{r.defaultBranch}</strong></span>
             <span>•</span>
             <span>commit: <strong className="text-[#111111]">{r.commit.slice(0, 7)}</strong></span>
@@ -43,19 +43,19 @@ const RepositoryCard = memo(function RepositoryCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-6 shrink-0">
-        <div className="text-right">
-          <div className="mono text-[18px] font-extrabold text-[#111111]">
-            {score} <span className="text-[12px] text-[#666666] font-normal">/ 100</span>
+      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#111111]/10 shrink-0">
+        <div className="text-left sm:text-right">
+          <div className="mono text-[16px] sm:text-[18px] font-extrabold text-[#111111]">
+            {score} <span className="text-[11px] sm:text-[12px] text-[#666666] font-normal">/ 100</span>
           </div>
-          <div className="mono text-[11px] font-bold text-[#666666]">
+          <div className="mono text-[10.5px] sm:text-[11px] font-bold text-[#666666]">
             {findingsCount} findings
           </div>
         </div>
 
         <button
           onClick={() => onAssess(r)}
-          className="btn btn-accent px-5 py-2.5 text-[13px]"
+          className="btn btn-accent px-4 sm:px-5 py-2 sm:py-2.5 text-[12.5px] sm:text-[13px]"
         >
           <GitFork className="w-4 h-4" />
           Assess Repository
@@ -91,23 +91,23 @@ export default function RepositoriesPage() {
   }, [loadRepo, navigate]);
 
   return (
-    <div className="max-w-[1040px] mx-auto space-y-8 fade-in py-2">
+    <div className="max-w-[1040px] mx-auto space-y-6 sm:space-y-8 fade-in py-2">
       
       {/* Editorial Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-6 border-b border-[#111111]">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 sm:pb-6 border-b border-[#111111]">
         <div className="space-y-1">
           <div className="protocol-tag">raksha://workspace/repositories</div>
-          <h1 className="text-4xl font-extrabold text-[#111111] tracking-tighter">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111111] tracking-tighter">
             REPOSITORIES
           </h1>
-          <p className="text-[13.5px] text-[#555555] font-medium">
+          <p className="text-[12.5px] sm:text-[13.5px] text-[#555555] font-medium">
             Repositories authorized for autonomous security assessment.
           </p>
         </div>
 
         <button
           onClick={() => setGithubModalOpen(true)}
-          className="btn btn-accent px-5 py-2.5 text-[13px]"
+          className="btn btn-accent px-4 sm:px-5 py-2 sm:py-2.5 text-[12.5px] sm:text-[13px]"
         >
           <Plus className="w-4 h-4" />
           Connect GitHub
@@ -115,12 +115,12 @@ export default function RepositoriesPage() {
       </div>
 
       {/* Connection Info Banner */}
-      <div className="p-5 rounded-xl bg-white border border-[#111111] shadow-hard flex items-center justify-between gap-4 flex-wrap">
+      <div className="p-4 sm:p-5 rounded-xl bg-white border border-[#111111] shadow-hard flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-lg bg-[#C5F82A] border border-[#111111] flex items-center justify-center text-[#111111] shrink-0">
-            <GithubIcon className="w-5 h-5" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#C5F82A] border border-[#111111] flex items-center justify-center text-[#111111] shrink-0">
+            <GithubIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div className="text-[13px] text-[#333333] font-medium">
+          <div className="text-[12.5px] sm:text-[13px] text-[#333333] font-medium">
             {githubConnected ? (
               <>
                 Connected as <span className="font-extrabold text-[#111111]">@{user?.github_login}</span> — repositories read via authenticated OAuth token.
@@ -162,7 +162,7 @@ export default function RepositoriesPage() {
         </div>
 
         {filteredRepos.length === 0 ? (
-          <div className="p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+          <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
             No repositories match &ldquo;{searchQuery}&rdquo;
           </div>
         ) : (
@@ -173,7 +173,7 @@ export default function RepositoriesPage() {
       </div>
 
       <div className="flex items-center gap-2 text-[12px] text-[#555555] pt-2 font-medium">
-        <ShieldCheck className="w-4 h-4 text-[#111111]" />
+        <ShieldCheck className="w-4 h-4 text-[#111111] shrink-0" />
         RAKSHA never modifies your repositories without explicit review and branch creation.
       </div>
     </div>

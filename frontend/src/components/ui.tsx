@@ -150,12 +150,12 @@ export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED'
 
 export function PageHeader({ kicker, title, right }: { kicker?: string; title: ReactNode; right?: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#111111]">
-      <div>
+    <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-[#111111]">
+      <div className="space-y-1 min-w-0">
         {kicker && <div className="text-[10.5px] mono uppercase tracking-[0.12em] text-[#666666] font-bold mb-1">{kicker}</div>}
-        <h1 className="text-2xl font-extrabold text-[#111111] tracking-tight leading-tight">{title}</h1>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight leading-tight">{title}</h1>
       </div>
-      {right && <div className="flex items-center gap-2 shrink-0">{right}</div>}
+      {right && <div className="flex items-center gap-2 flex-wrap shrink-0">{right}</div>}
     </div>
   );
 }

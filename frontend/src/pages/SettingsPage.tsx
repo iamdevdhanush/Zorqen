@@ -22,22 +22,24 @@ export default function SettingsPage() {
 
       <Panel title="GitHub Integration">
         <div className="p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <GithubIcon className="w-5 h-5 text-[var(--color-ink)]" />
-            <div className="flex-1">
-              <div className="text-[13px] font-bold text-[var(--color-ink)]">
-                {githubConnected ? `Connected as @${user?.github_login}` : 'Not connected'}
-              </div>
-              <div className="mono text-[11px] text-[var(--color-ink-3)] mt-[1px]">
-                {githubConnected
-                  ? 'read scopes: repo metadata, branches, commits, contents'
-                  : 'requires OAuth read access — connect from the Repositories page'}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <GithubIcon className="w-5 h-5 text-[var(--color-ink)] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-bold text-[var(--color-ink)]">
+                  {githubConnected ? `Connected as @${user?.github_login}` : 'Not connected'}
+                </div>
+                <div className="mono text-[11px] text-[var(--color-ink-3)] mt-[1px]">
+                  {githubConnected
+                    ? 'read scopes: repo metadata, branches, commits, contents'
+                    : 'requires OAuth read access — connect from the Repositories page'}
+                </div>
               </div>
             </div>
             {githubConnected ? (
-              <button onClick={disconnectGithub} className="btn btn-sm">Disconnect</button>
+              <button onClick={disconnectGithub} className="btn btn-sm w-full sm:w-auto justify-center">Disconnect</button>
             ) : (
-              <button onClick={connectGithub} className="btn btn-accent btn-sm">
+              <button onClick={connectGithub} className="btn btn-accent btn-sm w-full sm:w-auto justify-center">
                 <PlugZap className="w-3.5 h-3.5" /> Connect GitHub
               </button>
             )}
@@ -47,14 +49,14 @@ export default function SettingsPage() {
 
       <Panel title="Active Workspace">
         <div className="p-4 space-y-2">
-          <KV k="Current repository" v={<span className="mono text-[12px] font-semibold">{currentRepo ? `${currentRepo.owner}/${currentRepo.name}` : '—'}</span>} />
-          <KV k="Branch / commit" v={<span className="mono text-[12px]">{currentRepo ? `${currentRepo.defaultBranch} • ${currentRepo.commit.slice(0, 7)}` : '—'}</span>} />
+          <KV k="Current repository" v={<span className="mono text-[12px] font-semibold break-all">{currentRepo ? `${currentRepo.owner}/${currentRepo.name}` : '—'}</span>} />
+          <KV k="Branch / commit" v={<span className="mono text-[12px] break-all">{currentRepo ? `${currentRepo.defaultBranch} • ${currentRepo.commit.slice(0, 7)}` : '—'}</span>} />
           <KV k="Assessment retention" v={<span className="mono text-[12px]">session-scoped • cleared on sign out</span>} />
-          <div className="flex gap-2 pt-3">
-            <button onClick={loadDemoRepo} className="btn btn-sm">
+          <div className="flex flex-wrap gap-2 pt-3">
+            <button onClick={loadDemoRepo} className="btn btn-sm flex-1 sm:flex-none justify-center">
               <RotateCcw className="w-3.5 h-3.5" /> Reload demo repository
             </button>
-            <button onClick={signOut} className="btn btn-sm text-red-600 border-red-200 hover:bg-red-50">
+            <button onClick={signOut} className="btn btn-sm text-red-600 border-red-200 hover:bg-red-50 flex-1 sm:flex-none justify-center">
               <LogOut className="w-3.5 h-3.5" /> Sign out
             </button>
           </div>

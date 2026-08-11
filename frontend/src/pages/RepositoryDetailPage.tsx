@@ -143,11 +143,11 @@ export default function RepositoryDetailPage() {
               <button
                 key={f.id}
                 onClick={() => navigate(`/findings/${f.id}`)}
-                className="w-full text-left flex items-center gap-3 px-3 py-[6px] border-b border-[var(--color-line)] last:border-0 hover:bg-[var(--color-hover)] transition-colors group"
+                className="w-full text-left flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 px-3 py-2 sm:py-[6px] border-b border-[var(--color-line)] last:border-0 hover:bg-[var(--color-hover)] transition-colors group"
               >
                 <SevBadge sev={f.severity} />
-                <span className="mono text-[11px] text-[var(--color-ink)]">{f.file_path}:{f.line_number}</span>
-                <span className="text-[11.5px] text-[var(--color-ink-2)] truncate">{f.title}</span>
+                <span className="mono text-[10.5px] sm:text-[11px] text-[var(--color-ink)] break-all">{f.file_path}:{f.line_number}</span>
+                <span className="text-[11.5px] text-[var(--color-ink-2)] truncate flex-1 min-w-0">{f.title}</span>
                 <span className="chip ml-auto mono text-[9px]">{f.cwe_id}</span>
               </button>
             ))}

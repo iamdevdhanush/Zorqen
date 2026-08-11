@@ -70,12 +70,12 @@ export default function AssessmentDetailPage() {
       </div>
 
       {/* Progressive Stage Visual Grid */}
-      <div className="p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
+      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
         <div className="mono text-[11px] font-extrabold text-[#666666] uppercase tracking-wider">
           PIPELINE STAGE PROGRESSION
         </div>
 
-        <div className="grid sm:grid-cols-3 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5 sm:gap-3">
           {run.steps.map((step, idx) => {
             const isDone = step.status === 'completed';
             const isRun = step.status === 'running';
@@ -83,7 +83,7 @@ export default function AssessmentDetailPage() {
             return (
               <div
                 key={step.id}
-                className={`p-3.5 rounded-lg border text-left space-y-2 transition-all ${
+                className={`p-3 sm:p-3.5 rounded-lg border text-left space-y-1.5 sm:space-y-2 transition-all ${
                   isRun
                     ? 'border-[#111111] bg-[#C5F82A] shadow-hard-sm'
                     : isDone
@@ -103,10 +103,10 @@ export default function AssessmentDetailPage() {
                 </div>
 
                 <div>
-                  <div className="mono text-[11px] font-extrabold text-[#111111] leading-tight">
+                  <div className="mono text-[10px] sm:text-[11px] font-extrabold text-[#111111] leading-tight">
                     {step.label.toUpperCase()}
                   </div>
-                  <div className="mono text-[9.5px] font-bold text-[#444444] mt-1">
+                  <div className="mono text-[9px] sm:text-[9.5px] font-bold text-[#444444] mt-1">
                     {isDone ? '✓ complete' : isRun ? '● running' : '○ pending'}
                   </div>
                 </div>

@@ -26,7 +26,7 @@ export default function ConnectGithubModal() {
       aria-modal="true"
       aria-label="Connect GitHub"
     >
-      <div className="modal-box border border-[#111111] shadow-hard-lg" style={{ maxWidth: 440 }}>
+      <div className="modal-box border border-[#111111] shadow-hard-lg max-w-[440px]">
         <div className="modal-header flex items-center justify-between p-4 border-b border-[#111111] bg-[#FAFAFA]">
           <div className="flex items-center gap-3">
             <GithubIcon className="w-5 h-5 text-[#111111]" />

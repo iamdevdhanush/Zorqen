@@ -50,15 +50,15 @@ export default function FindingDetailPage() {
       </div>
 
       {/* Forensic Investigation Header Banner */}
-      <div className="p-7 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
+      <div className="p-4 sm:p-7 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <SevBadge sev={finding.severity} />
-            <h1 className="text-3xl font-extrabold text-[#111111] tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-extrabold text-[#111111] tracking-tight break-words">
               {finding.title.toUpperCase()}
             </h1>
-            <span className="chip mono font-bold">{finding.cwe_id}</span>
-            <span className="mono text-[12px] font-extrabold text-[#111111] bg-[#C5F82A] px-2.5 py-1 rounded border border-[#111111]">
+            <span className="chip mono font-bold text-[10px] sm:text-[11px]">{finding.cwe_id}</span>
+            <span className="mono text-[11px] sm:text-[12px] font-extrabold text-[#111111] bg-[#C5F82A] px-2.5 py-1 rounded border border-[#111111]">
               {finding.confidence_pct}% CONFIDENCE
             </span>
             <ValidationBadge v={finding.validation} />
@@ -68,7 +68,7 @@ export default function FindingDetailPage() {
           {hasFix && (
             <button
               onClick={() => navigate(`/remediation/${finding.id}`)}
-              className="btn btn-accent px-6 py-2.5 text-[13px]"
+              className="btn btn-accent px-5 sm:px-6 py-2 sm:py-2.5 text-[12.5px] sm:text-[13px] w-full sm:w-auto justify-center"
             >
               <GitPullRequest className="w-4 h-4" />
               Review Patch Proposal →
@@ -76,33 +76,33 @@ export default function FindingDetailPage() {
           )}
         </div>
 
-        <div className="mono text-[12.5px] font-semibold text-[#111111] bg-[#FAFAFA] p-3.5 rounded-lg border border-[#111111] shadow-hard-sm flex items-center gap-2">
-          <FileCode className="w-4 h-4 text-[#111111]" />
+        <div className="mono text-[11.5px] sm:text-[12.5px] font-semibold text-[#111111] bg-[#FAFAFA] p-3 sm:p-3.5 rounded-lg border border-[#111111] shadow-hard-sm flex items-center gap-2 flex-wrap break-all">
+          <FileCode className="w-4 h-4 text-[#111111] shrink-0" />
           <span className="font-extrabold text-[#111111]">{finding.file_path}:{finding.line_number}</span>
           {finding.endpoint && (
             <>
               <span>•</span>
-              <span>{finding.endpoint}</span>
+              <span className="break-all">{finding.endpoint}</span>
             </>
           )}
         </div>
       </div>
 
       {/* ── PROMINENT VISUAL ATTACK PATH DIAGRAM (VibeScan Feature) ────── */}
-      <div className="p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5 text-[#111111]" />
-            <h2 className="text-lg font-extrabold text-[#111111] tracking-tight">VISUAL ATTACK PATH</h2>
+            <h2 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">VISUAL ATTACK PATH</h2>
           </div>
-          <span className="mono text-[11px] font-bold text-[#666666]">Derived from Repository Call Graph Analysis</span>
+          <span className="mono text-[10px] sm:text-[11px] font-bold text-[#666666]">Derived from Repository Call Graph Analysis</span>
         </div>
 
-        <div className="p-6 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-          <div className="max-w-[800px] mx-auto flex flex-wrap items-center justify-between gap-4 text-center">
+        <div className="p-4 sm:p-6 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
+          <div className="max-w-[800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 text-center">
             
             {/* Step 1: User Input */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-blue-50 text-[12.5px] font-bold text-blue-950 space-y-1 min-w-[150px] shadow-hard-sm">
+            <div className="p-3.5 rounded-lg border border-[#111111] bg-blue-50 text-[12.5px] font-bold text-blue-950 space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm">
               <div className="flex items-center justify-center gap-1.5 text-blue-700">
                 <Globe className="w-4 h-4" />
                 <span className="mono text-[10px] uppercase font-extrabold">HTTP INGRESS</span>
@@ -113,23 +113,23 @@ export default function FindingDetailPage() {
             <ArrowDown className="w-5 h-5 text-[#111111] md:-rotate-90 shrink-0" />
 
             {/* Step 2: Route Endpoint */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-white text-[12.5px] font-bold text-[#111111] space-y-1 min-w-[160px] shadow-hard-sm">
+            <div className="p-3.5 rounded-lg border border-[#111111] bg-white text-[12.5px] font-bold text-[#111111] space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm min-w-0">
               <div className="mono text-[10px] text-[#666666] uppercase font-extrabold">ROUTE</div>
-              <div className="mono text-[12px]">{finding.endpoint || '/api/users/search'}</div>
+              <div className="mono text-[11.5px] sm:text-[12px] break-all">{finding.endpoint || '/api/users/search'}</div>
             </div>
 
             <ArrowDown className="w-5 h-5 text-[#111111] md:-rotate-90 shrink-0" />
 
             {/* Step 3: Source File */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-white text-[12.5px] font-bold text-[#111111] space-y-1 min-w-[160px] shadow-hard-sm">
+            <div className="p-3.5 rounded-lg border border-[#111111] bg-white text-[12.5px] font-bold text-[#111111] space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm min-w-0">
               <div className="mono text-[10px] text-[#666666] uppercase font-extrabold">SOURCE FILE</div>
-              <div className="mono text-[12px]">users.py:{finding.line_number}</div>
+              <div className="mono text-[11.5px] sm:text-[12px] break-all">users.py:{finding.line_number}</div>
             </div>
 
             <ArrowDown className="w-5 h-5 text-[#111111] md:-rotate-90 shrink-0" />
 
             {/* Step 4: Vulnerable Operation / Sink */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-red-50 text-[12.5px] font-bold text-red-950 space-y-1 min-w-[160px] shadow-hard-sm">
+            <div className="p-3.5 rounded-lg border border-[#111111] bg-red-50 text-[12.5px] font-bold text-red-950 space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm">
               <div className="flex items-center justify-center gap-1.5 text-red-700">
                 <Database className="w-4 h-4" />
                 <span className="mono text-[10px] uppercase font-extrabold">VULNERABLE SINK</span>

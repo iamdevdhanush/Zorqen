@@ -420,6 +420,12 @@ body {
   backdrop-filter: blur(2px);
   display: flex; align-items: flex-start; justify-content: center;
   padding-top: 15vh;
+  padding-left: 12px; padding-right: 12px;
+}
+@media (max-width: 640px) {
+  .cmd-backdrop {
+    padding-top: 24px;
+  }
 }
 .cmd-box {
   width: 100%; max-width: 560px;
@@ -536,13 +542,17 @@ body {
   background: rgba(17, 17, 17, 0.5);
   backdrop-filter: blur(2px);
   display: flex; align-items: center; justify-content: center;
+  padding: 16px;
 }
 .modal-box {
   background: #FFFFFF;
   border: 1px solid #111111;
   border-radius: 10px;
   box-shadow: 5px 5px 0px #111111;
-  width: 100%; max-width: 480px;
+  width: calc(100vw - 32px);
+  max-width: 480px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   animation: slide-up-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
