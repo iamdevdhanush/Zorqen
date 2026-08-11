@@ -1,0 +1,78 @@
+import axios from 'axios';
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 30000,
+});
+
+// Attach JWT token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('raksha_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Handle 401 by clearing token
+api.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('raksha_token');
+      localStorage.removeItem('raksha_user');
+      window.location.href = '/';
+    }
+    return Promise.reject(err);
+  }
+);
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+export const demoLogin = () => api.post('/auth/demo-login');
+export const getMe = () => api.get('/auth/me');
+
+// ── Demo ────────────────────────────────────────────────────────────────────
+export const getDemoRepository = () => api.get('/demo/repository');
+export const getDemoAssessment = () => api.get('/demo/assessment');
+export const getDemoFindings = (filters?: { severity?: string; status?: string }) =>
+  api.get('/demo/findings', { params: filters });
+export const getDemoFinding = (id: string) => api.get(`/demo/findings/${id}`);
+export const getDemoScore = () => api.get('/demo/score');
+export const getDemoArchitecture = () => api.get('/demo/architecture');
+export const getDemoTimeline = () => api.get('/demo/timeline');
+export const getDemoSourceFile = (path: string) => api.get(`/demo/source/${path}`);
+export const listDemoSourceFiles = () => api.get('/demo/source');
+export const simulateRemediation = (findingId: string) =>
+  api.post(`/demo/simulate-remediation/${findingId}`);
+
+// ── Repositories ────────────────────────────────────────────────────────────
+export const listRepositories = () => api.get('/repositories');
+export const listGitHubRepos = () => api.get('/repositories/github');
+export const connectRepository = (data: object) => api.post('/repositories', data);
+export const getRepository = (id: string) => api.get(`/repositories/${id}`);
+export const getRepoBranches = (id: string) => api.get(`/repositories/${id}/branches`);
+export const getRepoCommits = (id: string, branch: string) =>
+  api.get(`/repositories/${id}/commits`, { params: { branch } });
+
+// ── Assessments ─────────────────────────────────────────────────────────────
+export const startAssessment = (data: object) => api.post('/assessments', data);
+export const getAssessment = (id: string) => api.get(`/assessments/${id}`);
+export const getAssessmentFindings = (id: string, filters?: object) =>
+  api.get(`/assessments/${id}/findings`, { params: filters });
+export const listRepoAssessments = (repoId: string) => api.get(`/assessments/repository/${repoId}`);
+
+// ── Findings ────────────────────────────────────────────────────────────────
+export const getFinding = (id: string) => api.get(`/findings/${id}`);
+export const dismissFinding = (id: string) => api.post(`/findings/${id}/dismiss`);
+export const generateFix = (findingId: string) => api.post(`/findings/${findingId}/generate-fix`);
+
+// ── Copilot ─────────────────────────────────────────────────────────────────
+export const copilotChat = (message: string, assessmentId?: string, findingId?: string) =>
+  api.post('/copilot/chat', { message, assessment_id: assessmentId, finding_id: findingId });
+
+// ── Health ──────────────────────────────────────────────────────────────────
+export const getHealth = () => api.get('/health');
+
+export default api;
