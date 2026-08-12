@@ -3,10 +3,8 @@ import {
   ArrowDown,
   ArrowLeft,
   CheckCircle2,
-  Database,
   FileCode,
   GitPullRequest,
-  Globe,
   Layers,
 } from 'lucide-react';
 import { SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
@@ -88,54 +86,67 @@ export default function FindingDetailPage() {
         </div>
       </div>
 
-      {/* ── PROMINENT VISUAL ATTACK PATH DIAGRAM (VibeScan Feature) ────── */}
+      {/* ── TECHNICAL EVIDENCE CHAIN COMPONENT ────── */}
       <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5 text-[#111111]" />
-            <h2 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">VISUAL ATTACK PATH</h2>
+            <h2 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">EVIDENCE CHAIN</h2>
           </div>
-          <span className="mono text-[10px] sm:text-[11px] font-bold text-[#666666]">Derived from Repository Call Graph Analysis</span>
+          <span className="mono text-[10px] sm:text-[11px] font-bold text-[#666666]">
+            Derived from Repository Call Graph &amp; Sandbox Transcripts
+          </span>
         </div>
 
-        <div className="p-4 sm:p-6 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-          <div className="max-w-[800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 text-center">
+        <div className="p-4 sm:p-5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm overflow-x-auto scroll-thin">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-3 text-center min-w-max">
             
-            {/* Step 1: User Input */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-blue-50 text-[12.5px] font-bold text-blue-950 space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm">
-              <div className="flex items-center justify-center gap-1.5 text-blue-700">
-                <Globe className="w-4 h-4" />
-                <span className="mono text-[10px] uppercase font-extrabold">HTTP INGRESS</span>
+            {/* 01: Ingress */}
+            <div className="p-3 rounded-lg border border-[#111111] bg-white text-[12px] font-bold text-[#111111] space-y-0.5 shadow-hard-sm min-w-[130px]">
+              <div className="mono text-[9.5px] text-[#666666] uppercase font-extrabold">01 INGRESS</div>
+              <div className="mono text-[11.5px]">USER INPUT</div>
+            </div>
+
+            <ArrowDown className="w-4 h-4 text-[#111111] md:-rotate-90 shrink-0" />
+
+            {/* 02: Route Endpoint */}
+            <div className="p-3 rounded-lg border border-[#111111] bg-white text-[12px] font-bold text-[#111111] space-y-0.5 shadow-hard-sm min-w-[140px]">
+              <div className="mono text-[9.5px] text-[#666666] uppercase font-extrabold">02 ENDPOINT</div>
+              <div className="mono text-[11.5px] truncate max-w-[180px]">{finding.endpoint || 'HTTP ROUTE'}</div>
+            </div>
+
+            <ArrowDown className="w-4 h-4 text-[#111111] md:-rotate-90 shrink-0" />
+
+            {/* 03: Source Location */}
+            <div className="p-3 rounded-lg border border-[#111111] bg-white text-[12px] font-bold text-[#111111] space-y-0.5 shadow-hard-sm min-w-[140px]">
+              <div className="mono text-[9.5px] text-[#666666] uppercase font-extrabold">03 SOURCE CODE</div>
+              <div className="mono text-[11.5px] truncate max-w-[180px]">
+                {finding.file_path.split('/').pop()}:{finding.line_number}
               </div>
-              <div>USER INPUT</div>
             </div>
 
-            <ArrowDown className="w-5 h-5 text-[#111111] md:-rotate-90 shrink-0" />
+            <ArrowDown className="w-4 h-4 text-[#111111] md:-rotate-90 shrink-0" />
 
-            {/* Step 2: Route Endpoint */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-white text-[12.5px] font-bold text-[#111111] space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm min-w-0">
-              <div className="mono text-[10px] text-[#666666] uppercase font-extrabold">ROUTE</div>
-              <div className="mono text-[11.5px] sm:text-[12px] break-all">{finding.endpoint || '/api/users/search'}</div>
+            {/* 04: Vulnerable Sink */}
+            <div className="p-3 rounded-lg border border-[#111111] bg-[#FEE2E2] text-[12px] font-bold text-[#DC2626] space-y-0.5 shadow-hard-sm min-w-[140px]">
+              <div className="mono text-[9.5px] text-[#DC2626] uppercase font-extrabold">04 SINK</div>
+              <div className="mono text-[11.5px] uppercase">{finding.cwe_name.slice(0, 18)}</div>
             </div>
 
-            <ArrowDown className="w-5 h-5 text-[#111111] md:-rotate-90 shrink-0" />
+            <ArrowDown className="w-4 h-4 text-[#111111] md:-rotate-90 shrink-0" />
 
-            {/* Step 3: Source File */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-white text-[12.5px] font-bold text-[#111111] space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm min-w-0">
-              <div className="mono text-[10px] text-[#666666] uppercase font-extrabold">SOURCE FILE</div>
-              <div className="mono text-[11.5px] sm:text-[12px] break-all">users.py:{finding.line_number}</div>
-            </div>
-
-            <ArrowDown className="w-5 h-5 text-[#111111] md:-rotate-90 shrink-0" />
-
-            {/* Step 4: Vulnerable Operation / Sink */}
-            <div className="p-3.5 rounded-lg border border-[#111111] bg-red-50 text-[12.5px] font-bold text-red-950 space-y-1 w-full md:w-auto min-w-[140px] shadow-hard-sm">
-              <div className="flex items-center justify-center gap-1.5 text-red-700">
-                <Database className="w-4 h-4" />
-                <span className="mono text-[10px] uppercase font-extrabold">VULNERABLE SINK</span>
+            {/* 05: Validation State */}
+            {finding.validation === 'CONFIRMED' || finding.validation === 'VALIDATED' ? (
+              <div className="p-3 rounded-lg border border-[#111111] bg-[#C5F82A] text-[12px] font-extrabold text-[#111111] space-y-0.5 shadow-hard-sm min-w-[150px]">
+                <div className="mono text-[9.5px] uppercase font-bold text-[#111111]">05 PROBE RESULT</div>
+                <div className="mono text-[11.5px]">SANDBOX VERIFIED</div>
               </div>
-              <div className="mono text-[12px] text-red-700">SQL EXECUTION</div>
-            </div>
+            ) : (
+              <div className="p-3 rounded-lg border border-[#111111] bg-white text-[12px] font-extrabold text-[#666666] space-y-0.5 shadow-hard-sm min-w-[150px]">
+                <div className="mono text-[9.5px] uppercase font-bold text-[#666666]">05 PROBE RESULT</div>
+                <div className="mono text-[11.5px]">NOT VALIDATED</div>
+              </div>
+            )}
 
           </div>
         </div>

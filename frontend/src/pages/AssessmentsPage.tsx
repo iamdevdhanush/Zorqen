@@ -156,8 +156,8 @@ export default function AssessmentsPage() {
                       <div className="mono text-[10px] sm:text-[10.5px] font-extrabold text-[#111111] leading-tight">
                         {stageLabel}
                       </div>
-                      <div className="mono text-[9px] sm:text-[9.5px] font-bold text-[#444444] mt-1">
-                        {isDone ? '✓ complete' : isRun ? '● running' : '○ pending'}
+                      <div className="mono text-[9px] sm:text-[9.5px] font-extrabold text-[#111111] mt-1">
+                        {isDone ? '✓ COMPLETE' : isRun ? '● RUNNING' : '○ QUEUED'}
                       </div>
                     </div>
                   </div>

@@ -106,8 +106,8 @@ export default function AssessmentDetailPage() {
                   <div className="mono text-[10px] sm:text-[11px] font-extrabold text-[#111111] leading-tight">
                     {step.label.toUpperCase()}
                   </div>
-                  <div className="mono text-[9px] sm:text-[9.5px] font-bold text-[#444444] mt-1">
-                    {isDone ? '✓ complete' : isRun ? '● running' : '○ pending'}
+                  <div className="mono text-[9px] sm:text-[9.5px] font-extrabold text-[#111111] mt-1">
+                    {isDone ? '✓ COMPLETE' : isRun ? '● RUNNING' : '○ QUEUED'}
                   </div>
                 </div>
               </div>

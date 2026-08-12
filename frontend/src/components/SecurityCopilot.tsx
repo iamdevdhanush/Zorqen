@@ -10,10 +10,11 @@ interface Message {
 
 const SUGGESTIONS = [
   'Why is this finding valid?',
-  'Show the attack path.',
+  'Show me the attack path.',
   'What evidence confirms this?',
-  'How should I remediate it?',
-  'Was this reproduced in the sandbox?',
+  'Why is this HIGH severity?',
+  'Where is the vulnerable code?',
+  'How should this be fixed?',
 ];
 
 function fallbackReply(q: string): string {
@@ -24,10 +25,12 @@ function fallbackReply(q: string): string {
     return 'ATTACK PATH:\nUSER INPUT\n→ GET /api/users/search\n→ search_users() (app/api/users.py:42)\n→ PostgreSQL SQL Execution Sink';
   if (low.includes('evidence'))
     return 'Corroborating evidence includes Semgrep rule python.lang.security.audit.raw-sql-interpolation match, static taint graph analysis, and sandboxed container reproduction log (HTTP 500 psycopg2 syntax error on input `\'`).';
-  if (low.includes('remediate'))
+  if (low.includes('severity'))
+    return 'Severity rating is calculated based on impact (unauthorized database disclosure & execution) and exploitability (unauthenticated HTTP ingress).';
+  if (low.includes('code') || low.includes('where'))
+    return 'Vulnerable code is located at app/api/users.py:42 within search_users(), where request query string parameter input is interpolated directly into an SQL command string.';
+  if (low.includes('fixed') || low.includes('remediate'))
     return 'Proposed remediation replaces f-string string interpolation with parameterized SQL query arguments, ensuring user input is bound safely by the database driver.';
-  if (low.includes('sandbox'))
-    return 'Yes. Exploit probe `\' OR \'1\'=\'1` returned all 1,284 database rows (HTTP 200) and `\'` triggered a psycopg2 syntax exception (HTTP 500) inside container sandbox #0241.';
   return 'Grounded in assessment evidence: repository, findings, call graph, and verification logs. Ask about specific findings or evidence.';
 }
 

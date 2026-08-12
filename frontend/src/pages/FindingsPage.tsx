@@ -24,7 +24,7 @@ const FindingRow = memo(function FindingRow({
             {finding.title}
           </h3>
           <span className="chip mono font-bold text-[9.5px] sm:text-[10.5px]">{finding.cwe_id}</span>
-          <span className="mono text-[10.5px] sm:text-[11.5px] text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111] font-bold">
+          <span className="mono text-[10.5px] sm:text-[11.5px] text-[#111111] bg-[#FAFAFA] px-2 py-0.5 rounded border border-[#111111] font-bold">
             {finding.confidence_pct}% confidence
           </span>
         </div>

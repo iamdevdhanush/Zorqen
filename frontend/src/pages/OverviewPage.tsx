@@ -200,7 +200,7 @@ export default function OverviewPage() {
             <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">AI-REASONED ATTACK MAP</h2>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5 mono text-[10.5px] sm:text-[11px] font-bold text-[#111111] bg-[#C5F82A] px-3 sm:px-3.5 py-1.5 rounded-md border border-[#111111] shadow-hard-sm flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-2.5 mono text-[10.5px] sm:text-[11px] font-bold text-[#111111] bg-[#FAFAFA] px-3 sm:px-3.5 py-1.5 rounded-md border border-[#111111] shadow-hard-sm flex-wrap">
             <span>38 FILES</span>
             <span>•</span>
             <span>14 ROUTES</span>
@@ -209,7 +209,7 @@ export default function OverviewPage() {
             <span>•</span>
             <span>9 FLOWS</span>
             <span>•</span>
-            <span className="text-red-700 font-extrabold">2 SECRETS</span>
+            <span className="text-[#DC2626] font-extrabold">2 SECRETS</span>
           </div>
         </div>
 

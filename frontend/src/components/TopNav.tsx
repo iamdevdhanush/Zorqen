@@ -29,18 +29,18 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
       <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
         
         {/* Brand Logo & Title */}
-        <div className="flex items-center gap-4 lg:gap-8 min-w-0">
-          <NavLink to="/" onClick={closeMobileMenu} className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+        <div className="flex items-center gap-5 lg:gap-8 min-w-0">
+          <NavLink to="/" onClick={closeMobileMenu} className="flex items-center gap-3 sm:gap-3.5 group shrink-0 py-0.5">
             <img
               src="/logo.png"
               alt="RAKSHA"
-              className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-md transition-transform group-hover:-translate-y-0.5"
+              className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0 transition-transform group-hover:-translate-y-0.5"
             />
-            <div className="leading-tight">
-              <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] flex items-center gap-1.5">
+            <div className="leading-tight flex flex-col justify-center">
+              <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] leading-none flex items-center gap-1.5">
                 RAKSHA
               </div>
-              <div className="mono text-[8px] sm:text-[8.5px] font-bold tracking-[0.18em] text-[#666666] uppercase">
+              <div className="mono text-[8px] sm:text-[8.5px] font-bold tracking-[0.18em] text-[#666666] uppercase mt-1">
                 SECURITY VALIDATION
               </div>
             </div>
