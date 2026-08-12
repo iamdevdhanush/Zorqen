@@ -32,16 +32,16 @@ export default function FindingDetailPage() {
   const hasFix = !!finding.remediation;
 
   return (
-    <div className="max-w-[1340px] mx-auto space-y-8 fade-in py-2">
+    <div className="max-w-[1340px] mx-auto space-y-5 fade-in py-2">
       
       {/* Navigation & Protocol Tag */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/findings')}
-          className="btn btn-ghost btn-sm text-[12px] font-bold text-[#111111]"
+          className="inline-flex items-center gap-1.5 text-[11.5px] font-extrabold text-[#555555] hover:text-[#111111] transition-colors cursor-pointer group"
         >
-          <ArrowLeft className="w-4 h-4" />
-          ← FINDINGS INVESTIGATION
+          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-[#111111]" />
+          <span>FINDINGS INVESTIGATION</span>
         </button>
 
         <div className="protocol-tag">raksha://finding/{finding.cwe_id.toLowerCase()}</div>
@@ -90,8 +90,13 @@ export default function FindingDetailPage() {
       <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#111111]" />
-            <h2 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">EVIDENCE CHAIN</h2>
+            <Layers className="w-5 h-5 text-[#111111] shrink-0" />
+            <h2 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">
+              EVIDENCE CHAIN
+            </h2>
+            <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111] uppercase">
+              REASONING &amp; PROBE
+            </span>
           </div>
           <span className="mono text-[10px] sm:text-[11px] font-bold text-[#666666]">
             Derived from Repository Call Graph &amp; Sandbox Transcripts
@@ -195,7 +200,7 @@ export default function FindingDetailPage() {
 
           {/* Evidence Checklist */}
           <div className="p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
-            <h3 className="mono text-[11px] font-extrabold text-[#666666] uppercase tracking-wider">
+            <h3 className="mono text-[11px] font-extrabold text-[#111111] uppercase tracking-wider">
               CORROBORATING EVIDENCE MATRIX
             </h3>
 
