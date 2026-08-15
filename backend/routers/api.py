@@ -24,7 +24,7 @@ from models.repository import Repository
 from models.user import User
 from routers.deps import get_current_user
 from services.assessments import create_assessment, get_run, list_user_runs, resolve_assessment
-from services.copilot import CopilotRequest, investigate
+from services.copilot import CopilotRequest, CopilotContextError, investigate
 from services.findings import find_by_slug, search_findings
 from services.grok import GrokAPIError, GrokConfigurationError
 from services.serializers import finding_contract, remediation_contract, repo_meta, run_contract
@@ -409,6 +409,12 @@ async def copilot_chat(
         )
     except GrokConfigurationError:
         log.warning("[COPILOT] grok_not_configured", error_code="GROK_CONFIGURATION_ERROR")
+        raise HTTPException(
+            status_code=503,
+            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+        )
+    except CopilotContextError:
+        log.warning("[COPILOT] context_error", error_code="ASSESSMENT_CONTEXT_ERROR")
         raise HTTPException(
             status_code=503,
             detail="ASK RAKSHA is temporarily unavailable. Please try again.",

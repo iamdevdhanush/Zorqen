@@ -33,6 +33,16 @@ from services.scoring import RESOLVED_STATUSES, risk_level
 
 log = structlog.get_logger()
 
+
+class CopilotContextError(RuntimeError):
+    """Raised when the Raksha assessment context cannot be loaded (DB failure,
+    model error). The router maps this to the ASSESSMENT_CONTEXT_ERROR log code.
+
+    Never carries secrets or stack details to the API response.
+    """
+
+    code = "ASSESSMENT_CONTEXT_ERROR"
+
 MAX_HISTORY_TURNS = 6
 MAX_HIGH_IMPACT_FINDINGS = 10
 MAX_FILES = 12
@@ -487,7 +497,16 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
     if not context.finding_id and request.finding_id:
         context.finding_id = request.finding_id
 
-    rakasha_context = await build_rakasha_context(db, user, context, request.message)
+    rakasha_context = None
+    try:
+        rakasha_context = await build_rakasha_context(db, user, context, request.message)
+    except Exception as e:
+        log.warning(
+            "[COPILOT] context_load_failed",
+            error_code="ASSESSMENT_CONTEXT_ERROR",
+            error_type=type(e).__name__,
+        )
+        raise CopilotContextError("Failed to load assessment context") from e
     system_prompt = build_system_prompt(rakasha_context)
 
     messages: List[Dict[str, str]] = [{"role": "system", "content": system_prompt}]
