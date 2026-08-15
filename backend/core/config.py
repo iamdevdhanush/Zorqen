@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 from typing import List, Optional
+from urllib.parse import urlparse
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 
@@ -92,6 +93,43 @@ class Settings(BaseSettings):
             except Exception:
                 return [origin.strip() for origin in v.split(",")]
         return v
+
+    # Trusted hosts for TrustedHostMiddleware.
+    # In production, requests must arrive with a Host header that matches the
+    # frontend (Vercel) and/or the backend's own public domain (Railway).
+    # Railway domains are assigned dynamically, so set BACKEND_URL to the
+    # Railway public domain (or add TRUSTED_HOSTS explicitly).
+    trusted_hosts: List[str] = []
+
+    @field_validator("trusted_hosts", mode="before")
+    @classmethod
+    def parse_trusted_hosts(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return [host.strip() for host in v.split(",")]
+        return v
+
+    @property
+    def trusted_hosts_list(self) -> List[str]:
+        """Hostnames allowed to reach the API in production.
+
+        Derived from explicit TRUSTED_HOSTS plus the hostnames of
+        FRONTEND_URL and BACKEND_URL (scheme and port stripped).
+        """
+        hosts: List[str] = []
+        for url in (self.frontend_url, self.backend_url):
+            if not url:
+                continue
+            try:
+                parsed = urlparse(url)
+            except ValueError:
+                continue
+            if parsed.hostname:
+                hosts.append(parsed.hostname)
+        hosts.extend(self.trusted_hosts)
+        return list(dict.fromkeys(hosts))
 
     # Logging
     log_level: str = "INFO"

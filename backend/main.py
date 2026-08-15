@@ -48,9 +48,24 @@ def run_migrations() -> None:
     command.upgrade(cfg, "head")
 
 
+_INSECURE_SECRETS = {
+    "dev-secret-key-change-in-production",
+    "change-this-to-a-long-random-secret-key-in-production",
+}
+
+
+def _assert_production_safety() -> None:
+    """Refuse to boot production with development defaults."""
+    if settings.app_env != "development" and settings.secret_key in _INSECURE_SECRETS:
+        raise RuntimeError(
+            "SECRET_KEY must be set to a strong random value when APP_ENV=production"
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
+    _assert_production_safety()
     log.info("RAKSHA starting up", version="1.1.0", env=settings.app_env)
     # Alembic's env.py uses asyncio.run(); run it in a worker thread so it gets
     # its own event loop instead of clashing with the app's running loop.
@@ -105,7 +120,7 @@ app.add_middleware(
 )
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"] if settings.is_development else [settings.frontend_url],
+    allowed_hosts=["*"] if settings.is_development else settings.trusted_hosts_list,
 )
 app.add_middleware(RequestContextMiddleware)
 
@@ -126,6 +141,7 @@ app.include_router(activity_router, prefix="/api")
 # ── Health Check ─────────────────────────────────────────────────────────────
 
 @app.get("/api/health")
+@app.get("/health")
 async def health():
     return {
         "status": "healthy",

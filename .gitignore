@@ -1,0 +1,40 @@
+# ── Environment ─────────────────────────────────────────────────────────────
+# Never commit real secrets. Use .env.example files as templates.
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# ── Node / Frontend ─────────────────────────────────────────────────────────
+node_modules
+dist
+dist-ssr
+
+# ── Python / Backend ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Local databases & artifacts ─────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS / Editor / IDE ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
