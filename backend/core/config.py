@@ -96,9 +96,9 @@ class Settings(BaseSettings):
 
     # Trusted hosts for TrustedHostMiddleware.
     # In production, requests must arrive with a Host header that matches the
-    # frontend (Vercel) and/or the backend's own public domain (Railway).
-    # Railway domains are assigned dynamically, so set BACKEND_URL to the
-    # Railway public domain (or add TRUSTED_HOSTS explicitly).
+    # frontend (Vercel) and/or the backend's own public domain (Koyeb).
+    # Koyeb domains are assigned dynamically, so set BACKEND_URL to the
+    # Koyeb public domain (or add TRUSTED_HOSTS explicitly).
     trusted_hosts: List[str] = []
 
     @field_validator("trusted_hosts", mode="before")
