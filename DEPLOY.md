@@ -362,16 +362,19 @@ rebuild the image.
   **no Python error printed** (uvicorn exits with code 3 = startup failure and
   suppresses the underlying error).
 - CAUSE: The app cannot connect to the database during startup migrations.
-  `DATABASE_URL` is missing, unreachable (wrong host/port/region), uses wrong
-  credentials, or is not the async `asyncpg` scheme.
-- FIX: Set `DATABASE_URL` to the **async** URL
-  `postgresql+asyncpg://USER:PASS@HOST:PORT/DB` (Render/Koyeb Postgres URLs are
-  usually `postgres://...` — you must change the scheme to `postgresql+asyncpg`),
-  confirm the database exists and is reachable, and whitelist the host's egress IPs.
-- DIAGNOSE: Since the app upgrade, startup failures are logged as a structured
-  JSON line with `event: database_startup_failed`, a `target` (host/port/db, no
-  credentials), a `hint`, and the full `exception` traceback — the real cause is
-  visible in the deploy logs.
+  `DATABASE_URL` is missing, still the docs **placeholder** (e.g.
+  `postgresql+asyncpg://USER:PASSWORD@host:5432/DBNAME`), unreachable (wrong
+  host/port/region), uses wrong credentials, or is not the async `asyncpg` scheme.
+- FIX: Create a Postgres database on your provider (Render: **New →
+  PostgreSQL**), copy its **Internal Database URL**, and set `DATABASE_URL` to the
+  **async** form `postgresql+asyncpg://USER:PASS@HOST:PORT/DB`. Render/Koyeb give
+  you `postgres://...` — you must change the scheme to `postgresql+asyncpg`.
+  Confirm the database exists and is reachable, and whitelist the host's egress IPs.
+- DIAGNOSE: Startup failures are logged as a structured JSON line with
+  `event: database_startup_failed`, a `target` (host/port/db, no credentials), a
+  `hint`, and the full `exception` traceback. If the URL is still a placeholder,
+  a `placeholder` field names the offending token and the hint says so directly —
+  the real cause is visible in the deploy logs.
 
 **GitHub sign-in fails**
 - SYMPTOM: Redirect to GitHub shows an error, or callback returns `error=...`.

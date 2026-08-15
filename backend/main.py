@@ -48,6 +48,12 @@ def run_migrations() -> None:
     command.upgrade(cfg, "head")
 
 
+_PLACEHOLDER_HOSTS = {"host", "your-host", "dbhost", "HOST"}
+_PLACEHOLDER_DBS = {"dbname", "DBNAME", "database", "DATABASE"}
+_PLACEHOLDER_USERS = {"user", "USER", "username", "USERNAME"}
+_PLACEHOLDER_PASSWORDS = {"password", "PASSWORD"}
+
+
 def _database_target() -> str:
     """Credential-free description of the configured database for diagnostics."""
     from urllib.parse import urlparse
@@ -62,6 +68,29 @@ def _database_target() -> str:
     port = f":{parsed.port}" if parsed.port else ""
     database = (parsed.path or "").lstrip("/")
     return f"{host}{port}/{database}"
+
+
+def _database_placeholder() -> str | None:
+    """Return a description of the placeholder token, if the URL is still the docs example."""
+    from urllib.parse import urlparse
+
+    try:
+        parsed = urlparse(settings.database_url)
+    except Exception:
+        return None
+    if parsed.scheme.startswith("sqlite"):
+        return None
+    host = parsed.hostname or ""
+    database = (parsed.path or "").lstrip("/")
+    if host in _PLACEHOLDER_HOSTS:
+        return f"host placeholder {host!r}"
+    if database in _PLACEHOLDER_DBS:
+        return f"database placeholder {database!r}"
+    if (parsed.username or "") in _PLACEHOLDER_USERS:
+        return f"user placeholder {parsed.username!r}"
+    if (parsed.password or "") in _PLACEHOLDER_PASSWORDS:
+        return "password placeholder"
+    return None
 
 
 _INSECURE_SECRETS = {
@@ -93,15 +122,27 @@ async def lifespan(app: FastAPI):
     except Exception:
         # Uvicorn exits with status 3 (STARTUP_FAILURE) and suppresses the real
         # error, so surface the cause here before re-raising.
+        placeholder = _database_placeholder()
+        if placeholder:
+            hint = (
+                "DATABASE_URL still contains the documentation placeholder "
+                f"({placeholder}). Replace it with a real connection string from "
+                "your database provider (Render: New -> PostgreSQL, then copy the "
+                "Internal Database URL and change the scheme to "
+                "'postgresql+asyncpg://')."
+            )
+        else:
+            hint = (
+                "Check that DATABASE_URL is set and reachable, that the database "
+                "exists, and that this host is allowed to connect. Render Postgres "
+                "URLs are typically 'postgresql+asyncpg://...' (async driver required)."
+            )
         log.exception(
             "database_startup_failed",
             database="postgres" if settings.is_postgres else "sqlite",
             target=_database_target(),
-            hint=(
-                "Check that DATABASE_URL is set and reachable, that the database "
-                "exists, and that this host is allowed to connect. Render Postgres "
-                "URLs are typically 'postgresql+asyncpg://...' (async driver required)."
-            ),
+            placeholder=placeholder,
+            hint=hint,
         )
         raise
     from demo.seed import ensure_demo_data
