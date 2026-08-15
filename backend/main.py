@@ -48,6 +48,22 @@ def run_migrations() -> None:
     command.upgrade(cfg, "head")
 
 
+def _database_target() -> str:
+    """Credential-free description of the configured database for diagnostics."""
+    from urllib.parse import urlparse
+
+    try:
+        parsed = urlparse(settings.database_url)
+    except Exception:
+        return "unknown"
+    if parsed.scheme.startswith("sqlite"):
+        return f"sqlite:{parsed.path or settings.database_url}"
+    host = parsed.hostname or "?"
+    port = f":{parsed.port}" if parsed.port else ""
+    database = (parsed.path or "").lstrip("/")
+    return f"{host}{port}/{database}"
+
+
 _INSECURE_SECRETS = {
     "dev-secret-key-change-in-production",
     "change-this-to-a-long-random-secret-key-in-production",
@@ -67,16 +83,35 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     _assert_production_safety()
     log.info("RAKSHA starting up", version="1.1.0", env=settings.app_env)
-    # Alembic's env.py uses asyncio.run(); run it in a worker thread so it gets
-    # its own event loop instead of clashing with the app's running loop.
-    await asyncio.to_thread(run_migrations)
-    log.info("Database migrations applied")
-    await init_db()
-    log.info("Database initialized")
+    try:
+        # Alembic's env.py uses asyncio.run(); run it in a worker thread so it
+        # gets its own event loop instead of clashing with the app's running loop.
+        await asyncio.to_thread(run_migrations)
+        log.info("Database migrations applied")
+        await init_db()
+        log.info("Database initialized")
+    except Exception:
+        # Uvicorn exits with status 3 (STARTUP_FAILURE) and suppresses the real
+        # error, so surface the cause here before re-raising.
+        log.exception(
+            "database_startup_failed",
+            database="postgres" if settings.is_postgres else "sqlite",
+            target=_database_target(),
+            hint=(
+                "Check that DATABASE_URL is set and reachable, that the database "
+                "exists, and that this host is allowed to connect. Render Postgres "
+                "URLs are typically 'postgresql+asyncpg://...' (async driver required)."
+            ),
+        )
+        raise
     from demo.seed import ensure_demo_data
     from core.database import AsyncSessionLocal
-    async with AsyncSessionLocal() as seed_db:
-        await ensure_demo_data(seed_db)
+    try:
+        async with AsyncSessionLocal() as seed_db:
+            await ensure_demo_data(seed_db)
+    except Exception:
+        log.exception("demo_seed_failed")
+        raise
     log.info("Demo workspace ready" if settings.demo_mode_enabled else "Demo mode disabled")
     yield
     log.info("RAKSHA shutting down")

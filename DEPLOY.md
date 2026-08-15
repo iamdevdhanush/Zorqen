@@ -249,6 +249,10 @@ FastAPI lifespan (`main.py` → `run_migrations()` → `alembic upgrade head`).
 - `init_db()` (`Base.metadata.create_all`) also runs after migrations as a no-op safety
   net; **Alembic remains the source of truth** for the schema.
 - If migrations fail, startup fails loudly (by design). Do not suppress the error.
+- Startup DB failures emit a structured JSON log (`event: database_startup_failed`
+  with `target`, `hint`, and the full `exception` traceback) before the process
+  exits. Uvicorn exits with code 3 and otherwise suppresses the error — look for
+  that JSON line in the deploy logs. See section 12, "Database connection failure".
 
 ### Render / Koyeb configuration
 
@@ -352,10 +356,22 @@ rebuild the image.
 - CAUSE: Health path/port mismatch, or backend not bound to the injected `PORT`.
 - FIX: Health check path `/health`; the Dockerfile already binds `0.0.0.0:${PORT}`. Do not hardcode a port override.
 
-**Database connection failure**
-- SYMPTOM: Backend logs `connection refused` / timeout at startup.
-- CAUSE: `DATABASE_URL` missing, wrong host/port, or missing `+asyncpg` driver in the URL.
-- FIX: Use `postgresql+asyncpg://...` and whitelist Koyeb's egress IPs on the database.
+**Database connection failure (deploy exits with status 3, no traceback)**
+- SYMPTOM: Deploy builds, the log shows `Started server process`, `Waiting for
+  application startup`, `RAKSHA starting up`, then `Exited with status 3` — with
+  **no Python error printed** (uvicorn exits with code 3 = startup failure and
+  suppresses the underlying error).
+- CAUSE: The app cannot connect to the database during startup migrations.
+  `DATABASE_URL` is missing, unreachable (wrong host/port/region), uses wrong
+  credentials, or is not the async `asyncpg` scheme.
+- FIX: Set `DATABASE_URL` to the **async** URL
+  `postgresql+asyncpg://USER:PASS@HOST:PORT/DB` (Render/Koyeb Postgres URLs are
+  usually `postgres://...` — you must change the scheme to `postgresql+asyncpg`),
+  confirm the database exists and is reachable, and whitelist the host's egress IPs.
+- DIAGNOSE: Since the app upgrade, startup failures are logged as a structured
+  JSON line with `event: database_startup_failed`, a `target` (host/port/db, no
+  credentials), a `hint`, and the full `exception` traceback — the real cause is
+  visible in the deploy logs.
 
 **GitHub sign-in fails**
 - SYMPTOM: Redirect to GitHub shows an error, or callback returns `error=...`.
