@@ -40,7 +40,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] leading-none flex items-center gap-1.5">
                 RAKSHA
               </div>
-              <div className="mono text-[8px] sm:text-[8.5px] font-bold tracking-[0.18em] text-[#666666] uppercase mt-1">
+              <div className="mono text-[8px] sm:text-[8.5px] font-extrabold tracking-[0.18em] text-[#4A4A4A] uppercase mt-1">
                 SECURITY VALIDATION
               </div>
             </div>
@@ -54,10 +54,10 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `px-4 py-1.5 rounded-md text-[13px] font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#111111] ${
+                  `px-4 py-1.5 rounded-md text-[13px] font-extrabold transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#111111] ${
                     isActive
                       ? 'bg-[#C5F82A] text-[#111111] border border-[#111111] shadow-hard-sm'
-                      : 'text-[#555555] hover:text-[#111111] hover:bg-black/5 border border-transparent'
+                      : 'text-[#333333] hover:text-[#111111] hover:bg-black/5 border border-transparent'
                   }`
                 }
               >
@@ -100,7 +100,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                 : 'bg-white text-[#111111] shadow-hard-sm hover:bg-[#C5F82A]'
             }`}
           >
-            <Bot className="w-4 h-4 text-[#111111] shrink-0" />
+            <Bot className={`w-4 h-4 shrink-0 ${copilotOpen ? 'text-[#C5F82A]' : 'text-[#111111]'}`} />
             <span className="hidden sm:inline">Ask RAKSHA</span>
             <span className="sm:hidden">Ask</span>
           </button>

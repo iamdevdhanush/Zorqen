@@ -92,8 +92,14 @@ export interface RepoMeta {
   private: boolean;
   language: string;
   defaultBranch: string;
-  commit: string;
+  commit?: string;
   isDemo?: boolean;
+  fullName?: string;
+  htmlUrl?: string;
+  updatedAt?: string;
+  visibility?: string;
+  permissions?: Record<string, boolean>;
+  description?: string | null;
 }
 
 export interface TreeEntry {

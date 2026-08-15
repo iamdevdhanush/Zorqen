@@ -62,7 +62,7 @@ export default function RepositoryDetailPage() {
             <span className="mono">{repo.name}</span>
             <span className="chip">{repo.private ? 'PRIVATE' : 'PUBLIC'}</span>
             <span className="chip">{repo.language}</span>
-            <span className="chip mono text-[10px]">{repo.defaultBranch} · {repo.commit.slice(0, 7)}</span>
+            <span className="chip mono text-[10px]">{repo.defaultBranch} · {repo.commit ? repo.commit.slice(0, 7) : '—'}</span>
           </span>
         }
         right={

@@ -17,7 +17,7 @@
   --color-line-subtle: #DCDCD5; /* Subtle internal divider */
   --color-ink: #111111;         /* Primary text — near-black */
   --color-ink-2: #333333;       /* Body / secondary text */
-  --color-ink-3: #666666;       /* Muted text */
+  --color-ink-3: #4A4A4A;       /* Muted text — refined to #4A4A4A for crisp WCAG AA contrast */
   --color-accent: #C5F82A;      /* Acid / Lime Green Brand Accent */
   --color-accent-hover: #B4EA1B;
   --color-critical: #DC2626;    /* Red */
@@ -385,6 +385,57 @@ body {
   text-align: center;
   color: var(--color-ink-3);
   font-size: 12.5px;
+}
+
+/* ── Live Log Stream Terminal System ──────────────────────────────────── */
+.logstream {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  overflow-y: auto;
+  color: #E2E8F0;
+  padding: 4px;
+}
+.log-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  word-break: break-all;
+}
+.log-line:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.log-time {
+  color: #94A3B8;
+  flex-shrink: 0;
+  font-size: 10.5px;
+}
+.log-src {
+  color: #C5F82A;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.log-txt {
+  color: #F8FAFC;
+  flex: 1;
+}
+.log-line.ok .log-txt { color: #A3E635; }
+.log-line.err .log-txt { color: #F87171; font-weight: 700; }
+.log-line.warn .log-txt { color: #FBBF24; }
+
+.cmd-kbd {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  background: #FAFAFA;
+  color: var(--color-ink);
+  border: 1px solid #111111;
+  border-radius: 3px;
+  padding: 1px 5px;
 }
 
 /* ── Animations ───────────────────────────────────────────────────────── */

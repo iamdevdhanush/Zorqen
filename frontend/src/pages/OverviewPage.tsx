@@ -99,7 +99,7 @@ export default function OverviewPage() {
             <div className="protocol-tag">raksha://repository/security-posture</div>
             <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none mt-2">
               SECURITY VALIDATION <br />
-              <span className="text-[#666666] font-normal">FOR AI-BUILT SOFTWARE.</span>
+              <span className="text-[#4A4A4A] font-bold">FOR AI-BUILT SOFTWARE.</span>
             </h1>
           </div>
 
@@ -120,26 +120,26 @@ export default function OverviewPage() {
         {/* Repository Header Target Strip */}
         <div className="p-4 sm:p-5 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1 min-w-0">
-            <div className="mono text-[10.5px] font-extrabold tracking-wider text-[#666666] uppercase">
+            <div className="mono text-[10.5px] font-extrabold tracking-wider text-[#4A4A4A] uppercase">
               TARGET REPOSITORY
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight flex items-center gap-2.5 flex-wrap break-all">
               {currentRepo.owner}/{currentRepo.name}
               <span className="chip uppercase text-[10px] font-bold">{currentRepo.private ? 'Private' : 'Public'}</span>
             </div>
-            <div className="text-[12.5px] sm:text-[13px] text-[#555555] font-medium">
+            <div className="text-[12.5px] sm:text-[13px] text-[#333333] font-semibold">
               Security posture for latest assessed snapshot.
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[12px]">
-            <div className="mono text-[11px] sm:text-[12px] font-semibold text-[#111111] bg-[#FAFAFA] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-md border border-[#111111] shadow-hard-sm">
+            <div className="mono text-[11px] sm:text-[12px] font-bold text-[#111111] bg-[#FAFAFA] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-md border border-[#111111] shadow-hard-sm">
               Python • FastAPI • PostgreSQL • Docker
             </div>
-            <div className="flex items-center gap-2 mono text-[11px] sm:text-[12px] font-bold text-[#111111] bg-[#C5F82A] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-md border border-[#111111] shadow-hard-sm">
+            <div className="flex items-center gap-2 mono text-[11px] sm:text-[12px] font-extrabold text-[#111111] bg-[#C5F82A] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-md border border-[#111111] shadow-hard-sm">
               <GitBranch className="w-4 h-4 text-[#111111]" />
               <span>{branch}</span>
-              <span className="text-[#111111]/70">@{commit.slice(0, 7)}</span>
+              <span className="text-[#111111]">@{commit.slice(0, 7)}</span>
             </div>
           </div>
         </div>
@@ -150,14 +150,14 @@ export default function OverviewPage() {
         
         {/* Huge Editorial Score Block */}
         <div className="border-b lg:border-b-0 lg:border-r border-[#111111] pb-5 lg:pb-0 pr-0 lg:pr-8 flex flex-col justify-center">
-          <div className="mono text-[11px] font-bold tracking-[0.12em] text-[#666666] uppercase mb-1">
+          <div className="mono text-[11px] font-extrabold tracking-[0.12em] text-[#4A4A4A] uppercase mb-1">
             SECURITY POSTURE SCORE
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-5xl sm:text-7xl font-extrabold text-[#111111] tracking-tighter leading-none">
               <AnimatedNumber value={score} />
             </span>
-            <span className="text-2xl sm:text-3xl font-bold text-[#666666]">/100</span>
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#333333]">/100</span>
           </div>
           <div className="mt-3 sm:mt-4">
             <span className="chip sev-critical text-[11.5px] px-3 py-1 uppercase font-bold">

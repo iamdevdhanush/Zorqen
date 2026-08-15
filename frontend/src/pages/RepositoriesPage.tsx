@@ -1,4 +1,4 @@
-import { memo, useDeferredValue, useMemo, useState } from 'react';
+import { memo, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GitFork, Plus, Search, ShieldCheck } from 'lucide-react';
 import GithubIcon from '../components/GithubIcon';
@@ -35,10 +35,10 @@ const RepositoryCard = memo(function RepositoryCard({
             {isLoaded && <span className="chip ok font-bold text-[9.5px] sm:text-[10.5px]">LOADED TARGET</span>}
           </div>
 
-          <div className="mono text-[10.5px] sm:text-[11.5px] text-[#555555] flex items-center gap-2 font-medium flex-wrap">
+          <div className="mono text-[10.5px] sm:text-[11.5px] text-[#333333] flex items-center gap-2 font-semibold flex-wrap">
             <span>branch: <strong className="text-[#111111]">{r.defaultBranch}</strong></span>
             <span>•</span>
-            <span>commit: <strong className="text-[#111111]">{r.commit.slice(0, 7)}</strong></span>
+            <span>commit: <strong className="text-[#111111]">{r.commit ? r.commit.slice(0, 7) : '—'}</strong></span>
           </div>
         </div>
       </div>
@@ -46,9 +46,9 @@ const RepositoryCard = memo(function RepositoryCard({
       <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#111111]/10 shrink-0">
         <div className="text-left sm:text-right">
           <div className="mono text-[16px] sm:text-[18px] font-extrabold text-[#111111]">
-            {score} <span className="text-[11px] sm:text-[12px] text-[#666666] font-normal">/ 100</span>
+            {score} <span className="text-[11px] sm:text-[12px] text-[#4A4A4A] font-bold">/ 100</span>
           </div>
-          <div className="mono text-[10.5px] sm:text-[11px] font-bold text-[#666666]">
+          <div className="mono text-[10.5px] sm:text-[11px] font-bold text-[#4A4A4A]">
             {findingsCount} findings
           </div>
         </div>
@@ -67,10 +67,16 @@ const RepositoryCard = memo(function RepositoryCard({
 
 export default function RepositoriesPage() {
   const { setGithubModalOpen } = useWorkspaceUI();
-  const { githubConnected, user, repos, loadRepo, currentRepo, loadDemoRepo } = useWorkspaceData();
+  const { githubConnected, user, repos, reposLoading, reposError, refreshRepos, loadRepo, currentRepo, loadDemoRepo } = useWorkspaceData();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearch = useDeferredValue(searchQuery);
+
+  /* Refresh live GitHub repositories whenever a connected account views the page,
+     so results are never stale from an earlier session. */
+  useEffect(() => {
+    if (githubConnected) refreshRepos();
+  }, [githubConnected, refreshRepos]);
 
   const availableRepos = useMemo(() => (githubConnected ? repos : [DEMO_REPO, CYBER_PORTAL]), [githubConnected, repos]);
 
@@ -158,10 +164,18 @@ export default function RepositoriesPage() {
       {/* Security Assessment Specimen Cards */}
       <div className="space-y-4">
         <div className="mono text-[11px] font-bold text-[#666666] uppercase tracking-wider">
-          AUTHORIZED REPOSITORIES ({filteredRepos.length})
+          AUTHORIZED REPOSITORIES ({githubConnected && reposLoading && filteredRepos.length === 0 ? '…' : filteredRepos.length})
         </div>
 
-        {filteredRepos.length === 0 ? (
+        {githubConnected && reposError ? (
+          <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+            Could not load GitHub repositories — {reposError}. Reconnect GitHub from the sidebar to try again.
+          </div>
+        ) : githubConnected && reposLoading && filteredRepos.length === 0 ? (
+          <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+            Syncing repositories from GitHub…
+          </div>
+        ) : filteredRepos.length === 0 ? (
           <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
             No repositories match &ldquo;{searchQuery}&rdquo;
           </div>

@@ -166,6 +166,12 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
 
+    # Grok (xAI) — ASK RAKSHA investigation copilot (backend only, never exposed)
+    grok_api_key: str = ""
+    grok_model: str = "grok-4-latest"
+    grok_api_base: str = "https://api.x.ai/v1"
+    grok_timeout_seconds: int = 60
+
     # AI provider abstraction — "groq" | "gemini" | "openai" | "anthropic" | "mock"
     ai_provider: str = "groq"
     ai_enabled: bool = True
@@ -264,6 +270,10 @@ class Settings(BaseSettings):
     @property
     def groq_configured(self) -> bool:
         return bool(self.groq_api_key)
+
+    @property
+    def grok_configured(self) -> bool:
+        return bool(self.grok_api_key)
 
     @property
     def ai_configured(self) -> bool:

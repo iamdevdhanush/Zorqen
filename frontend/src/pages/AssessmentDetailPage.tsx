@@ -88,7 +88,7 @@ export default function AssessmentDetailPage() {
                     ? 'border-[#111111] bg-[#C5F82A] shadow-hard-sm'
                     : isDone
                     ? 'border-[#111111] bg-white'
-                    : 'border-[#DCDCD5] bg-[#FAFAFA] opacity-60'
+                    : 'border-[#DCDCD5] bg-[#FAFAFA]'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -98,15 +98,15 @@ export default function AssessmentDetailPage() {
                   ) : isRun ? (
                     <span className="pulse-dot" />
                   ) : (
-                    <Circle className="w-3.5 h-3.5 text-[#666666]" />
+                    <Circle className="w-3.5 h-3.5 text-[#4A4A4A]" />
                   )}
                 </div>
 
                 <div>
-                  <div className="mono text-[10px] sm:text-[11px] font-extrabold text-[#111111] leading-tight">
+                  <div className={`mono text-[10px] sm:text-[11px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : 'text-[#333333]'}`}>
                     {step.label.toUpperCase()}
                   </div>
-                  <div className="mono text-[9px] sm:text-[9.5px] font-extrabold text-[#111111] mt-1">
+                  <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : 'text-[#4A4A4A]'}`}>
                     {isDone ? '✓ COMPLETE' : isRun ? '● RUNNING' : '○ QUEUED'}
                   </div>
                 </div>
@@ -119,11 +119,11 @@ export default function AssessmentDetailPage() {
       {/* Live Analysis Terminal Stream */}
       <div className="rounded-xl border border-[#111111] bg-[#111111] text-white shadow-hard-lg overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/5">
-          <div className="flex items-center gap-2 mono text-[11.5px] text-zinc-300 font-bold">
+          <div className="flex items-center gap-2 mono text-[11.5px] text-white font-bold">
             <Terminal className="w-4 h-4 text-[#C5F82A]" />
             <span>LIVE ANALYSIS LOG PROTOCOL</span>
           </div>
-          <span className="mono text-[10.5px] text-zinc-400">
+          <span className="mono text-[10.5px] text-zinc-300 font-extrabold">
             {run.logs.length} events logged
           </span>
         </div>

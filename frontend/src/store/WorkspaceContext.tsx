@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { ActivityItem, AssessmentRun, Finding, FindingStatus, LogLine, RepoMeta } from '../lib/types';
+import { listGitHubRepos } from '../services/api';
 import {
   COMPLETED_ACTIVITY,
   COMPLETED_STEPS,
@@ -62,6 +63,8 @@ export interface WorkspaceDataState {
   user: AuthUser | null;
   githubConnected: boolean;
   repos: RepoMeta[];
+  reposLoading: boolean;
+  reposError: string | null;
   currentRepo: RepoMeta | null;
   branch: string;
   commit: string;
@@ -76,6 +79,7 @@ export interface WorkspaceDataState {
   connectGithub: () => void;
   proceedGithubAuth: () => void;
   disconnectGithub: () => void;
+  refreshRepos: () => Promise<void>;
   loadDemoRepo: () => void;
   selectRepo: (id: string) => void;
   loadRepo: (repo: RepoMeta) => void;
@@ -96,15 +100,37 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [githubModalOpen, setGithubModalOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [repos, setRepos] = useState<RepoMeta[]>([DEMO_REPO]);
+  const [reposLoading, setReposLoading] = useState(false);
+  const [reposError, setReposError] = useState<string | null>(null);
   const [currentRepo, setCurrentRepo] = useState<RepoMeta | null>(null);
   const [branch, setBranch] = useState('main');
-  const [commit, setCommit] = useState(DEMO_REPO.commit);
+  const [commit, setCommit] = useState<string>(DEMO_REPO.commit || 'main');
   const [assessments, setAssessments] = useState<AssessmentRun[]>([]);
   const [currentAssessment, setCurrentAssessment] = useState<AssessmentRun | null>(null);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [notifications, setNotifications] = useState<LogLine[]>([]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  /* Fetch the connected GitHub account's repositories (all pages, live data) */
+  const refreshRepos = useCallback(async () => {
+    const stored = localStorage.getItem('raksha_user');
+    if (!stored) return;
+    const parsed = JSON.parse(stored) as AuthUser;
+    if (parsed.is_demo) return;
+
+    setReposLoading(true);
+    setReposError(null);
+    try {
+      const { data } = await listGitHubRepos();
+      setRepos((data.repositories ?? []) as RepoMeta[]);
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      setReposError(status ? `GitHub repositories unavailable (HTTP ${status})` : 'GitHub repositories unavailable');
+    } finally {
+      setReposLoading(false);
+    }
+  }, []);
 
   /* Restore session */
   useEffect(() => {
@@ -115,19 +141,22 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const u = JSON.parse(storedUser);
       setUser(u);
       setGithubConnected(!u.is_demo);
+      if (!u.is_demo) {
+        setRepos([]);
+        refreshRepos();
+      }
     }
     if (storedRepo) {
       const r = JSON.parse(storedRepo) as RepoMeta;
       setCurrentRepo(r);
-      setCommit(r.commit);
-      setRepos([DEMO_REPO, ...(r.name === CYBER_PORTAL.name ? [CYBER_PORTAL] : [])]);
+      setCommit(r.commit || 'main');
     }
     if (storedAssess) {
       const a = JSON.parse(storedAssess) as AssessmentRun;
       setCurrentAssessment(a);
       setAssessments([a]);
     }
-  }, []);
+  }, [refreshRepos]);
 
   const persist = useCallback(() => {
     if (currentRepo) localStorage.setItem('raksha_repo', JSON.stringify(currentRepo));
@@ -234,15 +263,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const loadRepo = useCallback(
     (repo: RepoMeta) => {
       setCurrentRepo(repo);
-      setCommit(repo.commit);
+      setCommit(repo.commit || 'main');
       setBranch(repo.defaultBranch);
-      setRepos([DEMO_REPO, ...(repo.name === CYBER_PORTAL.name ? [CYBER_PORTAL] : [])]);
       setAssessments([]);
       setCurrentAssessment(null);
       const completedRun: AssessmentRun = {
         id: '#0241',
         repo: repo.name,
-        commit: repo.commit,
+        commit: repo.commit || 'main',
         branch: repo.defaultBranch,
         status: 'COMPLETED',
         startedAt: '09:41:18',
@@ -323,6 +351,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       user,
       githubConnected,
       repos,
+      reposLoading,
+      reposError,
       currentRepo,
       branch,
       commit,
@@ -335,7 +365,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setUser(u);
         setGithubConnected(true);
         localStorage.setItem('raksha_user', JSON.stringify(u));
+        setRepos([]);
         loadRepo(DEMO_REPO);
+        refreshRepos();
       },
       signOut: () => {
         localStorage.removeItem('raksha_token');
@@ -347,6 +379,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setCurrentRepo(null);
         setCurrentAssessment(null);
         setAssessments([]);
+        setRepos([DEMO_REPO]);
+        setReposError(null);
       },
       connectGithub: () => setGithubModalOpen(true),
       proceedGithubAuth: () => {
@@ -356,13 +390,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       disconnectGithub: () => {
         setGithubConnected(false);
       },
+      refreshRepos,
       loadDemoRepo,
       selectRepo,
       loadRepo,
       startAssessment,
       markFinding,
     }),
-    [user, githubConnected, repos, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, loadDemoRepo, selectRepo, loadRepo, startAssessment, markFinding]
+    [user, githubConnected, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, loadDemoRepo, selectRepo, loadRepo, startAssessment, markFinding, refreshRepos]
   );
 
   return (

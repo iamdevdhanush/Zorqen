@@ -1,44 +1,68 @@
 import { memo, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bot, Send, Terminal, X } from 'lucide-react';
 import { useWorkspaceData, useFinding } from '../store/WorkspaceContext';
-import { copilotChat } from '../services/api';
+import { copilotChat, type CopilotChatContext, type CopilotSource } from '../services/api';
+import type { Finding } from '../lib/types';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  sources?: CopilotSource[];
 }
 
-const SUGGESTIONS = [
-  'Why is this finding valid?',
-  'Show me the attack path.',
-  'What evidence confirms this?',
-  'Why is this HIGH severity?',
-  'Where is the vulnerable code?',
-  'How should this be fixed?',
-];
+const ERROR_MESSAGE = 'ASK RAKSHA is temporarily unavailable. Please try again.';
 
-function fallbackReply(q: string): string {
-  const low = q.toLowerCase();
-  if (low.includes('valid'))
-    return 'The finding is validated across multiple layers: static analysis matched the rule pattern at line 42, taint flow traced HTTP input directly to SQL execution, and runtime probe confirmed execution in container sandbox #0241.';
-  if (low.includes('attack path'))
-    return 'ATTACK PATH:\nUSER INPUT\n→ GET /api/users/search\n→ search_users() (app/api/users.py:42)\n→ PostgreSQL SQL Execution Sink';
-  if (low.includes('evidence'))
-    return 'Corroborating evidence includes Semgrep rule python.lang.security.audit.raw-sql-interpolation match, static taint graph analysis, and sandboxed container reproduction log (HTTP 500 psycopg2 syntax error on input `\'`).';
-  if (low.includes('severity'))
-    return 'Severity rating is calculated based on impact (unauthorized database disclosure & execution) and exploitability (unauthenticated HTTP ingress).';
-  if (low.includes('code') || low.includes('where'))
-    return 'Vulnerable code is located at app/api/users.py:42 within search_users(), where request query string parameter input is interpolated directly into an SQL command string.';
-  if (low.includes('fixed') || low.includes('remediate'))
-    return 'Proposed remediation replaces f-string string interpolation with parameterized SQL query arguments, ensuring user input is bound safely by the database driver.';
-  return 'Grounded in assessment evidence: repository, findings, call graph, and verification logs. Ask about specific findings or evidence.';
+const MAX_HISTORY = 8;
+
+function starterQuestions(page: string, finding?: Finding): string[] {
+  if (page.startsWith('/findings/') && finding) {
+    return [
+      `Why is ${finding.id} dangerous?`,
+      'Show me the evidence.',
+      'Was this actually validated?',
+      'How should I remediate it?',
+    ];
+  }
+  if (page.startsWith('/repos/')) {
+    return [
+      'What are the highest-risk findings?',
+      'Which files are most affected?',
+      "What is this repository's security posture?",
+    ];
+  }
+  if (page.startsWith('/assessments/')) {
+    return [
+      'Summarize this assessment.',
+      'What is the most dangerous finding?',
+      'How many critical findings?',
+    ];
+  }
+  return [
+    "What's the current security posture?",
+    'What should I fix first?',
+    'Which files have the most findings?',
+  ];
+}
+
+function sourceLabel(s: CopilotSource): string {
+  switch (s.type) {
+    case 'finding':
+      return s.id ?? 'FINDING';
+    case 'assessment':
+      return s.id ?? 'ASSESSMENT';
+    case 'repository':
+      return s.name ?? 'REPO';
+    case 'source':
+      return `${s.file ?? 'source'}${s.line ? `:${s.line}` : ''}`;
+  }
 }
 
 const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }: { assessmentId?: string; onClose: () => void }) {
   const { currentRepo, currentAssessment } = useWorkspaceData();
-  const findingId = window.location.pathname.startsWith('/findings/')
-    ? window.location.pathname.split('/findings/')[1]
-    : undefined;
+  const navigate = useNavigate();
+  const page = window.location.pathname;
+  const findingId = page.startsWith('/findings/') ? page.split('/findings/')[1] : undefined;
   const finding = useFinding(findingId as string | undefined);
 
   const [messages, setMessages] = useState<Message[]>([
@@ -47,6 +71,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
       content: `ASK RAKSHA • INVESTIGATION CONSOLE\nContext: ${currentRepo?.name ?? 'no repository'}${currentAssessment ? ` • ${currentAssessment.id}` : ''}${
         finding ? ` • ${finding.id} ${finding.title}` : ''
       }\n\nGrounded in assessed repository evidence, static analysis rules, and sandbox validation transcripts.`,
+      sources: [],
     },
   ]);
   const [input, setInput] = useState('');
@@ -57,21 +82,59 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
+  const openSource = (s: CopilotSource) => {
+    if (s.type === 'repository' && s.id) {
+      navigate(`/repos/${s.id}`);
+      return;
+    }
+    if (s.type === 'finding' && s.id) {
+      navigate(`/findings/${s.id}`);
+      return;
+    }
+    if (s.type === 'source' && s.finding_id) {
+      navigate(`/findings/${s.finding_id}`);
+      return;
+    }
+    if (s.type === 'assessment') {
+      const run = s.run_number ?? (s.id ? s.id.replace(/\D/g, '') : undefined);
+      if (run) navigate(`/assessments/${run}`);
+    }
+  };
+
   const send = async (text?: string) => {
     const msg = (text ?? input).trim();
     if (!msg || loading) return;
     setInput('');
+
+    const history = messages
+      .slice(1)
+      .map((m) => ({ role: m.role, content: m.content }))
+      .slice(-MAX_HISTORY);
+
+    const context: CopilotChatContext = {
+      page,
+      repositoryId: currentRepo?.id,
+      assessmentId: currentAssessment?.id ?? assessmentId,
+      findingId: finding?.id,
+      history,
+    };
+
     setMessages((m) => [...m, { role: 'user', content: msg }]);
     setLoading(true);
     try {
-      const { data } = await copilotChat(msg, assessmentId, finding?.id);
-      setMessages((m) => [...m, { role: 'assistant', content: data.response }]);
+      const { data } = await copilotChat(msg, context);
+      setMessages((m) => [
+        ...m,
+        { role: 'assistant', content: data.answer, sources: (data.sources ?? []) as CopilotSource[] },
+      ]);
     } catch {
-      setMessages((m) => [...m, { role: 'assistant', content: fallbackReply(msg) }]);
+      setMessages((m) => [...m, { role: 'assistant', content: ERROR_MESSAGE, sources: [] }]);
     } finally {
       setLoading(false);
     }
   };
+
+  const questions = starterQuestions(page, finding);
 
   return (
     <div
@@ -85,7 +148,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
           </div>
           <div>
             <div className="font-extrabold text-[13px] text-[#111111] leading-none">ASK RAKSHA</div>
-            <div className="mono text-[9px] text-[#666666] font-bold mt-0.5">INVESTIGATION CONSOLE</div>
+            <div className="mono text-[9px] text-[#4A4A4A] font-extrabold mt-0.5">INVESTIGATION CONSOLE</div>
           </div>
         </div>
         <button onClick={onClose} className="btn btn-ghost btn-xs" aria-label="Close">
@@ -111,12 +174,26 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
             <div
               className={`text-[12.5px] leading-relaxed p-3.5 rounded-lg border shadow-hard-sm whitespace-pre-wrap ${
                 m.role === 'assistant'
-                  ? 'bg-white border-[#111111] text-[#111111] font-medium'
+                  ? 'bg-white border-[#111111] text-[#111111] font-semibold'
                   : 'bg-[#111111] border-[#111111] text-white font-bold'
               }`}
               style={{ maxWidth: '85%' }}
             >
-              {m.content}
+              <div>{m.content}</div>
+              {m.role === 'assistant' && m.sources && m.sources.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2.5">
+                  {m.sources.map((s, j) => (
+                    <button
+                      key={j}
+                      onClick={() => openSource(s)}
+                      title={s.title ?? s.name ?? s.file}
+                      className="mono text-[9.5px] font-bold px-2 py-0.5 rounded border border-[#111111] bg-[#F7F7F2] hover:bg-[#C5F82A] transition-colors text-[#111111]"
+                    >
+                      {sourceLabel(s)}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -125,7 +202,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
             <div className="w-6 h-6 rounded bg-[#111111] text-white flex items-center justify-center shrink-0">
               <Bot className="w-3.5 h-3.5 text-[#C5F82A] animate-pulse" />
             </div>
-            <div className="text-[12px] p-3 rounded-lg border border-[#111111] bg-white text-[#555555] font-semibold">
+            <div className="text-[12px] p-3 rounded-lg border border-[#111111] bg-white text-[#333333] font-extrabold">
               Reasoning against repository evidence…
             </div>
           </div>
@@ -135,8 +212,8 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
 
       {messages.length <= 1 && (
         <div className="p-3 border-t border-[#111111] bg-white space-y-1.5">
-          <div className="mono text-[9.5px] text-[#666666] uppercase font-extrabold mb-1">CONTEXTUAL INVESTIGATION QUESTIONS</div>
-          {SUGGESTIONS.map((q) => (
+          <div className="mono text-[9.5px] text-[#4A4A4A] uppercase font-extrabold mb-1">CONTEXTUAL INVESTIGATION QUESTIONS</div>
+          {questions.map((q) => (
             <button
               key={q}
               onClick={() => send(q)}
@@ -163,7 +240,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
             <Send className="w-4 h-4" />
           </button>
         </div>
-        <p className="mono text-[9.5px] font-semibold text-[#666666] text-center">
+        <p className="mono text-[9.5px] font-extrabold text-[#4A4A4A] text-center">
           Grounded in assessed repository evidence • Never scans production
         </p>
       </footer>

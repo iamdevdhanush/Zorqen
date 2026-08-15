@@ -91,7 +91,7 @@ export function Panel({
 export function KV({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1 border-b border-[#DCDCD5] last:border-0">
-      <span className="text-[11px] uppercase tracking-[0.06em] text-[#666666] font-bold">{k}</span>
+      <span className="text-[11px] uppercase tracking-[0.06em] text-[#4A4A4A] font-extrabold">{k}</span>
       <span className={`text-[12.5px] text-[#111111] ${mono ? 'mono text-[12px] font-semibold' : ''}`}>{v}</span>
     </div>
   );
@@ -100,7 +100,7 @@ export function KV({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) 
 export function KVCol({ k, v }: { k: string; v: ReactNode }) {
   return (
     <div className="py-1">
-      <div className="text-[11px] uppercase tracking-[0.06em] text-[#666666] font-bold mb-[2px]">{k}</div>
+      <div className="text-[11px] uppercase tracking-[0.06em] text-[#4A4A4A] font-extrabold mb-[2px]">{k}</div>
       <div className="text-[12.5px] text-[#111111]">{v}</div>
     </div>
   );
@@ -121,7 +121,7 @@ export function EmptyState({ text }: { text: string }) {
   return (
     <div className="empty-state flex flex-col items-center gap-2">
       <div className="w-8 h-8 rounded border border-[#111111] flex items-center justify-center text-[#111111] text-[13px] font-bold">—</div>
-      <span className="max-w-[280px] text-center leading-relaxed font-medium">{text}</span>
+      <span className="max-w-[280px] text-center leading-relaxed font-semibold text-[#333333]">{text}</span>
     </div>
   );
 }
@@ -152,7 +152,7 @@ export function PageHeader({ kicker, title, right }: { kicker?: string; title: R
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-[#111111]">
       <div className="space-y-1 min-w-0">
-        {kicker && <div className="text-[10.5px] mono uppercase tracking-[0.12em] text-[#666666] font-bold mb-1">{kicker}</div>}
+        {kicker && <div className="text-[10.5px] mono uppercase tracking-[0.12em] text-[#4A4A4A] font-extrabold mb-1">{kicker}</div>}
         <h1 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight leading-tight">{title}</h1>
       </div>
       {right && <div className="flex items-center gap-2 flex-wrap shrink-0">{right}</div>}
@@ -174,8 +174,8 @@ export function SectionHeader({ icon: Icon, title, right }: { icon?: any; title:
 
 export function TechnicalMeta({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <span className="mono text-[11.5px] font-medium text-[#555555]">
-      <span className="font-bold text-[#111111]">{label}: </span>
+    <span className="mono text-[11.5px] font-semibold text-[#333333]">
+      <span className="font-extrabold text-[#111111]">{label}: </span>
       <span>{value}</span>
     </span>
   );
@@ -231,9 +231,9 @@ export function SkeletonRows({ rows = 5 }: { rows?: number }) {
     <div aria-hidden="true" className="divide-y divide-[#DCDCD5]">
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3">
-          <span className="w-2 h-2 rounded-full bg-gray-300 animate-pulse" />
-          <span className="h-4 bg-gray-200 rounded flex-1 max-w-[50%] animate-pulse" />
-          <span className="h-4 bg-gray-200 rounded w-16 ml-auto animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-[#DCDCD5] animate-pulse" />
+          <span className="h-4 bg-[#EAEAE2] rounded flex-1 max-w-[50%] animate-pulse" />
+          <span className="h-4 bg-[#EAEAE2] rounded w-16 ml-auto animate-pulse" />
         </div>
       ))}
     </div>

@@ -68,9 +68,33 @@ export const getFinding = (id: string) => api.get(`/findings/${id}`);
 export const dismissFinding = (id: string) => api.post(`/findings/${id}/dismiss`);
 export const generateFix = (findingId: string) => api.post(`/findings/${findingId}/generate-fix`);
 
-// ── Copilot ─────────────────────────────────────────────────────────────────
-export const copilotChat = (message: string, assessmentId?: string, findingId?: string) =>
-  api.post('/copilot/chat', { message, assessment_id: assessmentId, finding_id: findingId });
+// ── Copilot (ASK RAKSHA) ────────────────────────────────────────────────────
+export interface CopilotSource {
+  type: 'repository' | 'assessment' | 'finding' | 'source';
+  id?: string;
+  run_number?: number;
+  title?: string;
+  name?: string;
+  file?: string;
+  line?: number;
+  finding_id?: string;
+}
+
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface CopilotChatContext {
+  page: string;
+  repositoryId?: string;
+  assessmentId?: string;
+  findingId?: string;
+  history?: ChatTurn[];
+}
+
+export const copilotChat = (message: string, context: CopilotChatContext) =>
+  api.post('/copilot/chat', { message, context }, { timeout: 90000 });
 
 // ── Health ──────────────────────────────────────────────────────────────────
 export const getHealth = () => api.get('/health');

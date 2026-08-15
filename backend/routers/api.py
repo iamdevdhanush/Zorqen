@@ -3,6 +3,8 @@ Console contract (frontend/src/lib/types.ts) via services.serializers.
 """
 from __future__ import annotations
 
+import httpx
+import structlog
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -11,7 +13,6 @@ from pydantic import BaseModel
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from agents.llm_client import llm
 from agents.orchestrator import run_assessment
 from agents.remediation_agent import generate_fix
 from core.database import get_db
@@ -23,12 +24,16 @@ from models.repository import Repository
 from models.user import User
 from routers.deps import get_current_user
 from services.assessments import create_assessment, get_run, list_user_runs, resolve_assessment
+from services.copilot import CopilotRequest, investigate
 from services.findings import find_by_slug, search_findings
+from services.grok import GrokAPIError, GrokConfigurationError
 from services.serializers import finding_contract, remediation_contract, repo_meta, run_contract
 
 # ── Repositories ────────────────────────────────────────────────────────────
 
 repos_router = APIRouter(prefix="/repositories", tags=["repositories"])
+
+log = structlog.get_logger()
 
 
 @repos_router.get("")
@@ -45,14 +50,43 @@ async def list_repositories(
 
 @repos_router.get("/github")
 async def list_github_repos(current_user: User = Depends(get_current_user)):
-    """Fetch the user's GitHub repositories directly."""
+    """Fetch ALL GitHub repositories the authenticated user can access.
+
+    Uses the authenticated GET /user/repos endpoint with full pagination. The
+    response is normalized to the frontend RepoMeta contract — never truncated,
+    never filtered by ownership, and never includes OAuth tokens.
+    """
     if not current_user.github_access_token:
         raise HTTPException(status_code=400, detail="No GitHub access token")
     client = GitHubClient(current_user.github_access_token)
     try:
+        gh_user = await client.get_user()
+        log.info("[GITHUB] authenticated_user", username=gh_user.get("login"))
+
         repos = await client.list_repos()
-        return {"repositories": repos[:50]}
+        private_count = sum(1 for r in repos if r.get("private"))
+        log.info(
+            "[GITHUB] repositories summary",
+            total_repositories=len(repos),
+            private_repositories=private_count,
+            public_repositories=len(repos) - private_count,
+        )
+        return {
+            "repositories": [GitHubClient.normalize_repo(r) for r in repos],
+            "total": len(repos),
+            "authenticated_user": gh_user.get("login"),
+        }
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        log.warning("[GITHUB] api_error", status=status)
+        detail = {
+            401: "GitHub authentication failed or expired — reconnect GitHub.",
+            403: "GitHub API rate limit or permission denied.",
+            404: "GitHub resource not found.",
+        }.get(status, f"GitHub API error ({status}).")
+        raise HTTPException(status_code=status, detail=detail)
     except Exception as e:
+        log.warning("[GITHUB] unexpected_error", error=str(e))
         raise HTTPException(status_code=502, detail=f"GitHub API error: {str(e)}")
 
 
@@ -343,15 +377,9 @@ async def _resolve_finding(db: AsyncSession, user: User, ref: str) -> Finding:
     return finding
 
 
-# ── AI Security Copilot ─────────────────────────────────────────────────────
+# ── ASK RAKSHA Investigation Copilot ────────────────────────────────────────
 
 copilot_router = APIRouter(prefix="/copilot", tags=["copilot"])
-
-
-class CopilotRequest(BaseModel):
-    message: str
-    assessment_id: Optional[str] = None
-    finding_id: Optional[str] = None
 
 
 @copilot_router.post("/chat")
@@ -360,54 +388,30 @@ async def copilot_chat(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    context_parts = []
+    """Evidence-grounded ASK RAKSHA: targeted retrieval → Grok → grounded answer + sources.
 
-    if req.assessment_id:
-        assessment = await resolve_assessment(db, req.assessment_id)
-        if assessment:
-            context_parts.append(f"Assessment status: {assessment.status}, Score: {assessment.security_score}")
-            context_parts.append(
-                f"Findings: {assessment.critical_count} critical, {assessment.high_count} high, "
-                f"{assessment.medium_count} medium, {assessment.low_count} low"
-            )
-            if assessment.architecture_map:
-                arch = assessment.architecture_map
-                context_parts.append(f"Architecture: {arch.get('ai_summary', '')}")
-                context_parts.append(f"Technologies: {', '.join(arch.get('technologies', []))}")
-
-    if req.finding_id:
-        finding = await find_by_slug(db, current_user, req.finding_id)
-        if finding is None:
-            finding = await db.get(Finding, req.finding_id)
-        if finding:
-            context_parts.append(f"\nCurrent finding: {finding.title}")
-            context_parts.append(f"Severity: {finding.severity}, Confidence: {finding.confidence_pct}%")
-            context_parts.append(f"CWE: {finding.cwe_id} — {finding.cwe_name}")
-            context_parts.append(f"File: {finding.file_path}:{finding.line_number}")
-            context_parts.append(f"Root cause: {finding.root_cause}")
-            context_parts.append(f"Attack path: {' → '.join(finding.attack_path or [])}")
-            context_parts.append(f"Impact: {finding.impact}")
-            context_parts.append(f"AI Reasoning: {finding.ai_reasoning}")
-            if finding.code_snippet:
-                context_parts.append(f"Code: {finding.code_snippet[:400]}")
-
-    context = "\n".join(context_parts)
-    system_prompt = f"""You are RAKSHA's AI Security Copilot — a senior application security engineer assistant.
-
-You ONLY answer questions about the current repository assessment and its findings.
-Be precise, technical, and evidence-based. Reference specific findings, code, and evidence.
-
-Current security context:
-{context if context else "No specific assessment loaded. Answer general security questions about RAKSHA."}
-"""
-
+    Grok runs server-side only. The frontend sends page context (route,
+    repository, assessment, finding) plus conversation history; the backend
+    retrieves the relevant Raksha evidence, grounds the answer in it, and
+    returns structured source references. Never exposes the API key or stacks.
+    """
     try:
-        response = await llm.complete(
-            system_prompt=system_prompt,
-            user_prompt=req.message,
-            max_tokens=1024,
-            temperature=0.2,
+        return await investigate(db, current_user, req)
+    except GrokAPIError as e:
+        log.warning("[COPILOT] grok_error", error_type=type(e).__name__, status=e.status)
+        raise HTTPException(
+            status_code=429 if e.status == 429 else 503,
+            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
         )
-        return {"response": response, "context_loaded": bool(context)}
+    except GrokConfigurationError:
+        log.warning("[COPILOT] grok_not_configured")
+        raise HTTPException(
+            status_code=503,
+            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+        )
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"AI service unavailable: {str(e)}")
+        log.warning("[COPILOT] unexpected_error", error_type=type(e).__name__)
+        raise HTTPException(
+            status_code=503,
+            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+        )

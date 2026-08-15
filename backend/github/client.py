@@ -2,9 +2,13 @@
 from __future__ import annotations
 
 import base64
+import re
 import httpx
+import structlog
 from typing import Optional, List, Dict, Any
 from core.config import settings
+
+log = structlog.get_logger()
 
 
 class GitHubClient:
@@ -28,20 +32,85 @@ class GitHubClient:
         return await self._get("/user")
 
     async def list_repos(self, per_page: int = 100) -> List[dict]:
-        repos = []
+        """Fetch every repository the authenticated user can access.
+
+        Uses the authenticated endpoint GET /user/repos — NOT /users/{login}/repos,
+        which only reflects public repos and does not cover the complete set of
+        repositories the token can reach (private, collaborator, organization).
+
+        Pagination: page-by-page with per_page=100. The Link header rel="last"
+        is honored when present so the final page is detected without a wasted
+        request; an empty page is the fallback terminator. A hard page cap
+        (100 pages) prevents runaway loops against a misbehaving API.
+
+        `affiliation` explicitly includes owner, collaborator, and
+        organization_member repositories so repositories the user is authorized
+        to access are never dropped.
+        """
+        repos: List[dict] = []
         page = 1
-        while True:
-            page_data = await self._get(
-                "/user/repos",
-                params={"per_page": per_page, "page": page, "sort": "updated", "affiliation": "owner,collaborator"},
-            )
-            if not page_data:
-                break
-            repos.extend(page_data)
-            if len(page_data) < per_page:
-                break
-            page += 1
+        last_page: Optional[int] = None
+        async with httpx.AsyncClient(base_url=self.BASE, timeout=30) as client:
+            while True:
+                params = {
+                    "per_page": per_page,
+                    "page": page,
+                    "sort": "updated",
+                    "affiliation": "owner,collaborator,organization_member",
+                }
+                log.info("[GITHUB] fetching repositories", page=page)
+                resp = await client.get("/user/repos", headers=self._headers, params=params)
+                resp.raise_for_status()
+                page_data = resp.json()
+                if not page_data:
+                    break
+                repos.extend(page_data)
+                log.info("[GITHUB] repositories page", page=page, count=len(page_data))
+
+                if last_page is None:
+                    match = re.search(
+                        r'<[^>]*[?&]page=(\d+)>;\s*rel="last"',
+                        resp.headers.get("Link", ""),
+                    )
+                    if match:
+                        last_page = int(match.group(1))
+
+                if last_page is not None and page >= last_page:
+                    break
+                if len(page_data) < per_page:
+                    break
+                page += 1
+                if page > 100:
+                    log.warning("[GITHUB] pagination safety cap reached", page=page)
+                    break
         return repos
+
+    @staticmethod
+    def normalize_repo(raw: dict) -> dict:
+        """Map a GitHub /user/repos item to the frontend RepoMeta contract.
+
+        Preserves the fields the UI reads (id, name, owner, private, language,
+        defaultBranch, commit) plus the full GitHub metadata (fullName, htmlUrl,
+        updatedAt, visibility, permissions, description). The list endpoint does
+        not include the HEAD commit sha, so `commit` is null and the UI renders
+        a dash rather than crashing. No token data is ever included.
+        """
+        owner = (raw.get("owner") or {}).get("login", "")
+        return {
+            "id": str(raw.get("id") or ""),
+            "name": raw.get("name") or "",
+            "fullName": raw.get("full_name") or f"{owner}/{raw.get('name') or ''}",
+            "owner": owner,
+            "private": bool(raw.get("private")),
+            "language": raw.get("language") or "Unknown",
+            "defaultBranch": raw.get("default_branch") or "main",
+            "commit": None,
+            "htmlUrl": raw.get("html_url"),
+            "updatedAt": raw.get("updated_at"),
+            "visibility": raw.get("visibility"),
+            "permissions": raw.get("permissions"),
+            "description": raw.get("description"),
+        }
 
     async def get_repo(self, owner: str, repo: str) -> dict:
         return await self._get(f"/repos/{owner}/{repo}")

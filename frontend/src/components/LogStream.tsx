@@ -19,7 +19,7 @@ export default function LogStream({ logs, height = 220, autoScroll = true }: { l
 
   if (logs.length === 0) {
     return (
-      <div className="logstream flex items-center justify-center text-[var(--color-ink-3)]" style={{ height }}>
+      <div className="logstream flex items-center justify-center text-[#A0A0A0] font-semibold" style={{ height }}>
         waiting for pipeline output…
       </div>
     );

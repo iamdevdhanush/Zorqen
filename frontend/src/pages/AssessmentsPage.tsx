@@ -83,27 +83,27 @@ export default function AssessmentsPage() {
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 pt-2">
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#666666] uppercase">Repository</div>
+                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Repository</div>
                 <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] truncate mt-0.5">{run.repo}</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#666666] uppercase">Commit</div>
+                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Commit</div>
                 <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">@{run.commit.slice(0, 7)}</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#666666] uppercase">Status</div>
+                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Status</div>
                 <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.status}</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#666666] uppercase">Posture Score</div>
+                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Posture Score</div>
                 <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.score ?? 74} / 100</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#666666] uppercase">Findings</div>
+                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Findings</div>
                 <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{runFindings.length || 30} Total</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#666666] uppercase">Duration</div>
+                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Duration</div>
                 <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.duration ?? '46s'}</div>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function AssessmentsPage() {
                         ? 'border-[#111111] bg-[#C5F82A] shadow-hard-sm'
                         : isDone
                         ? 'border-[#111111] bg-white'
-                        : 'border-[#DCDCD5] bg-[#FAFAFA] opacity-60'
+                        : 'border-[#DCDCD5] bg-[#FAFAFA]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -148,15 +148,15 @@ export default function AssessmentsPage() {
                       ) : isRun ? (
                         <span className="pulse-dot" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 text-[#666666]" />
+                        <Circle className="w-3.5 h-3.5 text-[#4A4A4A]" />
                       )}
                     </div>
 
                     <div>
-                      <div className="mono text-[10px] sm:text-[10.5px] font-extrabold text-[#111111] leading-tight">
+                      <div className={`mono text-[10px] sm:text-[10.5px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : 'text-[#333333]'}`}>
                         {stageLabel}
                       </div>
-                      <div className="mono text-[9px] sm:text-[9.5px] font-extrabold text-[#111111] mt-1">
+                      <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : 'text-[#4A4A4A]'}`}>
                         {isDone ? '✓ COMPLETE' : isRun ? '● RUNNING' : '○ QUEUED'}
                       </div>
                     </div>

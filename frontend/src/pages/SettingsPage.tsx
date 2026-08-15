@@ -50,7 +50,7 @@ export default function SettingsPage() {
       <Panel title="Active Workspace">
         <div className="p-4 space-y-2">
           <KV k="Current repository" v={<span className="mono text-[12px] font-semibold break-all">{currentRepo ? `${currentRepo.owner}/${currentRepo.name}` : '—'}</span>} />
-          <KV k="Branch / commit" v={<span className="mono text-[12px] break-all">{currentRepo ? `${currentRepo.defaultBranch} • ${currentRepo.commit.slice(0, 7)}` : '—'}</span>} />
+          <KV k="Branch / commit" v={<span className="mono text-[12px] break-all">{currentRepo ? `${currentRepo.defaultBranch} • ${currentRepo.commit ? currentRepo.commit.slice(0, 7) : '—'}` : '—'}</span>} />
           <KV k="Assessment retention" v={<span className="mono text-[12px]">session-scoped • cleared on sign out</span>} />
           <div className="flex flex-wrap gap-2 pt-3">
             <button onClick={loadDemoRepo} className="btn btn-sm flex-1 sm:flex-none justify-center">

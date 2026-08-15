@@ -33,8 +33,8 @@ const FindingRow = memo(function FindingRow({
           {finding.root_cause}
         </p>
 
-        <div className="mono text-[10.5px] sm:text-[11.5px] text-[#555555] flex items-center gap-2 pt-0.5 font-medium flex-wrap break-all">
-          <span className="font-bold text-[#111111]">{finding.file_path}:{finding.line_number}</span>
+        <div className="mono text-[10.5px] sm:text-[11.5px] text-[#333333] flex items-center gap-2 pt-0.5 font-semibold flex-wrap break-all">
+          <span className="font-extrabold text-[#111111]">{finding.file_path}:{finding.line_number}</span>
           {finding.endpoint && (
             <>
               <span>•</span>

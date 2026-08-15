@@ -151,7 +151,7 @@ export default function VerificationPage() {
           </div>
 
           <p className="text-[12.5px] text-[var(--color-ink-2)] leading-relaxed">
-            Vulnerability probe executed against baseline commit <span className="mono">{currentRepo?.commit.slice(0, 7)}</span>. HTTP 500 error triggered.
+            Vulnerability probe executed against baseline commit <span className="mono">{currentRepo?.commit ? currentRepo.commit.slice(0, 7) : '—'}</span>. HTTP 500 error triggered.
           </p>
         </div>
 
@@ -197,15 +197,15 @@ export default function VerificationPage() {
 
       {/* HUGE GREEN RESULT BANNER */}
       {isComplete && (
-        <div className="p-5 sm:p-8 rounded-xl bg-[#16C784] text-white shadow-md space-y-3 fade-in">
+        <div className="p-5 sm:p-8 rounded-xl bg-[#16C784] text-[#111111] border border-[#111111] shadow-hard space-y-3 fade-in">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-white shrink-0" />
+            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-[#111111] shrink-0" />
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">VERIFIED</h2>
           </div>
-          <p className="text-[14px] sm:text-[15px] font-medium leading-relaxed max-w-[800px] text-white/95">
+          <p className="text-[14px] sm:text-[15px] font-bold leading-relaxed max-w-[800px] text-[#111111]">
             &ldquo;Vulnerability could not be reproduced against the patched build.&rdquo;
           </p>
-          <div className="mono text-[11px] sm:text-[11.5px] text-white/80 pt-2 border-t border-white/20">
+          <div className="mono text-[11px] sm:text-[11.5px] text-[#111111] font-bold pt-2 border-t border-[#111111]/30">
             Audit proof recorded for assessment snapshot. Vulnerability status set to VERIFIED.
           </div>
         </div>

@@ -117,6 +117,8 @@ async def lifespan(app: FastAPI):
     log.info("Demo workspace ready" if settings.demo_mode_enabled else "Demo mode disabled")
     yield
     log.info("RAKSHA shutting down")
+    from services.grok import grok
+    await grok.aclose()
 
 
 app = FastAPI(
@@ -197,6 +199,8 @@ async def health():
         "app": settings.app_name,
         "version": "1.1.0",
         "github_configured": settings.github_configured,
+        "grok_configured": settings.grok_configured,
+        "grok_model": settings.grok_model,
         "ai_provider": settings.ai_provider,
         "ai_configured": settings.ai_configured,
         "demo_mode": settings.demo_mode_enabled,
