@@ -166,6 +166,18 @@ register_error_handlers(app)
 # ── Routers ──────────────────────────────────────────────────────────────────
 
 app.include_router(auth_router, prefix="/api")
+
+# GitHub OAuth is also reachable WITHOUT the /api prefix so that both
+# /auth/github and /api/auth/github work (users and health-checkers commonly
+# hit /auth/github directly). Both run the REAL OAuth flow against the same
+# code. The /api/auth/* paths remain the canonical routes — the frontend API
+# client builds its login URL from VITE_API_URL (which ends in /api) and
+# GITHUB_REDIRECT_URI / the GitHub OAuth App callback point at
+# /api/auth/github/callback. The prefix-less aliases add no security risk
+# because the callback always uses the fixed GITHUB_REDIRECT_URI, never a
+# user-supplied redirect_uri.
+app.include_router(auth_router)
+
 app.include_router(demo_router, prefix="/api")
 app.include_router(repos_router, prefix="/api")
 app.include_router(assessments_router, prefix="/api")
