@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400" width="1600" height="400">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&amp;family=JetBrains+Mono:wght@600;700;800&amp;display=swap');
+      .bg { fill: #F7F7F2; }
+      .font-sans { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .font-mono { font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace; }
+      .border-ink { stroke: #111111; stroke-width: 1.5; fill: none; }
+      .shadow-box { fill: #111111; }
+      .panel-fill { fill: #FFFFFF; }
+      .accent-fill { fill: #C5F82A; }
+      .ink-text { fill: #111111; }
+      .muted-text { fill: #444444; }
+      .subtle-text { fill: #666666; }
+    </style>
+  </defs>
+
+  <!-- Background Surface -->
+  <rect width="1600" height="400" class="bg" />
+
+  <!-- Outer Technical Inset Border -->
+  <rect x="20" y="20" width="1560" height="360" rx="6" class="border-ink" />
+
+  <!-- Minimal Corner Target Elements -->
+  <g stroke="#111111" stroke-width="1.5">
+    <line x1="28" y1="34" x2="40" y2="34" />
+    <line x1="34" y1="28" x2="34" y2="40" />
+    <line x1="1560" y1="34" x2="1572" y2="34" />
+    <line x1="1566" y1="28" x2="1566" y2="40" />
+    <line x1="28" y1="366" x2="40" y2="366" />
+    <line x1="34" y1="360" x2="34" y2="372" />
+    <line x1="1560" y1="366" x2="1572" y2="366" />
+    <line x1="1566" y1="360" x2="1566" y2="372" />
+  </g>
+
+  <!-- LEFT SIDE — Brand & Product Positioning -->
+  <g>
+    <!-- Logo Container Box -->
+    <rect x="63" y="55" width="60" height="60" rx="6" class="shadow-box" />
+    <rect x="60" y="52" width="60" height="60" rx="6" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+
+    <!-- Vector RAKSHA Shield Icon Emblem -->
+    <g>
+      <path d="M 90 63 L 107 69 V 85 C 107 96 90 103 90 103 C 90 103 73 96 73 85 V 69 Z" fill="#111111" />
+      <path d="M 90 68 L 102 72 V 84 C 102 92 90 97 90 97 C 90 97 78 92 78 84 V 72 Z" class="accent-fill" stroke="#111111" stroke-width="1.2" />
+      <path d="M 86 82 L 89 85 L 95 78" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- Wordmark & Subtitle -->
+    <text x="136" y="90" class="font-sans ink-text" font-size="40" font-weight="900" letter-spacing="-0.5">RAKSHA</text>
+    <text x="137" y="106" class="font-mono ink-text" font-size="10.5" font-weight="800" letter-spacing="2">SECURITY VALIDATION</text>
+
+    <!-- Short Headline -->
+    <text x="60" y="172" class="font-sans ink-text" font-size="32" font-weight="900" letter-spacing="-0.5">SECURITY VALIDATION FOR MODERN SOFTWARE.</text>
+
+    <!-- Short Supporting Text -->
+    <text x="60" y="206" class="font-sans muted-text" font-size="14.5" font-weight="500">Analyze vulnerabilities. Trace attack paths. Turn security findings into actionable remediation.</text>
+
+    <!-- Feature Labels (Chips) -->
+    <g id="feature-chips">
+      <!-- Chip 1 -->
+      <rect x="62" y="244" width="180" height="32" rx="5" class="shadow-box" />
+      <rect x="60" y="242" width="180" height="32" rx="5" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+      <text x="150" y="263" text-anchor="middle" class="font-mono ink-text" font-size="10.5" font-weight="800" letter-spacing="0.5">AI-ASSISTED ANALYSIS</text>
+
+      <!-- Chip 2 -->
+      <rect x="256" y="244" width="202" height="32" rx="5" class="shadow-box" />
+      <rect x="254" y="242" width="202" height="32" rx="5" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+      <text x="355" y="263" text-anchor="middle" class="font-mono ink-text" font-size="10.5" font-weight="800" letter-spacing="0.5">ATTACK-PATH VALIDATION</text>
+
+      <!-- Chip 3 -->
+      <rect x="472" y="244" width="176" height="32" rx="5" class="shadow-box" />
+      <rect x="470" y="242" width="176" height="32" rx="5" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+      <text x="558" y="263" text-anchor="middle" class="font-mono ink-text" font-size="10.5" font-weight="800" letter-spacing="0.5">ACTIONABLE FINDINGS</text>
+    </g>
+  </g>
+
+  <!-- RIGHT SIDE — Clean Sponsorship Card -->
+  <g>
+    <!-- Card Shadow -->
+    <rect x="954" y="76" width="586" height="248" rx="8" class="shadow-box" />
+
+    <!-- Main Card Body -->
+    <rect x="950" y="72" width="586" height="248" rx="8" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+
+    <!-- Card Title -->
+    <text x="986" y="124" class="font-sans ink-text" font-size="22" font-weight="900" letter-spacing="-0.2">SUPPORT RAKSHA</text>
+
+    <!-- Card Body Text -->
+    <text x="986" y="160" class="font-sans muted-text" font-size="14.5" font-weight="500">Help support the continued development of open security</text>
+    <text x="986" y="182" class="font-sans muted-text" font-size="14.5" font-weight="500">tooling and research.</text>
+
+    <!-- Button Shadow -->
+    <rect x="989" y="231" width="508" height="48" rx="6" class="shadow-box" />
+
+    <!-- Button Body -->
+    <rect x="986" y="228" width="508" height="48" rx="6" class="accent-fill" stroke="#111111" stroke-width="1.5" />
+    <text x="1240" y="258" text-anchor="middle" class="font-mono ink-text" font-size="14" font-weight="800" letter-spacing="0.8">SUPPORT RAKSHA  →</text>
+  </g>
+</svg>

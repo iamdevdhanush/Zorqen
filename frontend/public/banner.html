@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support RAKSHA — Security Validation Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F7F2;
+      --ink: #111111;
+      --accent: #C5F82A;
+      --panel: #FFFFFF;
+      --muted: #444444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', system-ui, sans-serif;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+    }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      color: #666666;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .heading {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .lead {
+      font-size: 16px;
+      color: var(--muted);
+      font-weight: 500;
+      line-height: 1.6;
+      margin-top: 12px;
+      max-width: 760px;
+    }
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: 1.5px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 3px 3px 0px var(--ink);
+      transition: all 0.1s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-accent { background: var(--accent); }
+    .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0px var(--ink); }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 3px 3px 0px var(--ink);
+    }
+    .card-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: 0.08em;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #555555;
+      line-height: 1.5;
+    }
+    .support-hero-card {
+      background: var(--panel);
+      border: 2px solid var(--ink);
+      border-radius: 10px;
+      padding: 36px;
+      box-shadow: 4px 4px 0px var(--ink);
+      max-width: 840px;
+    }
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      background: var(--accent);
+      border: 1px solid var(--ink);
+      padding: 4px 10px;
+      border-radius: 4px;
+      box-shadow: 2px 2px 0px var(--ink);
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .banner-preview {
+      width: 100%;
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 3px 3px 0px var(--ink);
+      background: var(--bg);
+    }
+    .banner-preview img { width: 100%; height: auto; display: block; }
+    .section-title {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .section-desc {
+      font-size: 14px;
+      color: #555555;
+      margin-bottom: 16px;
+    }
+    .rows { display: flex; flex-direction: column; gap: 12px; }
+    .row-card {
+      background: var(--panel);
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 2px 2px 0px var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .row-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 800;
+      background: #FAFAFA;
+      border: 1px solid var(--ink);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SECTION 1: HERO -->
+    <section>
+      <div class="eyebrow">SUPPORT RAKSHA</div>
+      <h1 class="heading">HELP BUILD BETTER<br>SECURITY TOOLS.</h1>
+      <p class="lead">RAKSHA is an open security validation platform designed to help developers understand vulnerabilities, trace attack paths, and turn security findings into actionable remediation.</p>
+      <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="https://buymeacoffee.com/raksha" target="_blank" class="btn btn-accent">☕ SUPPORT RAKSHA</a>
+        <a href="https://github.com/iamdevdhanush/Raksha-ai" target="_blank" class="btn">VIEW ON GITHUB</a>
+      </div>
+    </section>
+
+    <!-- SECTION 2: WHY SUPPORT -->
+    <section style="padding-top: 24px; border-top: 1px solid var(--ink);">
+      <h2 class="section-title">WHY SUPPORT RAKSHA?</h2>
+      <p class="section-desc">Security tooling shouldn't only belong to large companies with expensive infrastructure. RAKSHA is being built to make practical security analysis more accessible to developers, students, researchers, and open-source projects.</p>
+      <div class="grid-3" style="margin-top: 20px;">
+        <div class="card">
+          <div class="card-title">OPEN SECURITY TOOLING</div>
+          <div class="card-desc">Building practical tools for vulnerability analysis and security validation.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">RESEARCH & DEVELOPMENT</div>
+          <div class="card-desc">Improving analysis workflows, evidence collection, and AI-assisted security reasoning.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">OPEN-SOURCE COMMUNITY</div>
+          <div class="card-desc">Making useful security capabilities easier to explore, learn from, and contribute to.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: SUPPORT CARD -->
+    <section class="support-hero-card">
+      <div class="badge">☕ BUY ME A COFFEE</div>
+      <h2 style="font-size: 28px; font-weight: 900;">SUPPORT THE PROJECT</h2>
+      <p style="font-size: 15px; color: var(--muted); margin-top: 8px; margin-bottom: 24px;">Your support helps fund the time, infrastructure, experimentation, and development required to keep RAKSHA moving forward.</p>
+      <a href="https://buymeacoffee.com/raksha" target="_blank" class="btn btn-accent" style="font-size: 16px; padding: 14px 28px;">SUPPORT RAKSHA →</a>
+    </section>
+
+    <!-- SECTION 4: WHERE SUPPORT GOES -->
+    <section style="padding-top: 24px; border-top: 1px solid var(--ink);">
+      <h2 class="section-title">WHERE SUPPORT GOES</h2>
+      <div class="rows" style="margin-top: 16px;">
+        <div class="row-card">
+          <div class="row-num">01</div>
+          <div>
+            <div style="font-weight: 800; font-size: 14px;">SECURITY ENGINE DEVELOPMENT</div>
+            <div style="font-size: 13px; color: #555;">Improve vulnerability detection, evidence analysis, and security workflows.</div>
+          </div>
+        </div>
+        <div class="row-card">
+          <div class="row-num">02</div>
+          <div>
+            <div style="font-weight: 800; font-size: 14px;">INFRASTRUCTURE</div>
+            <div style="font-size: 13px; color: #555;">Hosting, testing environments, APIs, and development infrastructure.</div>
+          </div>
+        </div>
+        <div class="row-card">
+          <div class="row-num">03</div>
+          <div>
+            <div style="font-weight: 800; font-size: 14px;">RESEARCH & EXPERIMENTATION</div>
+            <div style="font-size: 13px; color: #555;">Explore better security analysis techniques and AI-assisted workflows.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: RAKSHA BRAND ASSETS -->
+    <section style="padding-top: 24px; border-top: 1px solid var(--ink);">
+      <h2 class="section-title">RAKSHA BRAND ASSETS</h2>
+      <p class="section-desc">Want to feature RAKSHA on your project page, profile, or community post? Use the official RAKSHA artwork below.</p>
+      <div class="banner-preview">
+        <img src="/raksha-banner.svg" alt="Official RAKSHA Artwork Banner">
+      </div>
+      <div style="margin-top: 16px; display: flex; gap: 12px;">
+        <a href="/raksha-banner.svg" download="raksha-banner.svg" class="btn btn-accent">DOWNLOAD SVG</a>
+        <button id="exportPng" class="btn">EXPORT PNG</button>
+      </div>
+    </section>
+
+    <!-- SECTION 6: GET INVOLVED -->
+    <section style="padding-top: 24px; border-top: 1px solid var(--ink);">
+      <div class="eyebrow">GET INVOLVED</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+        <a href="https://github.com/iamdevdhanush/Raksha-ai" target="_blank" class="btn" style="padding: 8px 16px; font-size: 12px;">GitHub</a>
+        <a href="https://github.com/iamdevdhanush/Raksha-ai/issues" target="_blank" class="btn" style="padding: 8px 16px; font-size: 12px;">Report an Issue</a>
+        <a href="https://github.com/iamdevdhanush/Raksha-ai#contribute" target="_blank" class="btn" style="padding: 8px 16px; font-size: 12px;">Contribute</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.getElementById('exportPng').addEventListener('click', function() {
+      fetch('/raksha-banner.svg')
+        .then(res => res.text())
+        .then(svgText => {
+          const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 3200;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#F7F7F2';
+            ctx.fillRect(0, 0, 3200, 800);
+            ctx.drawImage(img, 0, 0, 3200, 800);
+            const pngUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = pngUrl;
+            a.download = 'raksha-banner-3200x800.png';
+            a.click();
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400" width="1600" height="400">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&amp;family=JetBrains+Mono:wght@500;600;700;800&amp;display=swap');
+      .bg { fill: #F7F7F2; }
+      .border-ink { stroke: #111111; stroke-width: 1.5; fill: none; }
+      .border-ink-thick { stroke: #111111; stroke-width: 2; fill: none; }
+      .font-sans { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .font-mono { font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace; }
+      .shadow-box { fill: #111111; }
+      .panel-fill { fill: #FFFFFF; }
+      .panel-head-fill { fill: #FAFAFA; }
+      .accent-fill { fill: #C5F82A; }
+      .ink-text { fill: #111111; }
+      .muted-text { fill: #666666; }
+      .subtle-text { fill: #333333; }
+      .divider { stroke: #DCDCD5; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <!-- Canvas Background (Warm Off-White) -->
+  <rect width="1600" height="400" class="bg" />
+
+  <!-- Technical Grid Guide Lines -->
+  <line x1="16" y1="46" x2="1584" y2="46" stroke="#E2E2D9" stroke-width="1" stroke-dasharray="4,4" />
+  <line x1="16" y1="354" x2="1584" y2="354" stroke="#E2E2D9" stroke-width="1" stroke-dasharray="4,4" />
+  <line x1="880" y1="46" x2="880" y2="354" stroke="#E2E2D9" stroke-width="1" stroke-dasharray="4,4" />
+
+  <!-- Outer Technical Inset Border -->
+  <rect x="16" y="16" width="1568" height="368" rx="6" class="border-ink" />
+
+  <!-- Minimal Corner Crosshair Target Elements -->
+  <g stroke="#111111" stroke-width="1.5">
+    <!-- Top Left -->
+    <line x1="26" y1="32" x2="38" y2="32" />
+    <line x1="32" y1="26" x2="32" y2="38" />
+    <!-- Top Right -->
+    <line x1="1562" y1="32" x2="1574" y2="32" />
+    <line x1="1568" y1="26" x2="1568" y2="38" />
+    <!-- Bottom Left -->
+    <line x1="26" y1="368" x2="38" y2="368" />
+    <line x1="32" y1="362" x2="32" y2="374" />
+    <!-- Bottom Right -->
+    <line x1="1562" y1="368" x2="1574" y2="368" />
+    <line x1="1568" y1="362" x2="1568" y2="374" />
+  </g>
+
+  <!-- Top System Header Metadata Bar -->
+  <g>
+    <text x="52" y="36" class="font-mono muted-text" font-size="11" font-weight="700" letter-spacing="1.2">
+      SYS_ID: RAKSHA-SEC-VAL-01 <tspan fill="#CCCCCC">•</tspan> MODE: CONTINUOUS_VALIDATION <tspan fill="#CCCCCC">•</tspan> ENGINE: ACTIVE <tspan fill="#CCCCCC">•</tspan> BUILD: 2026.08
+    </text>
+
+    <!-- Top Right System Status Badge -->
+    <rect x="1410" y="24" width="150" height="20" rx="4" class="shadow-box" />
+    <rect x="1408" y="22" width="150" height="20" rx="4" class="accent-fill" stroke="#111111" stroke-width="1.2" />
+    <circle cx="1420" cy="32" r="3.5" fill="#111111" />
+    <text x="1430" y="35" class="font-mono ink-text" font-size="10" font-weight="800" letter-spacing="0.5">STATUS: VERIFIED</text>
+  </g>
+
+  <!-- Left Side: RAKSHA Core Product Identity -->
+  <g>
+    <!-- RAKSHA Shield Logo Box (Neo-Brutalist Offset Shadow) -->
+    <rect x="55" y="71" width="72" height="72" rx="8" class="shadow-box" />
+    <rect x="52" y="68" width="72" height="72" rx="8" class="panel-fill" stroke="#111111" stroke-width="2" />
+
+    <!-- Vector RAKSHA Shield Logo Emblem -->
+    <g>
+      <!-- Outer Shield Base -->
+      <path d="M 88 81 L 109 88.5 V 108.5 C 109 122.5 88 131.5 88 131.5 C 88 131.5 67 122.5 67 108.5 V 88.5 Z" fill="#111111" />
+      <!-- Inner Shield Lime Accent Layer -->
+      <path d="M 88 87 L 103 92 V 107 C 103 117.5 88 124 88 124 C 88 124 73 117.5 73 107 V 92 Z" class="accent-fill" stroke="#111111" stroke-width="1.5" />
+      <!-- Core Security Verification Check Mark -->
+      <path d="M 83 104.5 L 86.8 108.5 L 93.8 99.5" fill="none" stroke="#111111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- Wordmark & Badges -->
+    <text x="140" y="116" class="font-sans ink-text" font-size="52" font-weight="900" letter-spacing="-1">RAKSHA</text>
+
+    <!-- Version Chip -->
+    <rect x="366" y="81" width="68" height="24" rx="4" class="shadow-box" />
+    <rect x="364" y="79" width="68" height="24" rx="4" class="accent-fill" stroke="#111111" stroke-width="1.5" />
+    <text x="376" y="95" class="font-mono ink-text" font-size="11" font-weight="800" letter-spacing="0.5">v2.4.0</text>
+
+    <!-- Category Subtitle -->
+    <text x="142" y="138" class="font-mono ink-text" font-size="12.5" font-weight="800" letter-spacing="2.8">SECURITY VALIDATION PLATFORM</text>
+
+    <!-- Headline Tagline -->
+    <text x="52" y="180" class="font-sans ink-text" font-size="16" font-weight="800" letter-spacing="-0.2">CONTINUOUS THREAT &amp; VULNERABILITY VALIDATION ENGINE</text>
+    <text x="52" y="204" class="font-sans subtle-text" font-size="13" font-weight="500">Automated attack-path analysis, AI remediation, and deterministic SAST/DAST verification.</text>
+  </g>
+
+  <!-- Left Bottom: Technical Engineering Feature Badges (3 Neo-Brutalist Micro Panels) -->
+  <g>
+    <!-- Badge 1: Architecture -->
+    <g>
+      <rect x="54" y="238" width="245" height="82" rx="6" class="shadow-box" />
+      <rect x="52" y="236" width="245" height="82" rx="6" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+      <path d="M 52 242 C 52 238.7 54.7 236 58 236 L 291 236 C 294.3 236 297 238.7 297 242 L 297 262 L 52 262 Z" class="panel-head-fill" stroke="#111111" stroke-width="1.5" />
+      <text x="64" y="253" class="font-mono ink-text" font-size="10" font-weight="800" letter-spacing="0.8">[01] ENGINE DUAL-SCANNER</text>
+      <text x="64" y="280" class="font-sans ink-text" font-size="12" font-weight="800">DAST + SAST ENGINE</text>
+      <text x="64" y="298" class="font-mono muted-text" font-size="10.5">AST node graph validation</text>
+    </g>
+
+    <!-- Badge 2: AI Remediation -->
+    <g>
+      <rect x="317" y="238" width="255" height="82" rx="6" class="shadow-box" />
+      <rect x="315" y="236" width="255" height="82" rx="6" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+      <path d="M 315 242 C 315 238.7 317.7 236 321 236 L 564 236 C 567.3 236 570 238.7 570 242 L 570 262 L 315 262 Z" class="panel-head-fill" stroke="#111111" stroke-width="1.5" />
+      <text x="327" y="253" class="font-mono ink-text" font-size="10" font-weight="800" letter-spacing="0.8">[02] REPAIR &amp; REMEDIATION</text>
+      <text x="327" y="280" class="font-sans ink-text" font-size="12" font-weight="800">AI SECURITY COPILOT</text>
+      <text x="327" y="298" class="font-mono muted-text" font-size="10.5">Automated patch generation</text>
+    </g>
+
+    <!-- Badge 3: Accuracy -->
+    <g>
+      <rect x="590" y="238" width="255" height="82" rx="6" class="shadow-box" />
+      <rect x="588" y="236" width="255" height="82" rx="6" class="panel-fill" stroke="#111111" stroke-width="1.5" />
+      <path d="M 588 242 C 588 238.7 590.7 236 594 236 L 837 236 C 840.3 236 843 238.7 843 242 L 843 262 L 588 262 Z" class="panel-head-fill" stroke="#111111" stroke-width="1.5" />
+      <text x="600" y="253" class="font-mono ink-text" font-size="10" font-weight="800" letter-spacing="0.8">[03] ACCURACY RATING</text>
+      <text x="600" y="280" class="font-sans ink-text" font-size="12" font-weight="800">ZERO FALSE POSITIVES</text>
+      <text x="600" y="298" class="font-mono muted-text" font-size="10.5">Deterministic state proof</text>
+    </g>
+  </g>
+
+  <!-- Right Side: Buy Me a Coffee / RAKSHA Product UI Extension Panel -->
+  <g>
+    <!-- Hard Offset Shadow -->
+    <rect x="914" y="63" width="635" height="258" rx="8" class="shadow-box" />
+
+    <!-- Main Panel Box -->
+    <rect x="910" y="59" width="635" height="258" rx="8" class="panel-fill" stroke="#111111" stroke-width="2" />
+
+    <!-- Panel Top Header Bar -->
+    <path d="M 910 67 C 910 62.6 913.6 59 918 59 L 1537 59 C 1541.4 59 1545 62.6 1545 67 L 1545 99 L 910 99 Z" class="panel-head-fill" stroke="#111111" stroke-width="1.5" />
+    <text x="930" y="83" class="font-mono ink-text" font-size="11.5" font-weight="800" letter-spacing="1">ENGINEERING SPONSORSHIP // RAKSHA CORE</text>
+
+    <!-- Header Status Indicator Badge -->
+    <rect x="1380" y="70" width="148" height="20" rx="4" class="shadow-box" />
+    <rect x="1378" y="68" width="148" height="20" rx="4" class="accent-fill" stroke="#111111" stroke-width="1.2" />
+    <circle cx="1390" cy="78" r="3" fill="#111111" />
+    <text x="1398" y="81" class="font-mono ink-text" font-size="9.5" font-weight="800" letter-spacing="0.5">SPONSOR ENGINE</text>
+
+    <!-- Panel Content Area -->
+    <text x="930" y="126" class="font-sans ink-text" font-size="16.5" font-weight="800">SUPPORT CONTINUOUS SECURITY R&amp;D</text>
+    <text x="930" y="146" class="font-sans subtle-text" font-size="12.5" font-weight="500">Fund open-source security validation algorithms, vulnerability scanners, and AI copilot models.</text>
+
+    <!-- Spec KV Matrix inside Panel -->
+    <g>
+      <!-- Col 1 -->
+      <text x="930" y="174" class="font-mono muted-text" font-size="10" font-weight="700" letter-spacing="0.8">ENGINE VERSION</text>
+      <text x="930" y="191" class="font-mono ink-text" font-size="12" font-weight="700">v2.4.0-RELEASE</text>
+
+      <!-- Col 2 -->
+      <text x="1120" y="174" class="font-mono muted-text" font-size="10" font-weight="700" letter-spacing="0.8">LICENSE MODEL</text>
+      <text x="1120" y="191" class="font-mono ink-text" font-size="12" font-weight="700">OPEN SECURITY</text>
+
+      <!-- Col 3 -->
+      <text x="1320" y="174" class="font-mono muted-text" font-size="10" font-weight="700" letter-spacing="0.8">COMMUNITY TIER</text>
+      <text x="1320" y="191" class="font-mono ink-text" font-size="12" font-weight="700">CORE SPONSOR</text>
+    </g>
+
+    <!-- Divider Line -->
+    <line x1="930" y1="210" x2="1525" y2="210" class="divider" />
+
+    <!-- Action Button / Buy Me a Coffee Extension Bar (Neo-Brutalist Acid Accent Button) -->
+    <g>
+      <rect x="933" y="227" width="592" height="42" rx="6" class="shadow-box" />
+      <rect x="930" y="224" width="592" height="42" rx="6" class="accent-fill" stroke="#111111" stroke-width="2" />
+      <text x="1226" y="250" text-anchor="middle" class="font-mono ink-text" font-size="13" font-weight="800" letter-spacing="0.8">SPONSOR RAKSHA DEVELOPMENT // BUY ME A COFFEE  →</text>
+    </g>
+  </g>
+
+  <!-- Bottom Metadata Footer Bar -->
+  <g>
+    <text x="52" y="372" class="font-mono muted-text" font-size="10" font-weight="700" letter-spacing="1.2">
+      RAKSHA SECURITY ENGINE © 2026 <tspan fill="#CCCCCC">•</tspan> DETERMINISTIC VALIDATION <tspan fill="#CCCCCC">•</tspan> DEPLOYED SECURITY INFRASTRUCTURE
+    </text>
+
+    <!-- Corner Technical Inset Labels -->
+    <text x="1548" y="372" text-anchor="end" class="font-mono muted-text" font-size="10" font-weight="700">1600x400 // PX</text>
+  </g>
+</svg>

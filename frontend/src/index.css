@@ -567,3 +567,26 @@ kbd {
   padding: 1px 5px;
   font-weight: 700;
 }
+
+/* ── Buy Me a Coffee Floating Widget Positioning ──────────────────────── */
+#bmc-wbtn, .bmc-btn-container, #bmc-widget-wrapper, #bmc-widget-container {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 768px) {
+  #bmc-wbtn, .bmc-btn-container, #bmc-widget-wrapper, #bmc-widget-container {
+    bottom: 20px !important;
+    right: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #bmc-wbtn, .bmc-btn-container, #bmc-widget-wrapper, #bmc-widget-container {
+    bottom: 16px !important;
+    right: 16px !important;
+  }
+}

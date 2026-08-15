@@ -6,6 +6,7 @@ import SecurityCopilot from '../components/SecurityCopilot';
 import CommandPalette from '../components/CommandPalette';
 import ConnectGithubModal from '../components/ConnectGithubModal';
 import { ToastProvider } from '../components/ToastProvider';
+import BuyMeACoffeeWidget from '../components/BuyMeACoffeeWidget';
 import { useWorkspaceData, useWorkspaceUI } from '../store/WorkspaceContext';
 
 function AppShellInner() {
@@ -98,6 +99,9 @@ function AppShellInner() {
 
       {/* Command Palette */}
       {cmdOpen && <CommandPalette onClose={handleCloseCmd} />}
+
+      {/* Global Buy Me a Coffee Floating Widget */}
+      <BuyMeACoffeeWidget />
     </div>
   );
 }
