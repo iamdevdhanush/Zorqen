@@ -13,7 +13,7 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from core.config import settings
+from core.config import settings, database_target, detect_database_placeholder
 from core.database import init_db
 from core.errors import register_error_handlers
 from core.logging import configure_logging
@@ -48,51 +48,6 @@ def run_migrations() -> None:
     command.upgrade(cfg, "head")
 
 
-_PLACEHOLDER_HOSTS = {"host", "your-host", "dbhost", "HOST"}
-_PLACEHOLDER_DBS = {"dbname", "DBNAME", "database", "DATABASE"}
-_PLACEHOLDER_USERS = {"user", "USER", "username", "USERNAME"}
-_PLACEHOLDER_PASSWORDS = {"password", "PASSWORD"}
-
-
-def _database_target() -> str:
-    """Credential-free description of the configured database for diagnostics."""
-    from urllib.parse import urlparse
-
-    try:
-        parsed = urlparse(settings.database_url)
-    except Exception:
-        return "unknown"
-    if parsed.scheme.startswith("sqlite"):
-        return f"sqlite:{parsed.path or settings.database_url}"
-    host = parsed.hostname or "?"
-    port = f":{parsed.port}" if parsed.port else ""
-    database = (parsed.path or "").lstrip("/")
-    return f"{host}{port}/{database}"
-
-
-def _database_placeholder() -> str | None:
-    """Return a description of the placeholder token, if the URL is still the docs example."""
-    from urllib.parse import urlparse
-
-    try:
-        parsed = urlparse(settings.database_url)
-    except Exception:
-        return None
-    if parsed.scheme.startswith("sqlite"):
-        return None
-    host = parsed.hostname or ""
-    database = (parsed.path or "").lstrip("/")
-    if host in _PLACEHOLDER_HOSTS:
-        return f"host placeholder {host!r}"
-    if database in _PLACEHOLDER_DBS:
-        return f"database placeholder {database!r}"
-    if (parsed.username or "") in _PLACEHOLDER_USERS:
-        return f"user placeholder {parsed.username!r}"
-    if (parsed.password or "") in _PLACEHOLDER_PASSWORDS:
-        return "password placeholder"
-    return None
-
-
 _INSECURE_SECRETS = {
     "dev-secret-key-change-in-production",
     "change-this-to-a-long-random-secret-key-in-production",
@@ -111,7 +66,13 @@ def _assert_production_safety() -> None:
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     _assert_production_safety()
-    log.info("RAKSHA starting up", version="1.1.0", env=settings.app_env)
+    log.info(
+        "RAKSHA starting up",
+        version="1.1.0",
+        env=settings.app_env,
+        database="postgres" if settings.is_postgres else "sqlite",
+        target=database_target(settings.database_url),
+    )
     try:
         # Alembic's env.py uses asyncio.run(); run it in a worker thread so it
         # gets its own event loop instead of clashing with the app's running loop.
@@ -122,7 +83,7 @@ async def lifespan(app: FastAPI):
     except Exception:
         # Uvicorn exits with status 3 (STARTUP_FAILURE) and suppresses the real
         # error, so surface the cause here before re-raising.
-        placeholder = _database_placeholder()
+        placeholder = detect_database_placeholder(settings.database_url)
         if placeholder:
             hint = (
                 "DATABASE_URL still contains the documentation placeholder "
@@ -140,7 +101,7 @@ async def lifespan(app: FastAPI):
         log.exception(
             "database_startup_failed",
             database="postgres" if settings.is_postgres else "sqlite",
-            target=_database_target(),
+            target=database_target(settings.database_url),
             placeholder=placeholder,
             hint=hint,
         )

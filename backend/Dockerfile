@@ -20,5 +20,7 @@ RUN mkdir -p /data
 
 EXPOSE 8000
 
-# Koyeb (and other PaaS) injects PORT at runtime; fall back to 8000 for local Docker use.
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+# Koyeb / Render / other PaaS inject PORT at runtime; fall back to 8000 for local Docker use.
+# --proxy-headers lets uvicorn honour X-Forwarded-* from the platform proxy so
+# rate-limit keying and trusted-host checks see the real client.
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --proxy-headers"]

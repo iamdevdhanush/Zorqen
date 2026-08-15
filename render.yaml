@@ -1,0 +1,24 @@
+# RAKSHA backend — Render Blueprint (optional).
+# You can also create this service manually: New Web Service -> connect repo ->
+# Root Directory `backend` -> Runtime `Docker`. The Dockerfile is authoritative;
+# this file only documents the recommended production settings.
+services:
+  - type: web
+    name: raksha-api
+    runtime: docker
+    repo: https://github.com/iamdevdhanush/Raksha-ai
+    rootDir: backend
+    dockerfilePath: Dockerfile
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEMO_MODE_ENABLED
+        value: "true"
+      # Set this to your PostgreSQL Internal Database URL (create via
+      # New -> PostgreSQL). The app normalizes postgres:// -> postgresql+asyncpg://
+      - key: DATABASE_URL
+        sync: false

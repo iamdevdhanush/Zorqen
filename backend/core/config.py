@@ -9,9 +9,68 @@ from pathlib import Path
 from typing import List, Optional
 from urllib.parse import urlparse
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+# Documentation placeholders that must never be used as a real database in
+# production. Render/Koyeb/Heroku URLs look like
+#   postgres://postgres:xxxxx@dpg-xxxx-xxxx.region.postgres.render.com:5432/db
+# The exact tokens below are the ones used in .env.example and deployment docs.
+_PLACEHOLDER_HOSTS = {
+    "host", "your-host", "your_host", "dbhost", "DBHOST",
+    "postgres", "postgres-db", "example.com",
+}
+_PLACEHOLDER_DBS = {
+    "dbname", "DBNAME", "database", "DATABASE",
+    "your-database", "your_database", "db", "postgres-db",
+}
+_PLACEHOLDER_USERS = {
+    "user", "USER", "username", "USERNAME",
+    "your-user", "your_user", "your-username", "your_username",
+}
+_PLACEHOLDER_PASSWORDS = {
+    "password", "PASSWORD", "your-password", "your_password", "secret",
+}
+
+
+def detect_database_placeholder(url: str) -> str | None:
+    """Return a description of the placeholder token, if `url` is still the docs example."""
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return None
+    if parsed.scheme.startswith("sqlite"):
+        return None
+    host = parsed.hostname or ""
+    database = (parsed.path or "").lstrip("/")
+    if not host:
+        return "missing hostname"
+    if host in _PLACEHOLDER_HOSTS:
+        return f"host placeholder {host!r}"
+    if not database:
+        return "missing database name"
+    if database in _PLACEHOLDER_DBS:
+        return f"database placeholder {database!r}"
+    if (parsed.username or "") in _PLACEHOLDER_USERS:
+        return f"user placeholder {parsed.username!r}"
+    if (parsed.password or "") in _PLACEHOLDER_PASSWORDS:
+        return "password placeholder"
+    return None
+
+
+def database_target(url: str) -> str:
+    """Credential-free host:port/database description of `url` for diagnostics."""
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return "unknown"
+    if parsed.scheme.startswith("sqlite"):
+        return f"sqlite:{parsed.path or url}"
+    host = parsed.hostname or "?"
+    port = f":{parsed.port}" if parsed.port else ""
+    database = (parsed.path or "").lstrip("/")
+    return f"{host}{port}/{database}"
 
 
 class Settings(BaseSettings):
@@ -36,6 +95,62 @@ class Settings(BaseSettings):
     db_pool_size: int = 5
     db_max_overflow: int = 10
     db_pool_recycle: int = 3600
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        """Normalize a sync Postgres URL to the async driver the app requires.
+
+        `postgresql://...` and `postgres://...` are rewritten to
+        `postgresql+asyncpg://...` preserving credentials, host, port and any
+        query parameters. SQLite URLs are left untouched (local development).
+        """
+        url = (v or "").strip()
+        lowered = url.lower()
+        for prefix in ("postgresql://", "postgres://"):
+            if lowered.startswith(prefix):
+                return "postgresql+asyncpg://" + url[len(prefix):]
+        return url
+
+    @model_validator(mode="after")
+    def validate_production_database_url(self):
+        """Fail fast when production config is missing or uses a placeholder.
+
+        SQLite is only supported for local development. In production the app
+        MUST be pointed at a real PostgreSQL instance via DATABASE_URL.
+        """
+        if self.app_env == "development":
+            return self
+        url = (self.database_url or "").strip()
+        if not url or url.startswith("sqlite"):
+            raise ValueError(
+                "DATABASE_URL is not configured. Set DATABASE_URL in the "
+                "deployment environment to a PostgreSQL connection string "
+                "(postgresql+asyncpg://USERNAME:PASSWORD@HOST:5432/DATABASE). "
+                "Production must use PostgreSQL + asyncpg; SQLite is only "
+                "supported for local development."
+            )
+        parsed = urlparse(url)
+        if parsed.scheme != "postgresql+asyncpg":
+            raise ValueError(
+                "DATABASE_URL must use the asyncpg driver "
+                "(postgresql+asyncpg://...). Render URLs that start with "
+                "'postgresql://' or 'postgres://' are normalized automatically; "
+                "other drivers are not supported."
+            )
+        placeholder = detect_database_placeholder(url)
+        if placeholder:
+            raise ValueError(
+                "DATABASE_URL contains a documentation placeholder "
+                f"({placeholder}). Set it to the real connection string from "
+                "your database provider, e.g. "
+                "postgresql+asyncpg://USERNAME:PASSWORD@HOST:5432/DATABASE."
+            )
+        if not parsed.hostname:
+            raise ValueError("DATABASE_URL is missing a hostname (HOST).")
+        if not (parsed.path or "").lstrip("/"):
+            raise ValueError("DATABASE_URL is missing a database name.")
+        return self
 
     # Snapshot retention for the overview score chart
     snapshot_retention_days: int = 90

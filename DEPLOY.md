@@ -94,7 +94,7 @@ Do not commit real values. `frontend/.env.example` documents the name only.
 | `FRONTEND_URL` | Yes | `https://your-vercel-app.vercel.app` | Frontend origin; used for OAuth redirect + trusted hosts |
 | `BACKEND_URL` | Yes | `https://your-koyeb-service.koyeb.app` | Backend public URL; used for trusted hosts |
 | `CORS_ORIGINS` | Yes | `["https://your-vercel-app.vercel.app"]` | JSON list of browser origins allowed to call the API |
-| `DATABASE_URL` | Yes* | `postgresql+asyncpg://user:pass@host:5432/db` | SQLAlchemy async URL. *Required for persistent data |
+| `DATABASE_URL` | Yes* | see section 9 | **PostgreSQL async URL. Required in production — the app fails fast if it is missing, a placeholder, or SQLite.** `postgres://`/`postgresql://` are normalized to `postgresql+asyncpg://` automatically. |
 | `GITHUB_CLIENT_ID` | No | — | GitHub OAuth client ID |
 | `GITHUB_CLIENT_SECRET` | No | — | GitHub OAuth client secret |
 | `GITHUB_REDIRECT_URI` | No | `https://your-koyeb-service.koyeb.app/api/auth/github/callback` | OAuth callback URL |
@@ -209,8 +209,14 @@ Notes:
 
 - **Provider**: SQLite (default, local/dev) or **PostgreSQL** (production) via SQLAlchemy async.
 - **Connection variable**: `DATABASE_URL`.
-  - SQLite: `sqlite+aiosqlite:///./raksha.db` (default)
-  - PostgreSQL: `postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DBNAME`
+  - SQLite: `sqlite+aiosqlite:///./raksha.db` (default, local/dev only)
+  - PostgreSQL format: `postgresql+asyncpg://USER:PASSWORD@HOST:5432/DATABASE` —
+    **format only, never paste verbatim**. The app rejects placeholder URLs
+    (host/DBNAME/USER/PASSWORD etc.) in production with a clear error.
+- **Fail-fast**: when `APP_ENV=production`, startup refuses if `DATABASE_URL` is
+  missing, is SQLite, contains a placeholder, or uses an unsupported driver.
+  `postgres://` / `postgresql://` URLs are normalized to
+  `postgresql+asyncpg://` automatically (credentials/query params preserved).
 - **Migrations**: Alembic. Applied automatically at startup (`main.py` → `run_migrations()`). Manual run: `cd backend && alembic upgrade head`.
 - **Seed**: demo workspace is seeded at startup when `DEMO_MODE_ENABLED=true` (`demo/seed.py`). No separate seed command.
 - **Production considerations**: use a managed PostgreSQL (any provider — the connection string is all that matters). SQLite on Koyeb is ephemeral and unsuitable for production.
