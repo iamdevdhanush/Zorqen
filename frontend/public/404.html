@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page Not Found — RAKSHA</title>
+    <meta name="description" content="This page does not exist. Head back to the RAKSHA security validation home page." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; padding: 0; }
+      body {
+        background: #F7F7F2;
+        color: #111111;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+        text-align: center;
+      }
+      .tag {
+        font-family: 'JetBrains Mono', Consolas, monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: #111111;
+        background: #C5F82A;
+        border: 1px solid #111111;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 2px 2px 0 #111111;
+      }
+      .tag::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #111111;
+      }
+      h1 {
+        font-size: 72px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 24px 0 8px;
+        line-height: 1;
+      }
+      h1 span { color: #C5F82A; }
+      p {
+        color: #333333;
+        font-weight: 500;
+        max-width: 520px;
+        margin: 0 auto 24px;
+      }
+      .links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1;
+        padding: 11px 20px;
+        border-radius: 6px;
+        border: 1px solid #111111;
+        text-decoration: none;
+        box-shadow: 2px 2px 0 #111111;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+      }
+      .btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #111111; }
+      .btn-accent { background: #C5F82A; color: #111111; }
+      .btn-primary { background: #111111; color: #FFFFFF; box-shadow: 2px 2px 0 #C5F82A; }
+      .btn-primary:hover { box-shadow: 3px 3px 0 #C5F82A; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <span class="tag">raksha://404</span>
+      <h1>404<span>.</span></h1>
+      <p>
+        This route does not exist. It may be a private workspace path, a removed page,
+        or a typo. Nothing here is a security finding.
+      </p>
+      <div class="links">
+        <a class="btn btn-accent" href="/ai-code-security">RAKSHA Home</a>
+        <a class="btn btn-primary" href="/">Open the Console</a>
+      </div>
+    </main>
+  </body>
+</html>

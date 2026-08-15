@@ -1,3 +1,20 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/auth/callback", "destination": "/index.html" },
+    { "source": "/repos", "destination": "/index.html" },
+    { "source": "/repos/:path*", "destination": "/index.html" },
+    { "source": "/assessments", "destination": "/index.html" },
+    { "source": "/assessments/:path*", "destination": "/index.html" },
+    { "source": "/findings", "destination": "/index.html" },
+    { "source": "/findings/:path*", "destination": "/index.html" },
+    { "source": "/remediation/:path*", "destination": "/index.html" },
+    { "source": "/verification/:path*", "destination": "/index.html" },
+    { "source": "/settings", "destination": "/index.html" },
+    { "source": "/ai-code-security", "destination": "/index.html" },
+    { "source": "/ai-generated-code-security", "destination": "/index.html" },
+    { "source": "/ai-vulnerability-scanner", "destination": "/index.html" },
+    { "source": "/vibe-coded-app-security", "destination": "/index.html" },
+    { "source": "/ai-application-security", "destination": "/index.html" },
+    { "source": "/docs", "destination": "/index.html" }
+  ]
 }

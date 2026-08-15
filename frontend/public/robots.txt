@@ -1,0 +1,22 @@
+# RAKSHA — robots.txt
+# Public marketing/documentation pages are crawlable.
+# Private application routes (console, findings, assessments, auth) are blocked
+# from crawling AND marked noindex in the app (robots.txt is not a security boundary).
+
+User-agent: *
+Allow: /
+Disallow: /repos
+Disallow: /repos/
+Disallow: /assessments
+Disallow: /assessments/
+Disallow: /findings
+Disallow: /findings/
+Disallow: /remediation
+Disallow: /remediation/
+Disallow: /verification
+Disallow: /verification/
+Disallow: /settings
+Disallow: /auth
+Disallow: /auth/
+
+Sitemap: https://raksha-ai-pink.vercel.app/sitemap.xml

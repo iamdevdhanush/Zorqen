@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import TopNav from '../components/TopNav';
+import Seo from '../components/Seo';
 import SecurityCopilot from '../components/SecurityCopilot';
 import CommandPalette from '../components/CommandPalette';
 import ConnectGithubModal from '../components/ConnectGithubModal';
@@ -34,6 +35,14 @@ function AppShellInner() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)]">
+      {/* Console is a private authenticated workspace — never index it. */}
+      <Seo
+        title="RAKSHA — Security Operations Console"
+        description="RAKSHA security validation console: run assessments, review findings, and remediate vulnerabilities in repositories you control."
+        canonicalPath="/"
+        noIndex
+      />
+
       {/* Top Header Navigation */}
       <TopNav onOpenCmd={handleOpenCmd} />
 

@@ -218,6 +218,77 @@ Notes:
 
 ---
 
+## 9A. Alembic / Database Migration Requirements
+
+Alembic migrations are **required for startup** and run automatically in the
+FastAPI lifespan (`main.py` → `run_migrations()` → `alembic upgrade head`).
+
+### Dependency
+
+- `alembic==1.13.1` is pinned in `backend/requirements.txt`.
+- Compatible with SQLAlchemy `2.0.35` and Python 3.10+/3.11 (the Docker image uses 3.11).
+- Installed by the normal dependency install; imported at startup:
+  - `run_migrations()` does `from alembic import command` and `command.upgrade(cfg, "head")`
+  - executed inside `asyncio.to_thread(...)` in `lifespan()` so Alembic's
+    `asyncio.run()` gets its own event loop and never clashes with the app loop.
+
+### Migration directory
+
+- `backend/alembic/` — `script_location` is set at runtime from `alembic.ini`
+  (`prepend_sys_path` points at the backend root so `core.config` and `models` import).
+- Revisions (single linear chain, head = `595dd11e90f8`):
+  - `c3e49d63014d` initial schema (base)
+  - `595dd11e90f8` console contract columns
+- `alembic/env.py` reads the URL from `core.config.settings.database_url`, i.e. the
+  `DATABASE_URL` environment variable. Never hardcode credentials.
+
+### Production behavior
+
+- On every app start, `upgrade head` runs against `DATABASE_URL` (PostgreSQL in prod).
+- The Dockerfile runs Uvicorn with `--workers 1`, so migrations never race between workers.
+- `init_db()` (`Base.metadata.create_all`) also runs after migrations as a no-op safety
+  net; **Alembic remains the source of truth** for the schema.
+- If migrations fail, startup fails loudly (by design). Do not suppress the error.
+
+### Render / Koyeb configuration
+
+- The repo contains no `render.yaml`; the canonical production image is
+  `backend/Dockerfile` (used by Koyeb and compatible with Render's Docker option).
+- **Render** (Docker deployment):
+  - Root Directory: `backend`
+  - Build: `pip install -r requirements.txt` (or use the Dockerfile directly)
+  - Start: `uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1`
+- **Koyeb**: Working directory `/backend`, Docker build auto-detected; see section 5.
+- Required env: `DATABASE_URL` (e.g. `postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DBNAME`).
+
+### Safe verification commands (run from `backend/`)
+
+```bash
+python -m alembic heads            # expect: 595dd11e90f8 (head)
+python -m alembic history          # expect the linear chain above
+python -m alembic current          # needs a reachable DATABASE_URL
+python -m alembic upgrade head     # applies pending migrations
+```
+
+### Troubleshooting Alembic import failures
+
+**Symptom:** startup exits with
+`ImportError: cannot import name 'command' from 'alembic' (unknown location)`.
+
+**Cause:** `alembic` is not installed in the runtime environment. Python then
+resolves `import alembic` to the project's own `backend/alembic/` migration
+directory (a namespace package — it has no `__init__.py`), which has no
+`command` attribute. The `(unknown location)` suffix is the giveaway.
+
+**Fix:** ensure `alembic==1.13.1` is present in `backend/requirements.txt` and
+the deployment actually installs it (`pip install -r requirements.txt`), then
+rebuild the image.
+
+**Verify:** `python -c "import alembic; print(alembic.__file__)"` must print a
+`site-packages/alembic/__init__.py` path — never `/app/alembic/...`.
+
+---
+
 ## 10. Health Check
 
 - `GET /health` → `200` with `{"status":"healthy",...}` (used by Koyeb health checks).
@@ -268,6 +339,13 @@ Notes:
 - SYMPTOM: Startup exits with `RuntimeError`.
 - CAUSE: Production started with the development default secret.
 - FIX: Set a strong `SECRET_KEY` in Koyeb.
+
+**Backend fails to start — `ImportError: cannot import name 'command' from 'alembic' (unknown location)`**
+- SYMPTOM: Startup exits during `run_migrations()`.
+- CAUSE: `alembic` missing from the installed dependencies; `import alembic`
+  resolves to the local `backend/alembic/` migration directory (namespace package).
+- FIX: `alembic==1.13.1` is pinned in `backend/requirements.txt` — rebuild the
+  image so it is installed. See section 9A for verification commands.
 
 **Health check failing on Koyeb**
 - SYMPTOM: Service marked unhealthy.

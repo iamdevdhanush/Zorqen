@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './store/WorkspaceContext';
 import AppShell from './layouts/AppShell';
 import './index.css';
@@ -15,6 +15,14 @@ const RemediationPage = lazy(() => import('./pages/RemediationPage'));
 const VerificationPage = lazy(() => import('./pages/VerificationPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+
+const AiCodeSecurityPage = lazy(() => import('./pages/public/AiCodeSecurityPage'));
+const AiGeneratedCodeSecurityPage = lazy(() => import('./pages/public/AiGeneratedCodeSecurityPage'));
+const AiVulnerabilityScannerPage = lazy(() => import('./pages/public/AiVulnerabilityScannerPage'));
+const VibeCodedAppSecurityPage = lazy(() => import('./pages/public/VibeCodedAppSecurityPage'));
+const AiApplicationSecurityPage = lazy(() => import('./pages/public/AiApplicationSecurityPage'));
+const DocsPage = lazy(() => import('./pages/public/DocsPage'));
 
 export interface AuthUser {
   id: string;
@@ -43,6 +51,14 @@ function App() {
             {/* OAuth redirect target — standalone, re-enters the shell */}
             <Route path="/auth/callback" element={<AuthCallback />} />
 
+            {/* Public, indexable marketing & documentation pages */}
+            <Route path="/ai-code-security" element={<AiCodeSecurityPage />} />
+            <Route path="/ai-generated-code-security" element={<AiGeneratedCodeSecurityPage />} />
+            <Route path="/ai-vulnerability-scanner" element={<AiVulnerabilityScannerPage />} />
+            <Route path="/vibe-coded-app-security" element={<VibeCodedAppSecurityPage />} />
+            <Route path="/ai-application-security" element={<AiApplicationSecurityPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+
             {/* The console shell — RAKSHA opens directly into the workspace */}
             <Route path="/" element={<AppShell />}>
               <Route index element={<OverviewPage />} />
@@ -56,8 +72,10 @@ function App() {
               <Route path="/remediation/:id" element={<RemediationPage />} />
               <Route path="/verification/:id" element={<VerificationPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
+
+            {/* Client-side 404 — unknown URLs must not look like valid pages */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
