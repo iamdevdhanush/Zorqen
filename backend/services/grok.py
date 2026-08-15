@@ -23,13 +23,26 @@ log = structlog.get_logger()
 class GrokConfigurationError(RuntimeError):
     """Raised when GROK_API_KEY is missing and the copilot cannot run."""
 
+    code = "GROK_CONFIGURATION_ERROR"
+
 
 class GrokAPIError(RuntimeError):
-    """Raised when the xAI API rejects or fails to produce a usable answer."""
+    """Raised when the xAI API rejects or fails to produce a usable answer.
 
-    def __init__(self, message: str, *, status: Optional[int] = None):
+    `code` is a safe, loggable category (never contains secrets or provider
+    payloads): GROK_AUTH_ERROR | GROK_RATE_LIMIT | GROK_TIMEOUT | GROK_API_ERROR.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status: Optional[int] = None,
+        code: str = "GROK_API_ERROR",
+    ):
         super().__init__(message)
         self.status = status
+        self.code = code
 
 
 class GrokService:
@@ -78,23 +91,20 @@ class GrokService:
             resp = await client.post("/chat/completions", json=payload)
         except httpx.TimeoutException:
             log.warning("[GROK] request timed out", timeout=settings.grok_timeout_seconds)
-            raise GrokAPIError("ASK RAKSHA timed out")
+            raise GrokAPIError("ASK RAKSHA timed out", code="GROK_TIMEOUT")
         except httpx.HTTPError as e:
             log.warning("[GROK] transport error", error_type=type(e).__name__)
             raise GrokAPIError("ASK RAKSHA unavailable")
 
-        if resp.status_code == 401:
-            log.warning("[GROK] invalid API key")
-            raise GrokAPIError("Invalid Grok API key", status=401)
-        if resp.status_code == 403:
-            log.warning("[GROK] forbidden by xAI")
-            raise GrokAPIError("Grok API forbidden", status=403)
+        if resp.status_code in (401, 403):
+            log.warning("[GROK] authentication rejected", status=resp.status_code)
+            raise GrokAPIError("Grok API authentication failed", status=resp.status_code, code="GROK_AUTH_ERROR")
         if resp.status_code == 404:
             log.warning("[GROK] model unavailable", model=settings.grok_model)
             raise GrokAPIError("Grok model unavailable", status=404)
         if resp.status_code == 429:
             log.warning("[GROK] rate limited")
-            raise GrokAPIError("Grok rate limit exceeded", status=429)
+            raise GrokAPIError("Grok rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
         if resp.status_code >= 500:
             log.warning("[GROK] provider error", status=resp.status_code)
             raise GrokAPIError("Grok provider error", status=resp.status_code)

@@ -1,6 +1,20 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+/** Effective RAKSHA API base URL, always ending in `/api`.
+ *
+ * `VITE_API_URL` is a deployment setting that operators have historically set
+ * to the bare backend origin (e.g. `https://raksha-ai-b8wf.onrender.com`)
+ * without the `/api` suffix. All backend routes live under `/api`, so requests
+ * built from the raw value silently 404. This normalizes the value so the
+ * frontend always targets the canonical `/api` namespace regardless of how the
+ * environment variable was configured.
+ */
+export function getApiBase(): string {
+  const raw = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').trim();
+  return raw.replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
+}
+
+const BASE_URL = getApiBase();
 
 const api = axios.create({
   baseURL: BASE_URL,

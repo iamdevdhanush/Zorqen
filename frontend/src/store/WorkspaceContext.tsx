@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { ActivityItem, AssessmentRun, Finding, FindingStatus, LogLine, RepoMeta } from '../lib/types';
-import { listGitHubRepos } from '../services/api';
+import { getApiBase, listGitHubRepos } from '../services/api';
 import {
   COMPLETED_ACTIVITY,
   COMPLETED_STEPS,
@@ -384,8 +384,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       },
       connectGithub: () => setGithubModalOpen(true),
       proceedGithubAuth: () => {
-        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-        window.location.href = `${apiBase}/auth/github`;
+        window.location.href = `${getApiBase()}/auth/github`;
       },
       disconnectGithub: () => {
         setGithubConnected(false);

@@ -398,19 +398,23 @@ async def copilot_chat(
     try:
         return await investigate(db, current_user, req)
     except GrokAPIError as e:
-        log.warning("[COPILOT] grok_error", error_type=type(e).__name__, status=e.status)
+        log.warning(
+            "[COPILOT] grok_error",
+            error_code=getattr(e, "code", "GROK_API_ERROR"),
+            status=e.status,
+        )
         raise HTTPException(
             status_code=429 if e.status == 429 else 503,
             detail="ASK RAKSHA is temporarily unavailable. Please try again.",
         )
     except GrokConfigurationError:
-        log.warning("[COPILOT] grok_not_configured")
+        log.warning("[COPILOT] grok_not_configured", error_code="GROK_CONFIGURATION_ERROR")
         raise HTTPException(
             status_code=503,
             detail="ASK RAKSHA is temporarily unavailable. Please try again.",
         )
     except Exception as e:
-        log.warning("[COPILOT] unexpected_error", error_type=type(e).__name__)
+        log.warning("[COPILOT] unexpected_error", error_code="BACKEND_ERROR", error_type=type(e).__name__)
         raise HTTPException(
             status_code=503,
             detail="ASK RAKSHA is temporarily unavailable. Please try again.",
