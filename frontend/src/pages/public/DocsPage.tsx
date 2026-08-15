@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Github, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 import Seo from '../../components/Seo';
+import GithubIcon from '../../components/GithubIcon';
 
 const TITLE = 'RAKSHA Docs — How Security Validation Works';
 const DESCRIPTION =
@@ -153,7 +154,7 @@ export default function DocsPage() {
 
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Github className="w-5 h-5 text-[#111111]" />
+            <GithubIcon className="w-5 h-5 text-[#111111]" />
             <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">THE CONSOLE</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
