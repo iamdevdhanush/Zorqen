@@ -1,12 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, X } from 'lucide-react';
 import GithubIcon from './GithubIcon';
 import { useWorkspace } from '../store/WorkspaceContext';
 
 export default function ConnectGithubModal() {
-  const { setGithubModalOpen, proceedGithubAuth, loadDemoRepo } = useWorkspace();
-  const navigate = useNavigate();
+  const { setGithubModalOpen, proceedGithubAuth } = useWorkspace();
   const primaryRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -63,13 +61,6 @@ export default function ConnectGithubModal() {
               &ldquo;RAKSHA does not modify your repositories without explicit approval.&rdquo;
             </p>
           </div>
-
-          <button
-            onClick={() => { setGithubModalOpen(false); loadDemoRepo(); navigate('/'); }}
-            className="w-full text-center mono text-[11px] font-semibold text-[#666666] hover:text-[#111111] transition-colors pt-1"
-          >
-            Or continue with the demo repository →
-          </button>
         </div>
       </div>
     </div>

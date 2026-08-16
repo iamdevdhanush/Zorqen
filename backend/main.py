@@ -19,7 +19,6 @@ from core.errors import register_error_handlers
 from core.logging import configure_logging
 from core.middleware import RequestContextMiddleware
 from routers.auth import router as auth_router
-from routers.demo import router as demo_router
 from routers.api import (
     repos_router,
     assessments_router,
@@ -106,15 +105,6 @@ async def lifespan(app: FastAPI):
             hint=hint,
         )
         raise
-    from demo.seed import ensure_demo_data
-    from core.database import AsyncSessionLocal
-    try:
-        async with AsyncSessionLocal() as seed_db:
-            await ensure_demo_data(seed_db)
-    except Exception:
-        log.exception("demo_seed_failed")
-        raise
-    log.info("Demo workspace ready" if settings.demo_mode_enabled else "Demo mode disabled")
     yield
     log.info("RAKSHA shutting down")
     from services.grok import grok
@@ -180,7 +170,6 @@ app.include_router(auth_router, prefix="/api")
 # user-supplied redirect_uri.
 app.include_router(auth_router)
 
-app.include_router(demo_router, prefix="/api")
 app.include_router(repos_router, prefix="/api")
 app.include_router(assessments_router, prefix="/api")
 app.include_router(findings_router, prefix="/api")
@@ -203,7 +192,6 @@ async def health():
         "grok_model": settings.grok_model,
         "ai_provider": settings.ai_provider,
         "ai_configured": settings.ai_configured,
-        "demo_mode": settings.demo_mode_enabled,
         "database": "postgres" if settings.is_postgres else "sqlite",
     }
 

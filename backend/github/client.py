@@ -115,6 +115,10 @@ class GitHubClient:
     async def get_repo(self, owner: str, repo: str) -> dict:
         return await self._get(f"/repos/{owner}/{repo}")
 
+    async def get_languages(self, owner: str, repo: str) -> Dict[str, int]:
+        """Return the language byte breakdown from the GitHub languages API."""
+        return await self._get(f"/repos/{owner}/{repo}/languages")
+
     async def list_branches(self, owner: str, repo: str) -> List[dict]:
         return await self._get(f"/repos/{owner}/{repo}/branches", params={"per_page": 100})
 

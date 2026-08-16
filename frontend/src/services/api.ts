@@ -44,28 +44,14 @@ api.interceptors.response.use(
 );
 
 // ── Auth ────────────────────────────────────────────────────────────────────
-export const demoLogin = () => api.post('/auth/demo-login');
 export const getMe = () => api.get('/auth/me');
-
-// ── Demo ────────────────────────────────────────────────────────────────────
-export const getDemoRepository = () => api.get('/demo/repository');
-export const getDemoAssessment = () => api.get('/demo/assessment');
-export const getDemoFindings = (filters?: { severity?: string; status?: string }) =>
-  api.get('/demo/findings', { params: filters });
-export const getDemoFinding = (id: string) => api.get(`/demo/findings/${id}`);
-export const getDemoScore = () => api.get('/demo/score');
-export const getDemoArchitecture = () => api.get('/demo/architecture');
-export const getDemoTimeline = () => api.get('/demo/timeline');
-export const getDemoSourceFile = (path: string) => api.get(`/demo/source/${path}`);
-export const listDemoSourceFiles = () => api.get('/demo/source');
-export const simulateRemediation = (findingId: string) =>
-  api.post(`/demo/simulate-remediation/${findingId}`);
 
 // ── Repositories ────────────────────────────────────────────────────────────
 export const listRepositories = () => api.get('/repositories');
 export const listGitHubRepos = () => api.get('/repositories/github');
 export const connectRepository = (data: object) => api.post('/repositories', data);
 export const getRepository = (id: string) => api.get(`/repositories/${id}`);
+export const getRepoDetail = (id: string) => api.get(`/repositories/${id}/detail`);
 export const getRepoBranches = (id: string) => api.get(`/repositories/${id}/branches`);
 export const getRepoCommits = (id: string, branch: string) =>
   api.get(`/repositories/${id}/commits`, { params: { branch } });

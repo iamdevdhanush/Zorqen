@@ -31,7 +31,7 @@ interface CommandPaletteProps {
 const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteProps) {
   const navigate = useNavigate();
   const { copilotOpen, setCopilotOpen } = useWorkspaceUI();
-  const { currentRepo, currentAssessment, startAssessment, loadDemoRepo, connectGithub } = useWorkspaceData();
+  const { currentRepo, currentAssessment, startAssessment, connectGithub } = useWorkspaceData();
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -64,10 +64,10 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
     {
       id: 'repo',
       label: 'Switch repository',
-      description: currentRepo ? `${currentRepo.owner}/${currentRepo.name}` : 'load demo repository',
+      description: currentRepo ? `${currentRepo.owner}/${currentRepo.name}` : 'no repository loaded',
       icon: <GitMerge className="w-3.5 h-3.5" />,
       group: 'Actions',
-      action: () => { loadDemoRepo(); nav('/'); },
+      action: () => { nav('/repos'); },
     },
     {
       id: 'github',

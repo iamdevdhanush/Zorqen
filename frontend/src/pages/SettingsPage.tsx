@@ -1,10 +1,10 @@
-import { LogOut, PlugZap, RotateCcw, ShieldCheck } from 'lucide-react';
+import { LogOut, PlugZap, ShieldCheck } from 'lucide-react';
 import { KV, KVCol, Panel } from '../components/ui';
 import { useWorkspace } from '../store/WorkspaceContext';
 import GithubIcon from '../components/GithubIcon';
 
 export default function SettingsPage() {
-  const { user, githubConnected, connectGithub, disconnectGithub, signOut, loadDemoRepo, currentRepo } = useWorkspace();
+  const { user, githubConnected, connectGithub, disconnectGithub, signOut, currentRepo } = useWorkspace();
 
   return (
     <div className="max-w-[860px] mx-auto space-y-6 fade-in py-2">
@@ -53,9 +53,6 @@ export default function SettingsPage() {
           <KV k="Branch / commit" v={<span className="mono text-[12px] break-all">{currentRepo ? `${currentRepo.defaultBranch} • ${currentRepo.commit ? currentRepo.commit.slice(0, 7) : '—'}` : '—'}</span>} />
           <KV k="Assessment retention" v={<span className="mono text-[12px]">session-scoped • cleared on sign out</span>} />
           <div className="flex flex-wrap gap-2 pt-3">
-            <button onClick={loadDemoRepo} className="btn btn-sm flex-1 sm:flex-none justify-center">
-              <RotateCcw className="w-3.5 h-3.5" /> Reload demo repository
-            </button>
             <button onClick={signOut} className="btn btn-sm text-red-600 border-red-200 hover:bg-red-50 flex-1 sm:flex-none justify-center">
               <LogOut className="w-3.5 h-3.5" /> Sign out
             </button>

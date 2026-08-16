@@ -1,39 +1,35 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { File, Folder, Play } from 'lucide-react';
 import { BackLink, EmptyState, PageHeader, Panel, SevBadge } from '../components/ui';
 import { useWorkspace, useFindings } from '../store/WorkspaceContext';
-import { DEMO_REPO, stackFor, treeFor } from '../lib/demo';
+import { getRepoDetail } from '../services/api';
+import type { RepoDetail } from '../lib/types';
 
-function Tree({ repoId }: { repoId: string }) {
-  const repo = repoId === DEMO_REPO.id ? DEMO_REPO : { id: 'demo-cyber-portal', name: 'cyber-portal', owner: 'secureops', private: true, language: 'TypeScript', defaultBranch: 'main', commit: 'c91d4fe', isDemo: true };
-  const tree = treeFor(repo);
+function Tree({ paths, truncated }: { paths: string[]; truncated: boolean }) {
   return (
     <div className="mono text-[11.5px] leading-[19px] px-2 py-1 overflow-x-auto" style={{ background: 'var(--color-base)' }}>
-      {tree.map((entry, i) => {
-        const connector =
-          entry.depth === 0
-            ? ''
-            : `${'  '.repeat(Math.max(0, entry.depth - 1))}${i > 0 && tree[i - 1].depth < entry.depth && isLastChild(tree, i) ? '└─ ' : '├─ '}`;
+      {paths.map((p, i) => {
+        const isDir = p.endsWith('/');
+        const name = p.split('/').pop() || '/';
+        const depth = p.split('/').filter(Boolean).length - 1;
         return (
-          <div key={i} style={{ paddingLeft: entry.depth * 12 }}>
-            <span className="select-none" style={{ color: 'var(--color-ink-3)' }}>{connector}</span>
-            {entry.type === 'dir' ? (
-              <><Folder className="w-[11px] h-[11px] inline mr-1" style={{ color: 'var(--color-low)' }} /><span style={{ color: 'var(--color-ink-2)' }}>{entry.name}</span></>
+          <div key={`${p}-${i}`} style={{ paddingLeft: depth * 12 }} className="truncate">
+            {isDir ? (
+              <><Folder className="w-[11px] h-[11px] inline mr-1" style={{ color: 'var(--color-low)' }} /><span style={{ color: 'var(--color-ink-2)' }}>{name}/</span></>
             ) : (
-              <><File className="w-[11px] h-[11px] inline mr-1" style={{ color: 'var(--color-ink-3)' }} /><span style={{ color: 'var(--color-ink)' }}>{entry.name}</span></>
+              <><File className="w-[11px] h-[11px] inline mr-1" style={{ color: 'var(--color-ink-3)' }} /><span style={{ color: 'var(--color-ink)' }}>{name}</span></>
             )}
           </div>
         );
       })}
+      {truncated && (
+        <div className="mt-2 px-2 py-1.5 rounded border border-[#111111] text-[#666666] bg-[#FAFAFA]">
+          Tree truncated — showing the first {paths.length} paths from GitHub.
+        </div>
+      )}
     </div>
   );
-}
-
-function isLastChild(tree: ReturnType<typeof treeFor>, i: number): boolean {
-  const depth = tree[i].depth;
-  let j = i + 1;
-  while (j < tree.length && tree[j].depth > depth) j++;
-  return j === tree.length || tree[j].depth === depth;
 }
 
 export default function RepositoryDetailPage() {
@@ -42,10 +38,52 @@ export default function RepositoryDetailPage() {
   const findings = useFindings();
   const navigate = useNavigate();
 
-  const repo = currentRepo ?? DEMO_REPO;
-  const meta = stackFor(repo);
+  const [detail, setDetail] = useState<RepoDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!currentRepo) {
+      setDetail(null);
+      return;
+    }
+    let cancelled = false;
+    setDetailLoading(true);
+    setDetailError(null);
+    getRepoDetail(currentRepo.id)
+      .then((d) => {
+        if (!cancelled) setDetail(d.data);
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setDetailError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRepo]);
+
+  if (!currentRepo) {
+    return (
+      <div className="max-w-[1080px] mx-auto space-y-3 fade-in">
+        <BackLink to="/repos" label="Repositories" />
+        <PageHeader kicker="raksha://workspace/repositories" title="REPOSITORY DETAIL" />
+        <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+          No repository loaded — select a repository from the Repositories page.
+        </div>
+      </div>
+    );
+  }
+
+  const repo = currentRepo;
   const running = currentAssessment?.status === 'RUNNING';
   const lastScore = currentAssessment?.score;
+  const riskBand = lastScore == null ? null : lastScore >= 80 ? 'LOW RISK' : lastScore >= 60 ? 'MODERATE RISK' : 'HIGH RISK';
+
+  const langTotal = detail?.languages ? Object.values(detail.languages).reduce((a, b) => a + b, 0) : 0;
+  const topLanguages = detail?.languages ? Object.entries(detail.languages).sort((a, b) => b[1] - a[1]).slice(0, 6) : [];
 
   return (
     <div className="max-w-[1080px] mx-auto space-y-3 fade-in">
@@ -62,12 +100,16 @@ export default function RepositoryDetailPage() {
             <span className="mono">{repo.name}</span>
             <span className="chip">{repo.private ? 'PRIVATE' : 'PUBLIC'}</span>
             <span className="chip">{repo.language}</span>
-            <span className="chip mono text-[10px]">{repo.defaultBranch} · {repo.commit ? repo.commit.slice(0, 7) : '—'}</span>
+            <span className="chip mono text-[10px]">{detail?.defaultBranch ?? repo.defaultBranch} · {(detail?.headCommit ?? repo.commit ?? '').slice(0, 7) || '—'}</span>
           </span>
         }
         right={
           <>
-            {lastScore != null && <span className="chip warn">score {lastScore}/100 · {lastScore >= 60 ? 'HIGH RISK' : 'MODERATE'}</span>}
+            {riskBand && (
+              <span className={`chip text-[11.5px] uppercase font-bold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
+                {riskBand} · {lastScore}/100
+              </span>
+            )}
             <button onClick={startAssessment} disabled={running} className="btn btn-primary">
               <Play className="w-3 h-3" />
               {running ? 'Assessment running…' : 'Run Assessment'}
@@ -80,40 +122,70 @@ export default function RepositoryDetailPage() {
         {/* Repository tree */}
         <Panel
           title={`Repository tree · ${repo.name}`}
-          right={<span className="mono text-[9.5px] text-[var(--color-ink-3)]">1,284 files · HEAD</span>}
+          right={
+            <span className="mono text-[9.5px] text-[var(--color-ink-3)]">
+              {detail ? `${detail.fileCount} files · HEAD` : '…'}
+            </span>
+          }
           flush
         >
-          <Tree repoId={repo.id} />
+          {detailLoading ? (
+            <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">Loading repository tree from GitHub…</div>
+          ) : detailError ? (
+            <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">
+              Could not load repository tree — {detailError}
+            </div>
+          ) : detail && detail.treePaths.length > 0 ? (
+            <Tree paths={detail.treePaths} truncated={detail.treeTruncated} />
+          ) : (
+            <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">
+              {detail ? 'No files found in this repository tree.' : 'Run an assessment to populate the repository tree.'}
+            </div>
+          )}
         </Panel>
 
         {/* Stack metadata */}
         <div className="space-y-3">
-          {meta.map((m) => (
-            <Panel key={m.label} title={m.label} flush>
-              <div className="px-3 py-1.5">
-                {m.label === 'LANGUAGE' ? (
-                  m.rows.map((row) => (
-                    <div key={row.k} className="py-1">
+          <Panel title="LANGUAGE" flush>
+            <div className="px-3 py-1.5">
+              {detailLoading ? (
+                <div className="text-[11px] text-[var(--color-ink-3)] mono py-1">Loading…</div>
+              ) : topLanguages.length === 0 ? (
+                <div className="text-[11px] text-[var(--color-ink-3)] mono py-1">No language data</div>
+              ) : (
+                topLanguages.map(([lang, bytes]) => {
+                  const w = langTotal > 0 ? Math.max(2, Math.round((bytes / langTotal) * 100)) : 2;
+                  return (
+                    <div key={lang} className="py-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-[var(--color-ink-2)]">{row.k}</span>
-                        <span className="mono text-[var(--color-ink)]">{row.v}</span>
+                        <span className="text-[var(--color-ink-2)]">{lang}</span>
+                        <span className="mono text-[var(--color-ink)]">{w}%</span>
                       </div>
                       <div className="thin-bar mt-[3px]">
-                        <div style={{ width: `${row.w}%`, background: row.k === 'Python' ? 'var(--color-low)' : 'var(--color-accent)' }} />
+                        <div style={{ width: `${w}%`, background: 'var(--color-accent)' }} />
                       </div>
                     </div>
-                  ))
-                ) : (
-                  m.rows.map((row) => (
-                    <div key={row.k} className="flex items-center justify-between py-[2px] border-b border-[var(--color-line)] last:border-0">
-                      <span className="text-[9.5px] uppercase tracking-[0.06em] text-[var(--color-ink-3)] font-medium">{row.k}</span>
-                      <span className="mono text-[10.5px] text-[var(--color-ink)]">{row.v}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </Panel>
-          ))}
+                  );
+                })
+              )}
+            </div>
+          </Panel>
+
+          <Panel title="REPOSITORY" flush>
+            <div className="px-3 py-1.5">
+              {[
+                ['default branch', detail?.defaultBranch ?? '—'],
+                ['head commit', detail?.headCommit ? detail.headCommit.slice(0, 7) : repo.commit?.slice(0, 7) ?? '—'],
+                ['files', detail ? String(detail.fileCount) : '—'],
+                ['visibility', repo.private ? 'PRIVATE' : 'PUBLIC'],
+              ].map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between py-[2px] border-b border-[var(--color-line)] last:border-0">
+                  <span className="text-[9.5px] uppercase tracking-[0.06em] text-[var(--color-ink-3)] font-medium">{k}</span>
+                  <span className="mono text-[10.5px] text-[var(--color-ink)]">{v}</span>
+                </div>
+              ))}
+            </div>
+          </Panel>
 
           <Panel title="Next actions" flush>
             <div className="p-2 space-y-1">

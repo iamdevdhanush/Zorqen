@@ -49,12 +49,17 @@ async def list_repositories(
 
 
 @repos_router.get("/github")
-async def list_github_repos(current_user: User = Depends(get_current_user)):
+async def list_github_repos(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Fetch ALL GitHub repositories the authenticated user can access.
 
     Uses the authenticated GET /user/repos endpoint with full pagination. The
     response is normalized to the frontend RepoMeta contract — never truncated,
-    never filtered by ownership, and never includes OAuth tokens.
+    never filtered by ownership, and never includes OAuth tokens. Each repo is
+    annotated with the latest completed assessment's score and open finding
+    count (when one exists).
     """
     if not current_user.github_access_token:
         raise HTTPException(status_code=400, detail="No GitHub access token")
@@ -71,8 +76,18 @@ async def list_github_repos(current_user: User = Depends(get_current_user)):
             private_repositories=private_count,
             public_repositories=len(repos) - private_count,
         )
+
+        latest = await _latest_assessment_scores(db, current_user)
+        contracts = []
+        for r in repos:
+            c = GitHubClient.normalize_repo(r)
+            meta = latest.get(c["fullName"])
+            if meta:
+                c["latestScore"] = meta["score"]
+                c["latestFindingsCount"] = meta["findings_count"]
+            contracts.append(c)
         return {
-            "repositories": [GitHubClient.normalize_repo(r) for r in repos],
+            "repositories": contracts,
             "total": len(repos),
             "authenticated_user": gh_user.get("login"),
         }
@@ -149,6 +164,69 @@ async def get_repository(
     return repo_meta(repo)
 
 
+@repos_router.get("/{repo_id}/detail")
+async def get_repository_detail(
+    repo_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Real GitHub-backed repo detail: default branch, HEAD commit, tree, languages.
+
+    All values come from the GitHub API (git/trees recursive + languages). The
+    file tree is capped for the console; `treeTruncated` reports the GitHub
+    truncation flag so the UI can say the tree is partial.
+    """
+    repo = await _get_repo_or_404(repo_id, current_user.id, db)
+    if not current_user.github_access_token:
+        raise HTTPException(
+            status_code=400,
+            detail="No GitHub access token — re-connect your GitHub account.",
+        )
+    client = GitHubClient(current_user.github_access_token)
+
+    default_branch = repo.default_branch or "main"
+    ref = repo.head_commit or default_branch
+    try:
+        commits = await client.list_commits(repo.owner, repo.name, default_branch, per_page=1)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail="GitHub API error fetching commits.")
+    head_sha = None
+    if commits:
+        head_sha = commits[0].get("sha")
+        if head_sha and head_sha != repo.head_commit:
+            repo.head_commit = head_sha
+            await db.commit()
+
+    tree_data = await client.get_tree(repo.owner, repo.name, ref, recursive=True)
+    entries = tree_data.get("tree") or []
+    paths = [
+        item["path"]
+        for item in entries
+        if item.get("type") == "blob" and item.get("path")
+    ]
+    truncated = bool(tree_data.get("truncated"))
+    MAX_TREE_PATHS = 500
+    tree_paths = paths[:MAX_TREE_PATHS]
+
+    try:
+        languages = await client.get_languages(repo.owner, repo.name)
+    except httpx.HTTPStatusError:
+        languages = {}
+
+    return {
+        "repoId": repo.id,
+        "name": repo.name,
+        "owner": repo.owner,
+        "fullName": repo.full_name,
+        "defaultBranch": default_branch,
+        "headCommit": head_sha or repo.head_commit,
+        "fileCount": len(paths),
+        "treeTruncated": truncated,
+        "treePaths": tree_paths,
+        "languages": languages,
+    }
+
+
 @repos_router.get("/{repo_id}/branches")
 async def get_branches(repo_id: str, current_user: User = Depends(get_current_user),
                        db: AsyncSession = Depends(get_db)):
@@ -177,6 +255,43 @@ async def _get_repo_or_404(repo_id: str, user_id: str, db: AsyncSession) -> Repo
     return repo
 
 
+async def _latest_assessment_scores(db: AsyncSession, user: User) -> dict:
+    """Map full_name -> {score, findings_count} from the latest completed
+    assessment of each of the user's connected repositories."""
+    result = await db.execute(
+        select(Repository).where(Repository.user_id == user.id)
+    )
+    repos = result.scalars().all()
+    by_full_name: dict = {}
+    for repo in repos:
+        if not repo.full_name:
+            continue
+        run = await db.execute(
+            select(Assessment)
+            .where(
+                Assessment.repository_id == repo.id,
+                Assessment.status == AssessmentStatus.COMPLETED,
+            )
+            .order_by(desc(Assessment.created_at))
+            .limit(1)
+        )
+        assessment = run.scalar_one_or_none()
+        if assessment is None:
+            continue
+        findings_total = await db.execute(
+            select(Finding)
+            .where(
+                Finding.assessment_id == assessment.id,
+                Finding.status.notin_(["dismissed", "false_positive"]),
+            )
+        )
+        by_full_name[repo.full_name] = {
+            "score": assessment.security_score,
+            "findings_count": len(findings_total.scalars().all()),
+        }
+    return by_full_name
+
+
 # ── Assessments ─────────────────────────────────────────────────────────────
 
 assessments_router = APIRouter(prefix="/assessments", tags=["assessments"])
@@ -203,7 +318,7 @@ async def start_assessment(
         commit_sha=req.commit_sha or repo.head_commit,
         user=current_user,
     )
-    # Run the pipeline in the background (demo repos scan bundled fixtures).
+    # Run the pipeline in the background against the real repository.
     background_tasks.add_task(run_assessment, assessment.id, current_user.github_access_token)
     return await get_run(db, assessment, with_findings=False)
 

@@ -27,9 +27,6 @@ RESOLVED_STATUSES = {"dismissed", "fixed", "false_positive", "verified"}
 RISK_LOW = 80
 RISK_MODERATE = 60
 
-# Fallback "no data yet" posture score used by the overview chart
-GLOBAL_AVERAGE = 74
-
 
 def confidence_factor(confidence: Optional[str]) -> float:
     """Map a confidence label to a deterministic factor."""

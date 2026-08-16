@@ -190,10 +190,6 @@ class Settings(BaseSettings):
     sandbox_cpu_limit: float = 0.5
     sandbox_timeout: int = 60
 
-    # Demo Mode
-    demo_mode_enabled: bool = True
-    demo_user_login: str = "demo-user"
-
     # Rate limiting (slowapi)
     rate_limit_requests: int = 120
     rate_limit_window: str = "minute"

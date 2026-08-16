@@ -43,7 +43,7 @@ async def resolve_assessment(db: AsyncSession, ref: str) -> Optional[Assessment]
 async def get_next_run_number(db: AsyncSession) -> int:
     result = await db.execute(select(Assessment).order_by(desc(Assessment.run_number)).limit(1))
     last = result.scalar_one_or_none()
-    return (last.run_number if last and last.run_number else 240) + 1
+    return (last.run_number if last and last.run_number else 0) + 1
 
 
 async def create_assessment(

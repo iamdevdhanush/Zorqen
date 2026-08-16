@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { GitFork, Plus, Search, ShieldCheck } from 'lucide-react';
 import GithubIcon from '../components/GithubIcon';
 import { useWorkspaceData, useWorkspaceUI } from '../store/WorkspaceContext';
-import { CYBER_PORTAL, DEMO_REPO } from '../lib/demo';
 import type { RepoMeta } from '../lib/types';
 
 const RepositoryCard = memo(function RepositoryCard({
@@ -15,8 +14,9 @@ const RepositoryCard = memo(function RepositoryCard({
   isLoaded: boolean;
   onAssess: (r: RepoMeta) => void;
 }) {
-  const score = r.name === DEMO_REPO.name ? 74 : 61;
-  const findingsCount = r.name === DEMO_REPO.name ? 30 : 27;
+  const assessed = r.latestScore != null;
+  const score = r.latestScore ?? null;
+  const findingsCount = r.latestFindingsCount ?? null;
 
   return (
     <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 hover:bg-[#FAFAFA] transition-all">
@@ -45,12 +45,20 @@ const RepositoryCard = memo(function RepositoryCard({
 
       <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#111111]/10 shrink-0">
         <div className="text-left sm:text-right">
-          <div className="mono text-[16px] sm:text-[18px] font-extrabold text-[#111111]">
-            {score} <span className="text-[11px] sm:text-[12px] text-[#4A4A4A] font-bold">/ 100</span>
-          </div>
-          <div className="mono text-[10.5px] sm:text-[11px] font-bold text-[#4A4A4A]">
-            {findingsCount} findings
-          </div>
+          {assessed ? (
+            <>
+              <div className="mono text-[16px] sm:text-[18px] font-extrabold text-[#111111]">
+                {score} <span className="text-[11px] sm:text-[12px] text-[#4A4A4A] font-bold">/ 100</span>
+              </div>
+              <div className="mono text-[10.5px] sm:text-[11px] font-bold text-[#4A4A4A]">
+                {findingsCount ?? 0} findings
+              </div>
+            </>
+          ) : (
+            <div className="mono text-[12px] sm:text-[13px] font-bold text-[#666666]">
+              NO ASSESSMENT YET
+            </div>
+          )}
         </div>
 
         <button
@@ -67,7 +75,7 @@ const RepositoryCard = memo(function RepositoryCard({
 
 export default function RepositoriesPage() {
   const { setGithubModalOpen } = useWorkspaceUI();
-  const { githubConnected, user, repos, reposLoading, reposError, refreshRepos, loadRepo, currentRepo, loadDemoRepo } = useWorkspaceData();
+  const { githubConnected, user, repos, reposLoading, reposError, refreshRepos, loadRepo, currentRepo } = useWorkspaceData();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearch = useDeferredValue(searchQuery);
@@ -78,18 +86,16 @@ export default function RepositoriesPage() {
     if (githubConnected) refreshRepos();
   }, [githubConnected, refreshRepos]);
 
-  const availableRepos = useMemo(() => (githubConnected ? repos : [DEMO_REPO, CYBER_PORTAL]), [githubConnected, repos]);
-
   const filteredRepos = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
-    if (!q) return availableRepos;
-    return availableRepos.filter(
+    if (!q) return repos;
+    return repos.filter(
       (r) =>
         r.name.toLowerCase().includes(q) ||
         r.owner.toLowerCase().includes(q) ||
         r.language.toLowerCase().includes(q)
     );
-  }, [availableRepos, deferredSearch]);
+  }, [repos, deferredSearch]);
 
   const handleAssess = useMemo(() => (r: RepoMeta) => {
     loadRepo(r);
@@ -133,20 +139,11 @@ export default function RepositoriesPage() {
               </>
             ) : (
               <>
-                Connect GitHub read-only access to assess private repositories, or try the reference specimens below.
+                Connect GitHub read-only access to assess your private and public repositories.
               </>
             )}
           </div>
         </div>
-
-        {!githubConnected && (
-          <button
-            onClick={() => { loadDemoRepo(); navigate('/'); }}
-            className="btn btn-ghost btn-sm text-[12.5px] font-bold"
-          >
-            Load reference demo →
-          </button>
-        )}
       </div>
 
       {/* Search Filter Input */}
@@ -167,17 +164,21 @@ export default function RepositoriesPage() {
           AUTHORIZED REPOSITORIES ({githubConnected && reposLoading && filteredRepos.length === 0 ? '…' : filteredRepos.length})
         </div>
 
-        {githubConnected && reposError ? (
+        {!githubConnected ? (
+          <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+            No GitHub account connected — connect to list the repositories you can assess.
+          </div>
+        ) : reposError ? (
           <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
             Could not load GitHub repositories — {reposError}. Reconnect GitHub from the sidebar to try again.
           </div>
-        ) : githubConnected && reposLoading && filteredRepos.length === 0 ? (
+        ) : reposLoading && filteredRepos.length === 0 ? (
           <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
             Syncing repositories from GitHub…
           </div>
         ) : filteredRepos.length === 0 ? (
           <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
-            No repositories match &ldquo;{searchQuery}&rdquo;
+            {searchQuery ? `No repositories match "${searchQuery}"` : 'No repositories found on this account.'}
           </div>
         ) : (
           filteredRepos.map((r) => (

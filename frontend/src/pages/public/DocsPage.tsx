@@ -57,7 +57,7 @@ const JSONLD = [
         name: 'Can I try RAKSHA without a GitHub account?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. The console includes a reference demo workspace that exercises the full detection and remediation pipeline with sample findings.',
+          text: 'Yes. Connect a GitHub account with read-only access and run an assessment on any repository you control — no credit card or trial period required.',
         },
       },
     ],
@@ -100,7 +100,7 @@ const FAQS = [
   ],
   [
     'Can I try RAKSHA without a GitHub account?',
-    'Yes. The console includes a reference demo workspace that exercises the full detection and remediation pipeline with sample findings.',
+    'Yes. Connect a GitHub account with read-only access and run an assessment on any repository you control — no credit card or trial period required.',
   ],
 ];
 

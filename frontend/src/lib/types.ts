@@ -49,12 +49,12 @@ export interface Finding {
   remediation?: Remediation;
 }
 
-export type AssessmentStatus = 'IDLE' | 'RUNNING' | 'COMPLETED';
+export type AssessmentStatus = 'IDLE' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 
 export interface StepState {
   id: string;
   label: string;
-  status: 'completed' | 'running' | 'pending';
+  status: 'completed' | 'running' | 'pending' | 'failed';
   detail?: string;
 }
 
@@ -65,8 +65,39 @@ export interface LogLine {
   tone?: 'ok' | 'warn' | 'err' | 'info';
 }
 
+export interface AssessmentArchitecture {
+  files: number;
+  routes: number;
+  topRoutes: {
+    endpoint: string;
+    method: string;
+    file_path: string;
+    line_number: number;
+    handler: string;
+    auth_required: boolean | null;
+    framework: string;
+  }[];
+  inputs: number;
+  sinks: number;
+  flows: string[];
+  secrets: number;
+  languages: Record<string, number>;
+  primaryLanguage: string;
+  frameworks: string[];
+  dependencies: number;
+  summary: string;
+  layers: {
+    frontend: string[];
+    backend: string[];
+    database: string[];
+    infrastructure: string[];
+  };
+  securityNotes: string[];
+}
+
 export interface AssessmentRun {
   id: string;
+  repoId?: string;
   repo: string;
   commit: string;
   branch: string;
@@ -74,9 +105,24 @@ export interface AssessmentRun {
   startedAt?: string;
   duration?: string;
   score?: number;
+  errorMessage?: string;
+  architecture?: AssessmentArchitecture;
   steps: StepState[];
   logs: LogLine[];
   findings: Finding[];
+}
+
+export interface RepoDetail {
+  repoId: string;
+  name: string;
+  owner: string;
+  fullName: string;
+  defaultBranch: string;
+  headCommit?: string;
+  fileCount: number;
+  treeTruncated: boolean;
+  treePaths: string[];
+  languages: Record<string, number>;
 }
 
 export interface ActivityItem {
@@ -100,6 +146,8 @@ export interface RepoMeta {
   visibility?: string;
   permissions?: Record<string, boolean>;
   description?: string | null;
+  latestScore?: number | null;
+  latestFindingsCount?: number | null;
 }
 
 export interface TreeEntry {

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   CheckCircle2,
+  Circle,
   Database,
   FileCode,
   FolderTree,
@@ -24,7 +25,6 @@ export default function OverviewPage() {
     commit,
     currentAssessment,
     startAssessment,
-    loadDemoRepo,
     connectGithub,
   } = useWorkspace();
   const findings = useFindings();
@@ -46,10 +46,6 @@ export default function OverviewPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button onClick={loadDemoRepo} className="btn btn-accent px-5 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[13.5px]">
-            <Play className="w-4 h-4 fill-current" />
-            Load Reference Demo
-          </button>
           <button onClick={connectGithub} className="btn btn-primary px-5 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[13.5px]">
             Connect GitHub Account
           </button>
@@ -87,7 +83,11 @@ export default function OverviewPage() {
   };
 
   const biggestFinding = findings.find((f) => f.severity === 'critical') || findings[0];
-  const score = currentAssessment?.score ?? 74;
+  const score = currentAssessment?.score;
+  const arch = currentAssessment?.architecture;
+  const stack = arch ? [...new Set([arch.primaryLanguage, ...(arch.frameworks ?? [])])].filter(Boolean).join(' • ') : null;
+  const riskBand = score == null ? null : score >= 80 ? 'LOW RISK' : score >= 60 ? 'MODERATE RISK' : 'HIGH RISK';
+  const criticalHigh = counts.critical + counts.high;
 
   return (
     <div className="max-w-[1240px] mx-auto space-y-6 sm:space-y-10 fade-in py-2">
@@ -134,7 +134,7 @@ export default function OverviewPage() {
 
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[12px]">
             <div className="mono text-[11px] sm:text-[12px] font-bold text-[#111111] bg-[#FAFAFA] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-md border border-[#111111] shadow-hard-sm">
-              Python • FastAPI • PostgreSQL • Docker
+              {stack || 'NO ASSESSMENT YET'}
             </div>
             <div className="flex items-center gap-2 mono text-[11px] sm:text-[12px] font-extrabold text-[#111111] bg-[#C5F82A] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-md border border-[#111111] shadow-hard-sm">
               <GitBranch className="w-4 h-4 text-[#111111]" />
@@ -154,15 +154,27 @@ export default function OverviewPage() {
             SECURITY POSTURE SCORE
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-5xl sm:text-7xl font-extrabold text-[#111111] tracking-tighter leading-none">
-              <AnimatedNumber value={score} />
-            </span>
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#333333]">/100</span>
+            {score != null ? (
+              <>
+                <span className="text-5xl sm:text-7xl font-extrabold text-[#111111] tracking-tighter leading-none">
+                  <AnimatedNumber value={score} />
+                </span>
+                <span className="text-2xl sm:text-3xl font-extrabold text-[#333333]">/100</span>
+              </>
+            ) : (
+              <span className="text-3xl sm:text-5xl font-extrabold text-[#333333] tracking-tighter leading-none">
+                —
+              </span>
+            )}
           </div>
           <div className="mt-3 sm:mt-4">
-            <span className="chip sev-critical text-[11.5px] px-3 py-1 uppercase font-bold">
-              HIGH RISK
-            </span>
+            {riskBand ? (
+              <span className={`chip text-[11.5px] px-3 py-1 uppercase font-bold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
+                {riskBand}
+              </span>
+            ) : (
+              <span className="chip text-[11.5px] px-3 py-1 uppercase font-bold">NO ASSESSMENT YET</span>
+            )}
           </div>
         </div>
 
@@ -184,7 +196,11 @@ export default function OverviewPage() {
           </div>
 
           <div className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight leading-snug">
-            &ldquo;6 critical &amp; high security findings require immediate engineering remediation.&rdquo;
+            {criticalHigh > 0
+              ? `&ldquo;${criticalHigh} critical &amp; high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.&rdquo;`
+              : findings.length > 0
+                ? '&ldquo;No critical or high findings — remaining issues are lower priority.&rdquo;'
+                : '&ldquo;No findings yet — run an assessment to scan this repository.&rdquo;'}
           </div>
           <div className="text-[12.5px] sm:text-[13px] text-[#555555] font-medium">
             Scan scope encompasses HTTP routes, database ORM queries, environment credentials, and dependency lockfiles across {findings.length} total findings.
@@ -200,63 +216,77 @@ export default function OverviewPage() {
             <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">AI-REASONED ATTACK MAP</h2>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5 mono text-[10.5px] sm:text-[11px] font-bold text-[#111111] bg-[#FAFAFA] px-3 sm:px-3.5 py-1.5 rounded-md border border-[#111111] shadow-hard-sm flex-wrap">
-            <span>38 FILES</span>
-            <span>•</span>
-            <span>14 ROUTES</span>
-            <span>•</span>
-            <span>23 INPUTS</span>
-            <span>•</span>
-            <span>9 FLOWS</span>
-            <span>•</span>
-            <span className="text-[#DC2626] font-extrabold">2 SECRETS</span>
-          </div>
+          {arch ? (
+            <div className="flex items-center gap-2 sm:gap-2.5 mono text-[10.5px] sm:text-[11px] font-bold text-[#111111] bg-[#FAFAFA] px-3 sm:px-3.5 py-1.5 rounded-md border border-[#111111] shadow-hard-sm flex-wrap">
+              <span>{arch.files} FILES</span>
+              <span>•</span>
+              <span>{arch.routes} ROUTES</span>
+              <span>•</span>
+              <span>{arch.inputs} INPUTS</span>
+              <span>•</span>
+              <span>{arch.sinks} SINKS</span>
+              <span>•</span>
+              <span>{arch.flows.length} FLOWS</span>
+              <span>•</span>
+              <span className={arch.secrets > 0 ? 'text-[#DC2626] font-extrabold' : ''}>{arch.secrets} SECRETS</span>
+            </div>
+          ) : (
+            <span className="mono text-[11px] font-bold text-[#666666] bg-[#FAFAFA] px-3 py-1.5 rounded-md border border-[#111111] shadow-hard-sm">
+              NO ASSESSMENT YET — RUN AN ASSESSMENT TO BUILD THE ATTACK MAP
+            </span>
+          )}
         </div>
 
-        <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-6">
-          <div className="grid md:grid-cols-2 gap-6 items-start">
-            
-            {/* Visual File Tree Attack Path */}
-            <div className="mono text-[11.5px] sm:text-[12.5px] leading-relaxed space-y-2 bg-[#FAFAFA] p-4 sm:p-5 rounded-lg border border-[#111111] shadow-hard-sm overflow-x-auto scroll-thin">
-              <div className="text-[#111111] font-bold">app/</div>
-              <div className="pl-4 text-[#444444]">├── api/</div>
-              <div className="pl-8 text-red-600 font-extrabold flex items-center justify-between gap-2 bg-[#FEE2E2] px-2.5 py-1 rounded border border-[#111111] min-w-max">
-                <span>├── users/ (SQL Injection)</span>
-                <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold uppercase">CWE-89</span>
+        {arch ? (
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-6">
+            <div className="grid md:grid-cols-2 gap-6 items-start">
+              {arch.topRoutes.length > 0 ? (
+                /* Real detected routes from the repository */
+                <div className="mono text-[11.5px] sm:text-[12.5px] leading-relaxed space-y-1.5 bg-[#FAFAFA] p-4 sm:p-5 rounded-lg border border-[#111111] shadow-hard-sm overflow-x-auto scroll-thin">
+                  <div className="text-[#111111] font-bold mb-2">ROUTES</div>
+                  {arch.topRoutes.map((r) => (
+                    <div key={`${r.method}${r.endpoint}${r.file_path}${r.line_number}`} className="flex items-center justify-between gap-2 px-2.5 py-1 rounded border border-[#111111] min-w-max">
+                      <span className="text-[#444444] font-bold">
+                        <span className="text-[#C2410C]">{r.method}</span> {r.endpoint}
+                      </span>
+                      <span className="text-[10px] text-[#555555] truncate max-w-[140px]">{r.file_path}:{r.line_number}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mono text-[11.5px] leading-relaxed bg-[#FAFAFA] p-4 sm:p-5 rounded-lg border border-[#111111] shadow-hard-sm">
+                  <div className="text-[#111111] font-bold mb-2">ROUTES</div>
+                  <div className="text-[#666666]">No HTTP routes detected in scanned files.</div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="p-4 sm:p-5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm space-y-2">
+                  <div className="mono text-[10.5px] font-extrabold text-[#111111] uppercase tracking-wider bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111] inline-block">
+                    PRIMARY LANGUAGE
+                  </div>
+                  <div className="font-extrabold text-[12px] sm:text-[13.5px] text-[#111111] mono leading-tight break-all">
+                    {arch.primaryLanguage}
+                  </div>
+                  <div className="text-[12px] sm:text-[12.5px] text-[#555555] leading-relaxed font-medium">
+                    {arch.summary || `Stack: ${arch.frameworks.join(', ') || 'unknown'} · ${arch.dependencies} dependencies detected.`}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3.5 rounded-lg border border-[#111111] bg-white text-[12px] sm:text-[12.5px] font-semibold flex-wrap gap-2">
+                  <span className="text-[#555555]">Sandbox Probe Status</span>
+                  <span className="mono font-bold text-[#111111] flex items-center gap-2">
+                    <span className="pulse-dot" /> Static validation only — sandbox execution not run
+                  </span>
+                </div>
               </div>
-              <div className="pl-8 text-[#444444]">├── payments/</div>
-              <div className="pl-8 text-amber-800 font-bold flex items-center justify-between gap-2 bg-[#FEF3C7] px-2.5 py-1 rounded border border-[#111111] min-w-max">
-                <span>└── auth/ (Permissive CORS)</span>
-                <span className="text-[10px] bg-amber-600 text-white px-2 py-0.5 rounded font-bold uppercase">CWE-942</span>
-              </div>
-              <div className="pl-4 text-[#444444]">├── lib/</div>
-              <div className="pl-4 text-[#444444]">└── middleware/</div>
             </div>
-
-            {/* Attack Path Details Specimen */}
-            <div className="space-y-4">
-              <div className="p-4 sm:p-5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm space-y-2">
-                <div className="mono text-[10.5px] font-extrabold text-[#111111] uppercase tracking-wider bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111] inline-block">
-                  PRIMARY ATTACK PATH
-                </div>
-                <div className="font-extrabold text-[12px] sm:text-[13.5px] text-[#111111] mono leading-tight break-all">
-                  USER INPUT → /api/users/search → users.py:42 → SQL SINK
-                </div>
-                <div className="text-[12px] sm:text-[12.5px] text-[#555555] leading-relaxed font-medium">
-                  Unsanitized request parameter concatenated directly into SQL statement string. Reproducible in sandboxed container probe.
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3.5 rounded-lg border border-[#111111] bg-white text-[12px] sm:text-[12.5px] font-semibold flex-wrap gap-2">
-                <span className="text-[#555555]">Sandbox Probe Status</span>
-                <span className="mono font-bold text-[#111111] flex items-center gap-2">
-                  <span className="pulse-dot" /> Container Verified #0241
-                </span>
-              </div>
-            </div>
-
           </div>
-        </div>
+        ) : (
+          <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+            Run an assessment to analyze routes, inputs, sinks, and secrets for this repository.
+          </div>
+        )}
       </div>
 
       {/* ── 4. WHAT RAKSHA CHECKS (6-Card Feature Matrix) ───────── */}
@@ -331,7 +361,7 @@ export default function OverviewPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-[12.5px] sm:text-[13px] border-y border-[#111111] py-3.5">
               <div className="min-w-0">
                 <span className="text-[#666666] font-bold">ENDPOINT: </span>
-                <span className="mono font-bold text-[#111111] break-all">{biggestFinding.endpoint || 'GET /api/users/search'}</span>
+                <span className="mono font-bold text-[#111111] break-all">{biggestFinding.endpoint || '—'}</span>
               </div>
               <div className="min-w-0">
                 <span className="text-[#666666] font-bold">LOCATION: </span>
@@ -366,19 +396,23 @@ export default function OverviewPage() {
           {[
             ['01', 'DETECT', 'Static analysis & repo mapping.', 'Complete'],
             ['02', 'REASON', 'AI correlates source & attack paths.', 'Complete'],
-            ['03', 'VALIDATE', 'Sandbox runtime reproduction.', 'Validated'],
+            ['03', 'VALIDATE', 'Sandbox runtime reproduction.', 'Not run'],
             ['04', 'REMEDIATE', 'Minimal patch diff generation.', 'Ready'],
-            ['05', 'VERIFY', 'Confirm patch fixes vulnerability.', 'Verified'],
+            ['05', 'VERIFY', 'Confirm patch fixes vulnerability.', 'Pending'],
           ].map(([stepNum, stepTitle, stepDesc, stepStatus]) => (
             <div key={stepNum} className="p-4 rounded-xl bg-white border border-[#111111] shadow-hard space-y-2">
               <div className="flex items-center justify-between">
                 <span className="mono text-[11px] font-extrabold bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111]">{stepNum}</span>
-                <CheckCircle2 className="w-4 h-4 text-[#111111]" />
+                {stepStatus === 'Complete' ? (
+                  <CheckCircle2 className="w-4 h-4 text-[#111111]" />
+                ) : (
+                  <Circle className="w-3.5 h-3.5 text-[#4A4A4A]" />
+                )}
               </div>
               <div className="font-extrabold text-[13.5px] text-[#111111] tracking-tight">{stepTitle}</div>
               <div className="text-[11.5px] text-[#555555] leading-snug font-medium">{stepDesc}</div>
               <div className="pt-1">
-                <span className="chip ok text-[9.5px] font-bold">{stepStatus}</span>
+                <span className={`chip text-[9.5px] font-bold ${stepStatus === 'Complete' ? 'ok' : ''}`}>{stepStatus}</span>
               </div>
             </div>
           ))}

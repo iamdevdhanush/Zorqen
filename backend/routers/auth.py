@@ -28,7 +28,10 @@ async def github_login(request: Request):
     if not settings.github_configured:
         raise HTTPException(
             status_code=503,
-            detail="GitHub OAuth is not configured. Use Demo Mode instead.",
+            detail=(
+                "GitHub OAuth is not configured. Set GITHUB_CLIENT_ID and "
+                "GITHUB_CLIENT_SECRET to enable sign-in."
+            ),
         )
     state = secrets.token_urlsafe(32)
     _oauth_states[state] = "pending"
@@ -97,31 +100,6 @@ async def github_callback(
     return RedirectResponse(
         url=f"{settings.frontend_url}/auth/callback?token={jwt_token}"
     )
-
-
-@router.post("/demo-login")
-async def demo_login(db: AsyncSession = Depends(get_db)):
-    """Create/retrieve a demo user and issue a JWT. No GitHub required."""
-    result = await db.execute(select(User).where(User.github_login == "demo-user"))
-    user = result.scalar_one_or_none()
-
-    if user is None:
-        user = User(
-            github_id=999999,
-            github_login="demo-user",
-            github_name="RAKSHA Demo",
-            github_email="demo@raksha.ai",
-            github_avatar_url="",
-            is_demo=True,
-        )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-    jwt_token = create_access_token(
-        {"sub": user.id, "login": user.github_login, "is_demo": True},
-    )
-    return {"access_token": jwt_token, "token_type": "bearer", "is_demo": True}
 
 
 @router.get("/me")

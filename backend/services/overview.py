@@ -10,7 +10,7 @@ from models.finding import Finding
 from models.repository import Repository
 from models.snapshot import RepositorySnapshot
 from models.user import User
-from services.scoring import severity_counts, GLOBAL_AVERAGE
+from services.scoring import severity_counts
 from services.serializers import finding_contract, repo_meta
 
 
@@ -77,18 +77,18 @@ async def overview(db: AsyncSession, user: User) -> dict:
             "name": top_snapshot.repository.name if top_snapshot.repository else "N/A",
             "commit": (top_snapshot.repository.head_commit[:7] if top_snapshot.repository and top_snapshot.repository.head_commit else "N/A"),
             "score": int(top_snapshot.score),
-            "trend": {"up": True, "delta": 0},
+            "trend": await _trend(db, top_snapshot),
         }
     elif completed:
         assessment, repo = completed
         top_meta = {
             "name": repo.name,
             "commit": (repo.head_commit or assessment.commit_sha or "N/A")[:7],
-            "score": int(assessment.security_score) if assessment.security_score is not None else GLOBAL_AVERAGE,
-            "trend": {"up": True, "delta": 0},
+            "score": int(assessment.security_score) if assessment.security_score is not None else None,
+            "trend": {"up": None, "delta": 0},
         }
     else:
-        top_meta = {"name": "N/A", "commit": "N/A", "score": GLOBAL_AVERAGE, "trend": {"up": True, "delta": 0}}
+        top_meta = {"name": None, "commit": None, "score": None, "trend": {"up": None, "delta": 0}}
 
     current = (
         (await db.execute(
@@ -114,6 +114,25 @@ async def overview(db: AsyncSession, user: User) -> dict:
         "current": repo_meta(current) if current else None,
         "reposFixed": open_count,
     }
+
+
+async def _trend(db: AsyncSession, snapshot) -> dict:
+    """Honest trend from the latest two snapshots of the same repository."""
+    prev = (
+        await db.execute(
+            select(RepositorySnapshot)
+            .where(
+                RepositorySnapshot.repository_id == snapshot.repository_id,
+                RepositorySnapshot.created_at < snapshot.created_at,
+            )
+            .order_by(RepositorySnapshot.created_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    if prev is None or prev.score == snapshot.score:
+        return {"up": None, "delta": 0}
+    delta = round(snapshot.score - prev.score, 1)
+    return {"up": delta > 0, "delta": delta}
 
 
 async def _score_series(db: AsyncSession, user: User) -> list:
@@ -147,7 +166,10 @@ async def _recent_activity(db: AsyncSession, user: User) -> list:
     for assessment, repo in rows:
         status = str(assessment.status or "pending")
         if status == AssessmentStatus.COMPLETED.value:
-            tone, text = "ok", f"{repo.name} passed security assessment · {assessment.security_score or 74}/100"
+            if assessment.security_score is not None:
+                tone, text = "ok", f"{repo.name} security assessment completed · {assessment.security_score}/100"
+            else:
+                tone, text = "info", f"{repo.name} security assessment completed"
         elif status == AssessmentStatus.RUNNING.value:
             tone, text = "info", f"{repo.name} assessment running"
         else:

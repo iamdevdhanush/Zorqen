@@ -21,6 +21,7 @@ from models.repository import Repository
 from models.user import User
 from agents.architecture_analyst import analyze_architecture
 from agents.security_reasoner import reason_about_finding
+from security.repo_intel import analyze_repository
 from security.semgrep_runner import run_semgrep
 from security.secret_detector import scan_files as scan_secrets
 from security.custom_checks import scan_files as custom_scan
@@ -66,14 +67,33 @@ async def _update_assessment(
         assessment.current_step = step
         assessment.progress_pct = progress
 
+        log_status = (
+            "failed"
+            if step == "failed" or status == AssessmentStatus.FAILED
+            else ("completed" if progress > 0 else "running")
+        )
+
         # Update timeline
         timeline = assessment.timeline or []
         timeline.append({
             "step": step,
-            "status": "completed" if progress > 0 else "running",
+            "status": log_status,
             "timestamp": utcnow().isoformat(),
         })
         assessment.timeline = timeline
+
+        # Update pipeline log with the real step record
+        pipeline_log = assessment.pipeline_logs or []
+        pipeline_log.append({
+            "step": step,
+            "status": log_status,
+            "progress": progress,
+            "timestamp": utcnow().isoformat(),
+            "source": "orchestrator",
+            "text": f"{step.replace('_', ' ')} — {progress}%",
+            "tone": "err" if log_status == "failed" else "info",
+        })
+        assessment.pipeline_logs = pipeline_log
 
         for k, v in kwargs.items():
             setattr(assessment, k, v)
@@ -137,12 +157,7 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
         file_contents: Dict[str, str] = {}
         tmp_dir: Optional[str] = None
 
-        if repository.is_demo:
-            # Load demo fixtures
-            from demo.fixtures import DEMO_FILE_TREE, DEMO_FILE_CONTENTS
-            file_tree = DEMO_FILE_TREE
-            file_contents = DEMO_FILE_CONTENTS
-        elif gh_token and repository.clone_url:
+        if gh_token and repository.clone_url:
             # Fetch files via GitHub API
             file_tree, file_contents = await _fetch_repo_files(
                 repository.owner,
@@ -153,13 +168,19 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
             )
         else:
             await _update_assessment(assessment_id, "failed", 0, status=AssessmentStatus.FAILED,
-                                     error_message="No GitHub token available. Use demo mode.")
+                                     error_message="No GitHub access token available. Re-connect your GitHub account and retry.")
             return
 
         # ── Step 2: Architecture Analysis ───────────────────────────────────
         await _update_assessment(assessment_id, "architecture_generated", 25)
 
         arch_map = await analyze_architecture(file_tree, file_contents, repository.name)
+
+        # Deterministic repository intelligence — the real attack-map source.
+        intel = analyze_repository(file_tree, file_contents, repository.name)
+        intel_summary = intel.to_dict()
+        arch_map["repo_intel"] = intel_summary
+        arch_map["primary_language"] = intel.primary_language
 
         await _update_assessment(assessment_id, "architecture_generated", 30,
                                  architecture_map=arch_map)
@@ -212,7 +233,7 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
             try:
                 semgrep_findings = await run_semgrep(
                     tmp_dir,
-                    languages=[arch_map.get("primary_language", "")]
+                    languages=[arch_map.get("primary_language", "")],
                 )
                 for sf in semgrep_findings:
                     # Normalize path to relative
@@ -232,6 +253,10 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
                     })
             except Exception as e:
                 log.warning("Semgrep scan failed", error=str(e))
+
+        # Record secrets + dependency analysis as completed pipeline steps
+        await _update_assessment(assessment_id, "secrets", 50)
+        await _update_assessment(assessment_id, "dependencies", 55)
 
         # ── Step 4: AI Reasoning ─────────────────────────────────────────────
         await _update_assessment(assessment_id, "ai_reasoning", 65)
@@ -268,6 +293,7 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
         await _update_assessment(assessment_id, "security_scan", 80)
 
         score_data = await _save_findings(assessment_id, enriched_findings, arch_map)
+        score_data["dependencies"] = len(intel.dependencies)
 
         # ── Step 6: Complete ─────────────────────────────────────────────────
         await _update_assessment(

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Bell, Bot, ChevronDown, Command, GitBranch, GitFork } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../store/WorkspaceContext';
-import { DEMO_REPO, CYBER_PORTAL } from '../lib/demo';
 import GithubIcon from './GithubIcon';
 
 function Dropdown({
@@ -53,8 +52,8 @@ export default function TopBar({ onOpenCmd }: TopBarProps) {
     currentAssessment,
     branch,
     commit,
+    repos,
     selectRepo,
-    loadDemoRepo,
     notifications,
     setCopilotOpen,
     copilotOpen,
@@ -84,13 +83,18 @@ export default function TopBar({ onOpenCmd }: TopBarProps) {
           <div className="mono text-[9px] uppercase tracking-[0.1em] text-[var(--color-ink-3)] px-3 pt-1 pb-1.5">
             REPOSITORY
           </div>
-          {[DEMO_REPO, CYBER_PORTAL].map((r) => (
+          {repos.length === 0 && (
+            <div className="px-3 py-2 text-[11px] mono text-[var(--color-ink-3)]">
+              no repositories connected
+            </div>
+          )}
+          {repos.map((r) => (
             <button
               key={r.id}
               onClick={() => {
                 if (currentRepo?.id === r.id) close();
                 else {
-                  (r.id === DEMO_REPO.id ? loadDemoRepo : () => selectRepo(r.id))();
+                  selectRepo(r.id);
                   close();
                 }
               }}
@@ -134,7 +138,7 @@ export default function TopBar({ onOpenCmd }: TopBarProps) {
             <GitBranch className="w-3 h-3" style={{ color: 'var(--color-ink-3)' }} />
             <span className="mono text-[11px]" style={{ color: 'var(--color-low)' }}>{branch}</span>
             <span className="mono text-[10px]" style={{ color: 'var(--color-ink-3)' }}>@</span>
-            <span className="mono text-[11px]" style={{ color: 'var(--color-ink-2)' }}>{commit.slice(0, 7)}</span>
+            <span className="mono text-[11px]" style={{ color: 'var(--color-ink-2)' }}>{commit?.slice(0, 7) ?? '—'}</span>
           </div>
         </div>
 

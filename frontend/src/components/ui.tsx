@@ -128,7 +128,7 @@ export function EmptyState({ text }: { text: string }) {
 
 /* ── Status pill for live assessment status ───────────────────────────── */
 
-export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED' }) {
+export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED' | 'FAILED' }) {
   if (status === 'RUNNING') {
     return (
       <span className="chip ok inline-flex items-center gap-1.5 font-bold">
@@ -142,6 +142,14 @@ export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED'
       <span className="chip inline-flex items-center gap-1.5 font-bold">
         <span className="w-[7px] h-[7px] rounded-full bg-[#111111]" />
         COMPLETED
+      </span>
+    );
+  }
+  if (status === 'FAILED') {
+    return (
+      <span className="chip sev-critical inline-flex items-center gap-1.5 font-bold">
+        <span className="w-[7px] h-[7px] rounded-full bg-[#DC2626]" />
+        FAILED
       </span>
     );
   }

@@ -203,10 +203,23 @@ def repo_meta(repo: Repository) -> Dict[str, Any]:
 
 
 def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
-    """Derive the 7 step states from the most recent pipeline_logs entries."""
+    """Derive the 7 step states from the most recent pipeline_logs entries.
+
+    The orchestrator emits its own internal step names; those are aliased to the
+    canonical console steps. Steps the pipeline never reached stay 'pending' —
+    notably SANDBOX VALIDATION, which RAKSHA does not run.
+    """
+    STEP_ALIASES = {
+        "repository_indexed": "index",
+        "architecture_generated": "architecture",
+        "security_scan": "static",
+        "ai_reasoning": "reasoning",
+    }
     latest: Dict[str, str] = {}
     for entry in assessment.pipeline_logs or []:
         step = entry.get("step")
+        if step:
+            step = STEP_ALIASES.get(step, step)
         if step and entry.get("status"):
             latest[step] = entry["status"]
     if assessment.status == AssessmentStatus.COMPLETED:
@@ -215,12 +228,10 @@ def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
     steps = []
     for step in PIPELINE_STEPS:
         state = latest.get(step["id"])
-        if state == "completed":
-            status = "completed"
-        elif state in {"running", "failed"}:
-            status = "running"
+        if state in {"completed", "running", "failed"}:
+            status = state
         else:
-            status = "completed" if assessment.status == AssessmentStatus.COMPLETED else "pending"
+            status = "pending"
         steps.append({"id": step["id"], "label": step["label"], "status": status})
     return steps
 
@@ -247,11 +258,44 @@ def _logs_from_pipeline(assessment: Assessment) -> List[Dict[str, Any]]:
     return logs
 
 
+def _architecture_contract(assessment: Assessment) -> Optional[Dict[str, Any]]:
+    """Deterministic architecture summary for the console attack map."""
+    arch_map = assessment.architecture_map or {}
+    if not arch_map:
+        return None
+    intel = arch_map.get("repo_intel") or {}
+    layers = arch_map.get("layers") or {}
+    features = arch_map.get("features") or {}
+    routes = intel.get("routes") or []
+    inputs = intel.get("input_sources") or []
+    sinks = intel.get("sinks") or []
+    flows = [k for k, v in (features or {}).items() if v]
+    return {
+        "files": intel.get("file_count", 0),
+        "routes": len(routes),
+        "topRoutes": routes[:8],
+        "inputs": len(inputs),
+        "sinks": len(sinks),
+        "flows": flows,
+        "secrets": assessment.secrets_count or 0,
+        "languages": intel.get("languages") or {},
+        "primaryLanguage": intel.get("primary_language")
+        or arch_map.get("primary_language")
+        or "Unknown",
+        "frameworks": intel.get("frameworks") or [],
+        "dependencies": len(intel.get("dependencies") or []),
+        "summary": arch_map.get("ai_summary") or "",
+        "layers": layers,
+        "securityNotes": arch_map.get("security_notes") or [],
+    }
+
+
 def run_contract(assessment: Assessment, repository: Optional[Repository] = None,
                  findings: Optional[List[Finding]] = None) -> Dict[str, Any]:
     repo = repository or assessment.repository
     contract: Dict[str, Any] = {
         "id": _run_id(assessment),
+        "repoId": assessment.repository_id,
         "repo": repo.name if repo else "unknown",
         "commit": (assessment.commit_sha or (repo.head_commit if repo else None) or "main")[:7],
         "branch": assessment.branch or "main",
@@ -260,6 +304,11 @@ def run_contract(assessment: Assessment, repository: Optional[Repository] = None
         "logs": _logs_from_pipeline(assessment),
         "findings": [finding_contract(f) for f in (findings or [])],
     }
+    if assessment.error_message:
+        contract["errorMessage"] = assessment.error_message
+    architecture = _architecture_contract(assessment)
+    if architecture:
+        contract["architecture"] = architecture
     started = _fmt_time(assessment.started_at)
     if started:
         contract["startedAt"] = started
@@ -274,10 +323,10 @@ def run_contract(assessment: Assessment, repository: Optional[Repository] = None
 def _run_status(assessment: Assessment) -> str:
     if assessment.status == AssessmentStatus.COMPLETED:
         return "COMPLETED"
+    if assessment.status == AssessmentStatus.FAILED:
+        return "FAILED"
     if assessment.status in {AssessmentStatus.PENDING}:
         return "IDLE"
-    # running, failed, cancelled all map to RUNNING while in flight; a failed
-    # run still surfaces its partial logs to the console.
     return "RUNNING"
 
 

@@ -20,7 +20,7 @@ const NAV = [
 ];
 
 export default function Sidebar() {
-  const { currentAssessment, githubConnected, user, signInDemo, signOut, connectGithub, disconnectGithub } = useWorkspace();
+  const { currentAssessment, githubConnected, user, connectGithub, disconnectGithub, signOut } = useWorkspace();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -199,7 +199,7 @@ export default function Sidebar() {
                 <>
                   <div className="px-3 py-1.5 border-b border-[var(--color-line)] mb-1">
                     <div className="text-[12px] font-medium text-[var(--color-ink)]">{user.github_name ?? user.github_login}</div>
-                    <div className="mono text-[10px] text-[var(--color-ink-3)]">@{user.github_login}{user.is_demo ? ' · demo' : ''}</div>
+                    <div className="mono text-[10px] text-[var(--color-ink-3)]">@{user.github_login}</div>
                   </div>
                   <button
                     onClick={() => { close(); signOut(); }}
@@ -211,11 +211,11 @@ export default function Sidebar() {
                 </>
               ) : (
                 <button
-                  onClick={() => { close(); signInDemo(); }}
-                  className="w-full text-left px-3 py-[5px] text-[12px] hover:bg-[var(--color-hover)]"
+                  onClick={() => { close(); connectGithub(); }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-[5px] text-[12px] hover:bg-[var(--color-hover)]"
                   style={{ color: 'var(--color-ink-2)' }}
                 >
-                  Sign in (demo)
+                  <GithubIcon className="w-3 h-3" style={{ color: 'var(--color-ink-3)' }} /> Connect GitHub
                 </button>
               )}
             </div>

@@ -16,10 +16,10 @@ export default function AssessmentsPage() {
   /* Counts calculation for active assessment workspace */
   const runFindings = run?.findings ?? [];
   const counts = {
-    critical: runFindings.filter((f) => f.severity === 'critical').length || 1,
-    high:     runFindings.filter((f) => f.severity === 'high').length || 5,
-    medium:   runFindings.filter((f) => f.severity === 'medium').length || 11,
-    low:      runFindings.filter((f) => f.severity === 'low').length || 13,
+    critical: runFindings.filter((f) => f.severity === 'critical').length,
+    high:     runFindings.filter((f) => f.severity === 'high').length,
+    medium:   runFindings.filter((f) => f.severity === 'medium').length,
+    low:      runFindings.filter((f) => f.severity === 'low').length,
   };
 
   const topFindings = runFindings.slice(0, 4);
@@ -88,7 +88,7 @@ export default function AssessmentsPage() {
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
                 <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Commit</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">@{run.commit.slice(0, 7)}</div>
+                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">@{run.commit?.slice(0, 7) ?? '—'}</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
                 <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Status</div>
@@ -96,15 +96,15 @@ export default function AssessmentsPage() {
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
                 <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Posture Score</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.score ?? 74} / 100</div>
+                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.score ?? '—'} / 100</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
                 <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Findings</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{runFindings.length || 30} Total</div>
+                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{runFindings.length} Total</div>
               </div>
               <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
                 <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Duration</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.duration ?? '46s'}</div>
+                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.duration ?? 'in progress'}</div>
               </div>
             </div>
           </div>
@@ -127,7 +127,8 @@ export default function AssessmentsPage() {
                 'SANDBOX VALIDATION',
               ].map((stageLabel, idx) => {
                 const step = run.steps?.[idx];
-                const isDone = !isRunning || step?.status === 'completed';
+                const isDone = step?.status === 'completed';
+                const isFailed = step?.status === 'failed';
                 const isRun = isRunning && step?.status === 'running';
 
                 return (
@@ -136,6 +137,8 @@ export default function AssessmentsPage() {
                     className={`p-3 sm:p-3.5 rounded-lg border text-left space-y-1.5 sm:space-y-2 transition-all ${
                       isRun
                         ? 'border-[#111111] bg-[#C5F82A] shadow-hard-sm'
+                        : isFailed
+                        ? 'border-[#111111] bg-[#FEE2E2]'
                         : isDone
                         ? 'border-[#111111] bg-white'
                         : 'border-[#DCDCD5] bg-[#FAFAFA]'
@@ -145,6 +148,8 @@ export default function AssessmentsPage() {
                       <span className="mono text-[10px] font-extrabold text-[#111111]">0{idx + 1}</span>
                       {isDone ? (
                         <CheckCircle2 className="w-4 h-4 text-[#111111]" />
+                      ) : isFailed ? (
+                        <ShieldAlert className="w-4 h-4 text-[#DC2626]" />
                       ) : isRun ? (
                         <span className="pulse-dot" />
                       ) : (
@@ -153,11 +158,11 @@ export default function AssessmentsPage() {
                     </div>
 
                     <div>
-                      <div className={`mono text-[10px] sm:text-[10.5px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : 'text-[#333333]'}`}>
+                      <div className={`mono text-[10px] sm:text-[10.5px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : 'text-[#333333]'}`}>
                         {stageLabel}
                       </div>
-                      <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : 'text-[#4A4A4A]'}`}>
-                        {isDone ? '✓ COMPLETE' : isRun ? '● RUNNING' : '○ QUEUED'}
+                      <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : 'text-[#4A4A4A]'}`}>
+                        {isDone ? '✓ COMPLETE' : isFailed ? '✕ FAILED' : isRun ? '● RUNNING' : '○ QUEUED'}
                       </div>
                     </div>
                   </div>
@@ -206,7 +211,7 @@ export default function AssessmentsPage() {
                   onClick={() => navigate('/findings')}
                   className="text-[12.5px] sm:text-[13px] font-extrabold text-[#111111] hover:underline"
                 >
-                  View All {runFindings.length || 30} Findings →
+                  View All {runFindings.length} Findings →
                 </button>
               </div>
 
@@ -253,6 +258,14 @@ export default function AssessmentsPage() {
       )}
 
       {/* ── 5. HISTORICAL PIPELINE RUNS LIST/TABLE ───────────────────── */}
+      {!run && (
+        <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+          {currentRepo
+            ? 'No assessments for this repository yet — run your first assessment to populate the pipeline.'
+            : 'No repository loaded — select a repository to run an assessment.'}
+        </div>
+      )}
+
       <Panel title={`HISTORICAL PIPELINE RUNS (${assessments.length})`} flush>
         <div className="overflow-x-auto scroll-thin">
           <table className="data-table min-w-[700px]">
@@ -274,14 +287,14 @@ export default function AssessmentsPage() {
                 <tr key={a.id} onClick={() => navigate(`/assessments/${a.id.replace('#', '')}`)}>
                   <td className="mono text-[11.5px] font-bold" style={{ color: 'var(--color-ink)' }}>{a.id}</td>
                   <td className="mono text-[11.5px] text-[var(--color-ink-2)] font-semibold">{a.repo}</td>
-                  <td className="mono text-[11.5px] text-[var(--color-ink-3)]">@{a.commit.slice(0, 7)}</td>
+                  <td className="mono text-[11.5px] text-[var(--color-ink-3)]">@{a.commit?.slice(0, 7) ?? '—'}</td>
                   <td className="mono text-[11px] text-[var(--color-ink-3)]">{a.startedAt ?? '—'}</td>
                   <td className="mono text-[11px] text-[var(--color-ink-3)]">{a.duration ?? 'in progress'}</td>
                   <td className="mono text-[11.5px] font-bold text-[#111111]">
-                    {a.score ?? 74}/100
+                    {a.score ?? '—'}/100
                   </td>
                   <td className="mono text-[11.5px] text-[var(--color-ink-2)] font-semibold">
-                    {a.findings.length > 0 ? a.findings.length : 30}
+                    {a.findings.length}
                   </td>
                   <td><RunStatus status={a.status} /></td>
                   <td className="text-right">

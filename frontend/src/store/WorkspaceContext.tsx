@@ -1,52 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { ActivityItem, AssessmentRun, Finding, FindingStatus, LogLine, RepoMeta } from '../lib/types';
-import { getApiBase, listGitHubRepos } from '../services/api';
 import {
-  COMPLETED_ACTIVITY,
-  COMPLETED_STEPS,
-  CYBER_PORTAL,
-  DEMO_REPO,
-  PIPELINE_FINAL_LOGS,
-  PIPELINE_STEPS,
-  generateFindingsFor,
-} from '../lib/demo';
+  getApiBase,
+  listGitHubRepos,
+  listRepoAssessments,
+  getAssessment,
+  startAssessment as apiStartAssessment,
+} from '../services/api';
 import type { AuthUser } from '../App';
-
-const DEMO_USER: AuthUser = {
-  id: 'demo-user',
-  github_login: 'secureops',
-  github_name: 'Secure Ops',
-  github_avatar_url: '',
-  is_demo: true,
-};
-
-interface ScheduleEvent {
-  at: number;
-  kind: 'step-done' | 'step-run' | 'log' | 'complete';
-  stepId?: string;
-  log?: { time: string; source: string; text: string; tone?: 'ok' | 'warn' | 'err' | 'info' };
-}
-
-function buildSchedule(): ScheduleEvent[] {
-  const events: ScheduleEvent[] = [];
-  const t0 = Date.now();
-  let cursor = 0;
-  for (const step of PIPELINE_STEPS) {
-    events.push({ at: t0 + cursor, kind: 'step-run', stepId: step.id });
-    cursor += 400;
-    for (const [text, tone] of step.logs) {
-      events.push({ at: t0 + cursor, kind: 'log', stepId: step.id, log: { time: '—', source: text.split(':')[0], text, tone: tone as any } });
-      cursor += 350;
-    }
-    events.push({ at: t0 + cursor, kind: 'step-done', stepId: step.id });
-    cursor += 900;
-  }
-  const endAt = t0 + cursor + 800;
-  for (const l of PIPELINE_FINAL_LOGS) events.push({ at: endAt + 900, kind: 'log', log: l });
-  events.push({ at: endAt + 1600, kind: 'complete' });
-  return events;
-}
 
 function fmtTime(d: Date): string {
   return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -73,17 +35,15 @@ export interface WorkspaceDataState {
   activity: ActivityItem[];
   notifications: LogLine[];
 
-  signInDemo: () => void;
   signInGithub: (user: AuthUser) => void;
   signOut: () => void;
   connectGithub: () => void;
   proceedGithubAuth: () => void;
   disconnectGithub: () => void;
   refreshRepos: () => Promise<void>;
-  loadDemoRepo: () => void;
   selectRepo: (id: string) => void;
   loadRepo: (repo: RepoMeta) => void;
-  startAssessment: () => void;
+  startAssessment: () => Promise<void>;
   markFinding: (findingId: string, status: FindingStatus) => void;
 }
 
@@ -92,33 +52,35 @@ export type WorkspaceState = WorkspaceDataState & WorkspaceUIState;
 const WorkspaceUIContext = createContext<WorkspaceUIState | null>(null);
 const WorkspaceDataContext = createContext<WorkspaceDataState | null>(null);
 
-let runSeq = 242;
-
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [githubConnected, setGithubConnected] = useState(false);
   const [githubModalOpen, setGithubModalOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
-  const [repos, setRepos] = useState<RepoMeta[]>([DEMO_REPO]);
+  const [repos, setRepos] = useState<RepoMeta[]>([]);
   const [reposLoading, setReposLoading] = useState(false);
   const [reposError, setReposError] = useState<string | null>(null);
   const [currentRepo, setCurrentRepo] = useState<RepoMeta | null>(null);
   const [branch, setBranch] = useState('main');
-  const [commit, setCommit] = useState<string>(DEMO_REPO.commit || 'main');
+  const [commit, setCommit] = useState('main');
   const [assessments, setAssessments] = useState<AssessmentRun[]>([]);
   const [currentAssessment, setCurrentAssessment] = useState<AssessmentRun | null>(null);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [notifications, setNotifications] = useState<LogLine[]>([]);
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activePollRef = useRef<string | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    activePollRef.current = null;
+  }, []);
 
   /* Fetch the connected GitHub account's repositories (all pages, live data) */
   const refreshRepos = useCallback(async () => {
-    const stored = localStorage.getItem('raksha_user');
-    if (!stored) return;
-    const parsed = JSON.parse(stored) as AuthUser;
-    if (parsed.is_demo) return;
-
     setReposLoading(true);
     setReposError(null);
     try {
@@ -132,209 +94,166 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  /* Restore session */
-  useEffect(() => {
-    const storedUser = localStorage.getItem('raksha_user');
-    const storedRepo = localStorage.getItem('raksha_repo');
-    const storedAssess = localStorage.getItem('raksha_assessment');
-    if (storedUser) {
-      const u = JSON.parse(storedUser);
-      setUser(u);
-      setGithubConnected(!u.is_demo);
-      if (!u.is_demo) {
-        setRepos([]);
-        refreshRepos();
-      }
+  /* Load the real assessments for a repository from the backend */
+  const loadAssessments = useCallback(async (repoId: string) => {
+    try {
+      const { data } = await listRepoAssessments(repoId);
+      const runs = (data.runs ?? []) as AssessmentRun[];
+      setAssessments(runs);
+      const active = runs.find((r) => r.status === 'RUNNING');
+      setCurrentAssessment(active ?? runs[0] ?? null);
+      if (runs[0]?.commit) setCommit(runs[0].commit);
+    } catch {
+      setAssessments([]);
+      setCurrentAssessment(null);
     }
-    if (storedRepo) {
-      const r = JSON.parse(storedRepo) as RepoMeta;
-      setCurrentRepo(r);
-      setCommit(r.commit || 'main');
-    }
-    if (storedAssess) {
-      const a = JSON.parse(storedAssess) as AssessmentRun;
-      setCurrentAssessment(a);
-      setAssessments([a]);
-    }
-  }, [refreshRepos]);
-
-  const persist = useCallback(() => {
-    if (currentRepo) localStorage.setItem('raksha_repo', JSON.stringify(currentRepo));
-  }, [currentRepo]);
-
-  useEffect(() => persist(), [persist]);
-  useEffect(() => {
-    if (currentAssessment) localStorage.setItem('raksha_assessment', JSON.stringify(currentAssessment));
-  }, [currentAssessment]);
-
-  /* Simulation driver — mutates a local snapshot, then commits to state */
-  const startSimulation = useCallback(
-    (assessment: AssessmentRun) => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      const schedule = buildSchedule();
-      const startTime = Date.now();
-      const snap = {
-        steps: assessment.steps.map((s) => ({ ...s })),
-        logs: [...assessment.logs],
-      };
-      let done = false;
-
-      const tick = () => {
-        if (done) return;
-        const now = Date.now();
-        let dirty = false;
-        let hasEvents = false;
-
-        for (const ev of schedule) {
-          if (now < ev.at) break;
-          hasEvents = true;
-          if (ev.kind === 'step-run') {
-            const s = snap.steps.find((x) => x.id === ev.stepId);
-            if (s && s.status !== 'running') { s.status = 'running'; dirty = true; }
-          } else if (ev.kind === 'step-done') {
-            const s = snap.steps.find((x) => x.id === ev.stepId);
-            if (s && s.status !== 'completed') { s.status = 'completed'; dirty = true; }
-          } else if (ev.kind === 'log' && ev.log) {
-            const line: LogLine = {
-              ...ev.log,
-              time: ev.log.time === '—' ? fmtTime(new Date(startTime + (ev.at - startTime))) : ev.log.time,
-              source: ev.log.source,
-            };
-            if (!snap.logs.some((l) => l.text === line.text)) {
-              snap.logs.push(line);
-              dirty = true;
-            }
-          } else if (ev.kind === 'complete') {
-            done = true;
-            snap.steps = snap.steps.map((s) => ({ ...s, status: 'completed' as const }));
-            dirty = true;
-          }
-        }
-
-        if (hasEvents && !done && dirty) {
-          setAssessments([{ ...assessment, steps: snap.steps, logs: snap.logs, status: 'RUNNING' }]);
-        }
-        if (dirty) {
-          const last = snap.logs[snap.logs.length - 1];
-          if (last && (last.tone === 'err' || last.tone === 'warn') && !last.text.startsWith('scorer')) {
-            setNotifications((n) => (n[n.length - 1]?.text === last.text ? n : [...n.slice(-4), last]));
-          }
-        }
-        if (done) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          setAssessments([
-            {
-              ...assessment,
-              steps: snap.steps,
-              logs: snap.logs,
-              status: 'COMPLETED',
-              score: 74,
-              duration: `${Math.round((Date.now() - startTime) / 1000)}s`,
-              findings: generateFindingsFor({ name: assessment.repo } as RepoMeta),
-            },
-          ]);
-        }
-      };
-
-      tick();
-      timerRef.current = setInterval(tick, 400);
-    },
-    []
-  );
-
-  /* Cleanup timers */
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
   }, []);
 
-  /* Derive activity from the current assessment */
+  const loadRepo = useCallback(
+    (repo: RepoMeta) => {
+      stopPolling();
+      setCurrentRepo(repo);
+      setBranch(repo.defaultBranch || 'main');
+      setCommit(repo.commit || 'main');
+      setAssessments([]);
+      setCurrentAssessment(null);
+      if (repo.id) void loadAssessments(repo.id);
+    },
+    [loadAssessments, stopPolling]
+  );
+
+  const selectRepo = useCallback(
+    (id: string) => {
+      const repo = repos.find((r) => r.id === id);
+      if (repo) loadRepo(repo);
+    },
+    [repos, loadRepo]
+  );
+
+  const pushNotification = useCallback((line: LogLine) => {
+    setNotifications((n) => {
+      if (n[n.length - 1]?.text === line.text) return n;
+      return [...n.slice(-4), line];
+    });
+  }, []);
+
+  /* Poll a real run until it leaves RUNNING, then load its final contract */
+  const pollAssessment = useCallback(
+    (assessmentRef: string) => {
+      stopPolling();
+      activePollRef.current = assessmentRef;
+      let attempts = 0;
+      const tick = async () => {
+        if (activePollRef.current !== assessmentRef) return;
+        attempts += 1;
+        try {
+          const { data } = await getAssessment(assessmentRef);
+          const run = data as AssessmentRun;
+          const last = run.logs[run.logs.length - 1];
+          if (last && (last.tone === 'warn' || last.tone === 'err')) {
+            pushNotification({ time: last.time, source: last.source, text: last.text, tone: last.tone });
+          }
+          if (run.status === 'RUNNING' && attempts < 300) {
+            setCurrentAssessment(run);
+            setAssessments((prev) => [run, ...prev.filter((a) => a.id !== run.id)]);
+            return;
+          }
+          stopPolling();
+          setCurrentAssessment(run);
+          setAssessments((prev) => [run, ...prev.filter((a) => a.id !== run.id)]);
+          if (run.commit) setCommit(run.commit);
+        } catch {
+          stopPolling();
+        }
+      };
+      pollTimerRef.current = setInterval(tick, 2000);
+      void tick();
+    },
+    [pushNotification, stopPolling]
+  );
+
+  /* Start a real assessment run against the current repository */
+  const startAssessment = useCallback(async () => {
+    if (!currentRepo) return;
+    stopPolling();
+    try {
+      const { data } = await apiStartAssessment({ repository_id: currentRepo.id, branch });
+      const run = data as AssessmentRun;
+      setAssessments((prev) => [run, ...prev]);
+      setCurrentAssessment(run);
+      if (run.commit) setCommit(run.commit);
+      pollAssessment(run.id.replace('#', ''));
+    } catch (err) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      pushNotification({
+        time: fmtTime(new Date()),
+        source: 'raksha',
+        text: detail || 'failed to start assessment',
+        tone: 'err',
+      });
+    }
+  }, [currentRepo, branch, pollAssessment, pushNotification, stopPolling]);
+
+  /* Derive activity from the current assessment's logs */
   useEffect(() => {
-    if (!currentAssessment) return;
+    if (!currentAssessment) {
+      setActivity([]);
+      return;
+    }
     const items: ActivityItem[] = currentAssessment.logs.map((l) => ({
-      time: l.time === '—' ? new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : l.time,
+      time: l.time === '—' ? fmtTime(new Date()) : l.time,
       text: `${l.source}: ${l.text}`,
       tone: l.tone,
     }));
     setActivity(items);
   }, [currentAssessment]);
 
-  const loadRepo = useCallback(
-    (repo: RepoMeta) => {
-      setCurrentRepo(repo);
-      setCommit(repo.commit || 'main');
-      setBranch(repo.defaultBranch);
-      setAssessments([]);
-      setCurrentAssessment(null);
-      const completedRun: AssessmentRun = {
-        id: '#0241',
-        repo: repo.name,
-        commit: repo.commit || 'main',
-        branch: repo.defaultBranch,
-        status: 'COMPLETED',
-        startedAt: '09:41:18',
-        duration: '46s',
-        score: repo.name === DEMO_REPO.name ? 74 : 61,
-        steps: COMPLETED_STEPS,
-        logs: repo.name === DEMO_REPO.name ? COMPLETED_ACTIVITY.map((a) => ({ time: a.time, source: a.text.split(':')[0], text: a.text.split(':').slice(1).join(':').trim(), tone: a.tone })) : COMPLETED_ACTIVITY.map((a) => ({ time: a.time, source: a.text.split(':')[0], text: a.text.split(':').slice(1).join(':').trim(), tone: a.tone })),
-        findings: generateFindingsFor(repo),
-      };
-      setAssessments([completedRun]);
-      setCurrentAssessment(completedRun);
-    },
-    []
-  );
-
-  const loadDemoRepo = useCallback(() => {
-    const u = localStorage.getItem('raksha_user');
-    if (u) {
-      const parsed = JSON.parse(u);
-      setUser(parsed);
-      setGithubConnected(!parsed.is_demo);
-    } else {
-      setUser(DEMO_USER);
-      setGithubConnected(false);
+  /* Restore session: user + repositories + previously selected repo */
+  useEffect(() => {
+    const storedUser = localStorage.getItem('raksha_user');
+    const storedRepo = localStorage.getItem('raksha_repo');
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser) as AuthUser;
+        setUser(u);
+        setGithubConnected(true);
+        void refreshRepos();
+      } catch {
+        /* ignore malformed session */
+      }
     }
-    loadRepo(DEMO_REPO);
-  }, [loadRepo]);
+    if (storedRepo) {
+      try {
+        const r = JSON.parse(storedRepo) as RepoMeta;
+        setCurrentRepo(r);
+        setBranch(r.defaultBranch || 'main');
+        setCommit(r.commit || 'main');
+        if (r.id) void loadAssessments(r.id);
+      } catch {
+        /* ignore malformed session */
+      }
+    }
+  }, [refreshRepos, loadAssessments]);
 
-  const selectRepo = useCallback((id: string) => {
-    const repo = [DEMO_REPO, CYBER_PORTAL].find((r) => r.id === id);
-    if (repo) loadRepo(repo);
-  }, [loadRepo]);
+  /* Persist the selected repository so a reload restores the workspace */
+  useEffect(() => {
+    if (currentRepo) localStorage.setItem('raksha_repo', JSON.stringify(currentRepo));
+  }, [currentRepo]);
 
-  const startAssessment = useCallback(() => {
-    if (!currentRepo) return;
-    const id = `#${runSeq++}`;
-    const run: AssessmentRun = {
-      id,
-      repo: currentRepo.name,
-      commit,
-      branch,
-      status: 'RUNNING',
-      startedAt: fmtTime(new Date()),
-      steps: PIPELINE_STEPS.map((s) => ({ id: s.id, label: s.label, status: 'pending' })),
-      logs: [{ time: fmtTime(new Date()), source: 'raksha', text: `assessment ${id} queued · repo ${currentRepo.name}@${commit}`, tone: 'info' }],
-      findings: [],
-    };
-    setAssessments([run, ...assessments]);
-    setCurrentAssessment(run);
-    startSimulation(run);
-  }, [currentRepo, commit, branch, assessments, startSimulation]);
+  /* Cleanup poller on unmount */
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
-  const markFinding = useCallback(
-    (findingId: string, status: FindingStatus) => {
-      setCurrentAssessment((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          findings: prev.findings.map((f) => (f.id === findingId ? { ...f, status } : f)),
-        };
-      });
-    },
-    []
-  );
+  const markFinding = useCallback((findingId: string, status: FindingStatus) => {
+    setCurrentAssessment((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        findings: prev.findings.map((f) => (f.id === findingId ? { ...f, status } : f)),
+      };
+    });
+  }, []);
 
   const uiValue = useMemo<WorkspaceUIState>(
     () => ({
@@ -360,43 +279,46 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       currentAssessment,
       activity,
       notifications,
-      signInDemo: loadDemoRepo,
       signInGithub: (u: AuthUser) => {
         setUser(u);
         setGithubConnected(true);
         localStorage.setItem('raksha_user', JSON.stringify(u));
         setRepos([]);
-        loadRepo(DEMO_REPO);
-        refreshRepos();
+        void refreshRepos();
       },
       signOut: () => {
+        stopPolling();
         localStorage.removeItem('raksha_token');
         localStorage.removeItem('raksha_user');
         localStorage.removeItem('raksha_repo');
-        localStorage.removeItem('raksha_assessment');
         setUser(null);
         setGithubConnected(false);
         setCurrentRepo(null);
         setCurrentAssessment(null);
         setAssessments([]);
-        setRepos([DEMO_REPO]);
+        setRepos([]);
         setReposError(null);
+        setNotifications([]);
       },
       connectGithub: () => setGithubModalOpen(true),
       proceedGithubAuth: () => {
         window.location.href = `${getApiBase()}/auth/github`;
       },
       disconnectGithub: () => {
+        stopPolling();
         setGithubConnected(false);
+        setCurrentRepo(null);
+        setCurrentAssessment(null);
+        setAssessments([]);
+        setRepos([]);
       },
       refreshRepos,
-      loadDemoRepo,
       selectRepo,
       loadRepo,
       startAssessment,
       markFinding,
     }),
-    [user, githubConnected, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, loadDemoRepo, selectRepo, loadRepo, startAssessment, markFinding, refreshRepos]
+    [user, githubConnected, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding, stopPolling]
   );
 
   return (
