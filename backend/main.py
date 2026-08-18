@@ -62,6 +62,37 @@ def _assert_production_safety() -> None:
         )
 
 
+async def _migrate_legacy_github_tokens() -> None:
+    """One-time upgrade: encrypt plaintext GitHub tokens from before
+    encryption-at-rest was introduced.
+
+    Idempotent and failure-safe: tokens already encrypted with the current
+    key are left untouched, and any error only logs (the app still boots;
+    affected users simply re-authenticate via GitHub).
+    """
+    from sqlalchemy import select
+    from core.crypto import migrate_token
+    from core.database import AsyncSessionLocal
+    from models.user import User
+
+    try:
+        async with AsyncSessionLocal() as db:
+            users = (await db.execute(select(User))).scalars().all()
+            changed = 0
+            for user in users:
+                if not user.github_access_token:
+                    continue
+                migrated = migrate_token(user.github_access_token)
+                if migrated != user.github_access_token:
+                    user.github_access_token = migrated
+                    changed += 1
+            if changed:
+                await db.commit()
+                log.info("legacy_github_tokens_migrated", count=changed)
+    except Exception:
+        log.exception("legacy_github_token_migration_failed")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
@@ -80,6 +111,7 @@ async def lifespan(app: FastAPI):
         log.info("Database migrations applied")
         await init_db()
         log.info("Database initialized")
+        await _migrate_legacy_github_tokens()
     except Exception:
         # Uvicorn exits with status 3 (STARTUP_FAILURE) and suppresses the real
         # error, so surface the cause here before re-raising.

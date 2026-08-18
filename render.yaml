@@ -16,6 +16,14 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
+      # REQUIRED: base64-encoded 32-byte key for AES-256-GCM encryption of
+      # GitHub tokens at rest. Generate with:
+      #   python -c "import base64, os; print(base64.b64encode(os.urandom(32)).decode())"
+      # then set it here (sync: false → fill in the Render dashboard).
+      # WARNING: keep this key stable across deploys — changing it makes all
+      # stored GitHub tokens undecryptable until users re-authenticate.
+      - key: ENCRYPTION_KEY
+        sync: false
       # REQUIRED: Set DATABASE_URL to your Render PostgreSQL Internal URL.
       # Format: postgresql+asyncpg://USERNAME:PASSWORD@HOST:5432/DATABASE
       # (Render's postgres:// URLs are normalized automatically)

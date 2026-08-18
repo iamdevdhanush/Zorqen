@@ -100,15 +100,45 @@ def is_encrypted(value: str) -> bool:
         return False
 
 
+# Known plaintext token shapes that pass the base64 heuristic above (40-char
+# GitHub tokens decode to exactly 30 bytes) but are NOT RAKSHA ciphertext.
+_PLAINTEXT_TOKEN_PREFIXES = (
+    "ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_", "glpat_",
+    "xoxb-", "xoxp-", "xoxa-", "sk-", "AKIA", "AIza",
+)
+
+
+def _looks_like_ciphertext(value: str) -> bool:
+    """True when `value` has the shape of RAKSHA ciphertext (base64, 4-aligned,
+    at least nonce+tag length). Plaintext tokens shorter than 29 decoded bytes
+    or with non-base64 characters fail this check."""
+    if len(value) % 4 != 0:
+        return False
+    if not value.isascii():
+        return False
+    try:
+        return len(base64.b64decode(value, validate=True)) >= 29
+    except Exception:
+        return False
+
+
 def migrate_token(value: str) -> str:
     """Migrate a plaintext token to encrypted form if needed.
-    
-    If already encrypted, returns as-is.
-    If plaintext, encrypts and returns encrypted version.
+
+    - Already encrypted with the current key → returned as-is.
+    - Plaintext → encrypted with the current key.
+    - Ciphertext that fails to decrypt (e.g. key rotation) → "" so the
+      caller re-authenticates. It is never double-encrypted and never left
+      unencrypted.
     """
     if not value:
         return ""
-    if is_encrypted(value):
-        return value  # Already encrypted
-    # Plaintext token - encrypt it
-    return encrypt_token(value)
+    try:
+        decrypt_token(value)
+        return value  # already encrypted with the current key
+    except EncryptionError:
+        if value.startswith(_PLAINTEXT_TOKEN_PREFIXES) or not _looks_like_ciphertext(value):
+            return encrypt_token(value)
+        # Looks like ciphertext but the current key cannot decrypt it —
+        # do not double-encrypt; the caller treats "" as "no token".
+        return ""

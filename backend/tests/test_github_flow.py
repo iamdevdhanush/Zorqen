@@ -607,6 +607,47 @@ class TestUserTokenMethods:
         assert user.get_github_token() == plaintext
 
     @pytest.mark.asyncio
+    async def test_migrate_real_shaped_plaintext_token(self):
+        """A real 40-char ghp_ token (which looks base64-ish) must be encrypted."""
+        from models.user import User
+        import uuid
+        plaintext = "ghp_" + "A" * 36  # exact GitHub classic token shape
+        user = User(
+            id=str(uuid.uuid4()),
+            github_id=12345,
+            github_login="testuser",
+            github_access_token=plaintext,
+        )
+        user.migrate_github_token()
+        assert user.github_access_token != plaintext
+        assert user.get_github_token() == plaintext
+
+    def test_migrate_token_never_double_encrypts_key_rotated_ciphertext(self):
+        """Ciphertext that the current key cannot decrypt must not be re-encrypted."""
+        from core.crypto import encrypt_token, migrate_token
+        import base64, os
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+        other_key = os.urandom(32)
+        aesgcm = AESGCM(other_key)
+        nonce = os.urandom(12)
+        combined = nonce + aesgcm.encrypt(nonce, b"secret-token", None)
+        stale_ciphertext = base64.b64encode(combined).decode("ascii")
+
+        assert stale_ciphertext != encrypt_token("x")
+        migrated = migrate_token(stale_ciphertext)
+        assert migrated == ""  # never double-encrypted
+
+    def test_startup_migrates_legacy_tokens(self):
+        """main.py must run the legacy plaintext→encrypted migration at startup."""
+        import pathlib
+        main_path = pathlib.Path(__file__).resolve().parent.parent / "main.py"
+        content = main_path.read_text(encoding="utf-8")
+        assert "_migrate_legacy_github_tokens" in content
+        assert "migrate_token(user.github_access_token)" in content
+        assert "await _migrate_legacy_github_tokens()" in content
+
+    @pytest.mark.asyncio
     async def test_empty_token_handling(self):
         """Empty/None token should return empty string."""
         from models.user import User
