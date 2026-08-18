@@ -30,14 +30,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 by clearing token
+// Handle 401 by dispatching a custom event — never reload the page directly.
+// Using a CustomEvent lets the React WorkspaceProvider catch it and call signOut()
+// cleanly without destroying the entire SPA (which caused the Vercel flash/reload).
 api.interceptors.response.use(
   (r) => r,
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('raksha_token');
       localStorage.removeItem('raksha_user');
-      window.location.href = '/';
+      // Signal React to handle the logout; avoids a full page reload
+      window.dispatchEvent(new CustomEvent('raksha:401'));
     }
     return Promise.reject(err);
   }

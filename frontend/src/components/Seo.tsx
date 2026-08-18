@@ -31,6 +31,9 @@ function cleanCanonical(path: string): string {
   return path;
 }
 
+/** Stable empty array — avoids creating a new reference on every render when jsonLd is omitted */
+const EMPTY_JSON_LD: Record<string, unknown>[] = [];
+
 export default function Seo({
   title,
   description,
@@ -38,7 +41,7 @@ export default function Seo({
   imagePath = '/logo.png',
   noIndex = false,
   type = 'website',
-  jsonLd = [],
+  jsonLd = EMPTY_JSON_LD,
 }: SeoProps) {
   const { pathname } = useLocation();
 

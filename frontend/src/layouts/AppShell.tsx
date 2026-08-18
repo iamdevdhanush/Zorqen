@@ -18,18 +18,19 @@ function AppShellInner() {
   const handleCloseCmd = useCallback(() => setCmdOpen(false), []);
   const handleCloseCopilot = useCallback(() => setCopilotOpen(false), [setCopilotOpen]);
 
-  /* Global keyboard shortcut: Cmd/Ctrl+K → command palette */
+  /* Global keyboard shortcut: Cmd/Ctrl+K → command palette.
+     cmdOpen is read via functional updater / state setter — never needed in deps. */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setCmdOpen((o) => !o);
       }
-      if (e.key === 'Escape' && cmdOpen) setCmdOpen(false);
+      if (e.key === 'Escape') setCmdOpen(false);
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [cmdOpen]);
+  }, []); // no deps — stable for the lifetime of AppShell
 
   const runningStep = currentAssessment?.steps.find((s) => s.status === 'running');
 

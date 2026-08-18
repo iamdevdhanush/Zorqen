@@ -73,6 +73,18 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const assessmentsReqIdRef = useRef(0);
   const initialRestoredRef = useRef(false);
 
+  // Stable ref to currentRepo — allows loadRepo to read latest value without being in deps
+  const currentRepoRef = useRef<RepoMeta | null>(null);
+  currentRepoRef.current = currentRepo;
+
+  // Stable ref to repos — allows selectRepo to read latest value without being in deps
+  const reposRef = useRef<RepoMeta[]>([]);
+  reposRef.current = repos;
+
+  // Stable ref to branch — allows startAssessment to read latest value without being in deps
+  const branchRef = useRef<string>('main');
+  branchRef.current = branch;
+
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
       clearInterval(pollTimerRef.current);
@@ -116,28 +128,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       });
       if (runs[0]?.commit) setCommit(runs[0].commit);
     } catch {
-      if (reqId === assessmentsReqIdRef.current) {
-        // Do not erase existing valid data on transient network errors
-      }
+      // Do not erase existing valid data on transient network errors
     }
   }, []);
 
+  // loadRepo: uses currentRepoRef so it never needs currentRepo in its deps
+  // This prevents loadRepo from being recreated on every currentRepo state change
   const loadRepo = useCallback(
     (repo: RepoMeta) => {
       const dbId = repo.rakshaId || repo.id;
+      const prev = currentRepoRef.current;
 
       // Check if this is the same repository already loaded in workspace
-      const isSameRepo = currentRepo && (
-        currentRepo.id === repo.id ||
-        String(currentRepo.id) === String(repo.id) ||
-        (repo.rakshaId && currentRepo.rakshaId === repo.rakshaId) ||
-        (repo.rakshaId && currentRepo.id === repo.rakshaId) ||
-        (currentRepo.rakshaId && currentRepo.rakshaId === repo.id)
+      const isSameRepo = prev && (
+        prev.id === repo.id ||
+        String(prev.id) === String(repo.id) ||
+        (repo.rakshaId && prev.rakshaId === repo.rakshaId) ||
+        (repo.rakshaId && prev.id === repo.rakshaId) ||
+        (prev.rakshaId && prev.rakshaId === repo.id)
       );
 
       if (isSameRepo) {
         // Preserve existing assessment/polling state when updating metadata
-        setCurrentRepo((prev) => (prev ? { ...prev, ...repo } : repo));
+        setCurrentRepo((p) => (p ? { ...p, ...repo } : repo));
         if (repo.defaultBranch) setBranch(repo.defaultBranch);
         if (repo.commit) setCommit(repo.commit);
         if (dbId) void loadAssessments(dbId);
@@ -155,15 +168,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setCurrentAssessment(null);
       }
     },
-    [currentRepo, loadAssessments, stopPolling]
+    [loadAssessments, stopPolling] // currentRepo removed — read via currentRepoRef
   );
 
+  // selectRepo: uses reposRef so it never needs repos in its deps
   const selectRepo = useCallback(
     (id: string) => {
-      const repo = repos.find((r) => r.id === id);
+      const repo = reposRef.current.find((r) => r.id === id);
       if (repo) loadRepo(repo);
     },
-    [repos, loadRepo]
+    [loadRepo]
   );
 
   const pushNotification = useCallback((line: LogLine) => {
@@ -208,13 +222,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     [pushNotification, stopPolling]
   );
 
-  /* Start a real assessment run against the current repository */
+  // startAssessment: uses branchRef and currentRepoRef so it never needs them in deps
   const startAssessment = useCallback(async () => {
-    if (!currentRepo) return;
+    const repo = currentRepoRef.current;
+    if (!repo) return;
     stopPolling();
     try {
-      const dbId = currentRepo.rakshaId || currentRepo.id;
-      const { data } = await apiStartAssessment({ repository_id: dbId, branch });
+      const dbId = repo.rakshaId || repo.id;
+      const { data } = await apiStartAssessment({ repository_id: dbId, branch: branchRef.current });
       const run = data as AssessmentRun;
       setAssessments((prev) => [run, ...prev]);
       setCurrentAssessment(run);
@@ -229,7 +244,56 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         tone: 'err',
       });
     }
-  }, [currentRepo, branch, pollAssessment, pushNotification, stopPolling]);
+  }, [pollAssessment, pushNotification, stopPolling]); // currentRepo & branch removed — read via refs
+
+  const markFinding = useCallback((findingId: string, status: FindingStatus) => {
+    setCurrentAssessment((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        findings: prev.findings.map((f) => (f.id === findingId ? { ...f, status } : f)),
+      };
+    });
+  }, []);
+
+  // Stable action callbacks — extracted so they don't recreate inline inside useMemo
+  const signInGithub = useCallback((u: AuthUser) => {
+    setUser(u);
+    setGithubConnected(true);
+    localStorage.setItem('raksha_user', JSON.stringify(u));
+    setRepos([]);
+    void refreshRepos();
+  }, [refreshRepos]);
+
+  const signOut = useCallback(() => {
+    stopPolling();
+    localStorage.removeItem('raksha_token');
+    localStorage.removeItem('raksha_user');
+    localStorage.removeItem('raksha_repo');
+    setUser(null);
+    setGithubConnected(false);
+    setCurrentRepo(null);
+    setCurrentAssessment(null);
+    setAssessments([]);
+    setRepos([]);
+    setReposError(null);
+    setNotifications([]);
+  }, [stopPolling]);
+
+  const connectGithub = useCallback(() => setGithubModalOpen(true), []);
+
+  const proceedGithubAuth = useCallback(() => {
+    window.location.href = `${getApiBase()}/auth/github`;
+  }, []);
+
+  const disconnectGithub = useCallback(() => {
+    stopPolling();
+    setGithubConnected(false);
+    setCurrentRepo(null);
+    setCurrentAssessment(null);
+    setAssessments([]);
+    setRepos([]);
+  }, [stopPolling]);
 
   /* Derive activity from the current assessment's logs */
   useEffect(() => {
@@ -245,7 +309,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setActivity(items);
   }, [currentAssessment]);
 
-  /* Restore session: user + repositories + previously selected repo */
+  /* Restore session: user + repositories + previously selected repo.
+     Uses empty deps + initialRestoredRef guard so it runs exactly once
+     on mount regardless of React StrictMode double-invocation. */
   useEffect(() => {
     if (initialRestoredRef.current) return;
     initialRestoredRef.current = true;
@@ -273,7 +339,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         /* ignore malformed session */
       }
     }
-  }, [refreshRepos, loadAssessments]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally empty — session restore runs once on mount only
 
   /* Persist the selected repository so a reload restores the workspace */
   useEffect(() => {
@@ -285,15 +352,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const markFinding = useCallback((findingId: string, status: FindingStatus) => {
-    setCurrentAssessment((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        findings: prev.findings.map((f) => (f.id === findingId ? { ...f, status } : f)),
-      };
-    });
-  }, []);
+  /* Listen for 401 events dispatched by the Axios interceptor.
+     The interceptor no longer does window.location.href = '/' (which caused full reloads).
+     Instead it fires this event so the WorkspaceProvider can call signOut() in React. */
+  useEffect(() => {
+    const handle = () => {
+      stopPolling();
+      setUser(null);
+      setGithubConnected(false);
+      setCurrentRepo(null);
+      setCurrentAssessment(null);
+      setAssessments([]);
+      setRepos([]);
+      setReposError(null);
+      setNotifications([]);
+    };
+    window.addEventListener('raksha:401', handle);
+    return () => window.removeEventListener('raksha:401', handle);
+  }, [stopPolling]);
 
   const uiValue = useMemo<WorkspaceUIState>(
     () => ({
@@ -319,46 +395,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       currentAssessment,
       activity,
       notifications,
-      signInGithub: (u: AuthUser) => {
-        setUser(u);
-        setGithubConnected(true);
-        localStorage.setItem('raksha_user', JSON.stringify(u));
-        setRepos([]);
-        void refreshRepos();
-      },
-      signOut: () => {
-        stopPolling();
-        localStorage.removeItem('raksha_token');
-        localStorage.removeItem('raksha_user');
-        localStorage.removeItem('raksha_repo');
-        setUser(null);
-        setGithubConnected(false);
-        setCurrentRepo(null);
-        setCurrentAssessment(null);
-        setAssessments([]);
-        setRepos([]);
-        setReposError(null);
-        setNotifications([]);
-      },
-      connectGithub: () => setGithubModalOpen(true),
-      proceedGithubAuth: () => {
-        window.location.href = `${getApiBase()}/auth/github`;
-      },
-      disconnectGithub: () => {
-        stopPolling();
-        setGithubConnected(false);
-        setCurrentRepo(null);
-        setCurrentAssessment(null);
-        setAssessments([]);
-        setRepos([]);
-      },
+      signInGithub,
+      signOut,
+      connectGithub,
+      proceedGithubAuth,
+      disconnectGithub,
       refreshRepos,
       selectRepo,
       loadRepo,
       startAssessment,
       markFinding,
     }),
-    [user, githubConnected, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding, stopPolling]
+    // stopPolling intentionally removed — it is not part of the public interface
+    // and including it caused dataValue to rebuild on every poll stop/start
+    [user, githubConnected, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, signInGithub, signOut, connectGithub, proceedGithubAuth, disconnectGithub, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding]
   );
 
   return (
