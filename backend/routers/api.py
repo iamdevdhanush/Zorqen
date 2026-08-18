@@ -17,7 +17,10 @@ from agents.orchestrator import run_assessment
 from agents.remediation_agent import generate_fix
 from core.database import get_db
 from github.client import GitHubClient
-from models.assessment import Assessment
+# Assessment and AssessmentStatus must both be imported — AssessmentStatus is used
+# in _latest_assessment_scores() and was previously missing, causing NameError on
+# every /repositories/github call.
+from models.assessment import Assessment, AssessmentStatus
 from models.finding import Finding, FindingStatus
 from models.remediation import Remediation, RemediationStatus
 from models.repository import Repository

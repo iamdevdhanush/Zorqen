@@ -140,9 +140,12 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 
 # ── Middleware ───────────────────────────────────────────────────────────────
 
+# CORS: never mix ["*"] with allow_credentials=True (browsers reject it).
+# In development, cors_origins includes http://localhost:5173 and :3000.
+# In production, set CORS_ORIGINS env var to the Vercel origin.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins + ["*"] if settings.is_development else settings.cors_origins,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -178,21 +181,113 @@ app.include_router(overview_router, prefix="/api")
 app.include_router(activity_router, prefix="/api")
 
 
-# ── Health Check ─────────────────────────────────────────────────────────────
+# ── Health Check ────────────────────────────────────────────────────────────────────────────
+
+
+async def _probe_database() -> dict:
+    """Attempt a real DB SELECT 1 probe and return status + latency."""
+    import time
+    from core.database import AsyncSessionLocal
+    from sqlalchemy import text
+    t0 = time.perf_counter()
+    try:
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        latency_ms = round((time.perf_counter() - t0) * 1000, 1)
+        return {"status": "ok", "latency_ms": latency_ms}
+    except Exception as exc:
+        log.warning("health_db_probe_failed", error=type(exc).__name__)
+        return {"status": "degraded", "error": type(exc).__name__}
+
 
 @app.get("/api/health")
 @app.get("/health")
 async def health():
+    """Structured health check that probes real dependencies.
+
+    Returns 200 when all required systems are operational; 503 when the
+    database is degraded (database is required for all API calls).  GitHub
+    and Grok misconfigurations are reported as “degraded” but do not block
+    the health response with 503 on their own — the UI surfaces the
+    limitation to the user.  Secrets are never included in this response.
+    """
+    from fastapi.responses import JSONResponse
+    db_status = await _probe_database()
+
+    if settings.github_configured:
+        github_status: dict = {"status": "ok", "configured": True}
+    else:
+        github_status = {
+            "status": "degraded",
+            "configured": False,
+            "message": "GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET not set",
+        }
+
+    if settings.grok_configured:
+        grok_status: dict = {"status": "ok", "configured": True, "provider": "xai", "model": settings.grok_model}
+    elif settings.groq_configured:
+        grok_status = {"status": "ok", "configured": True, "provider": "groq", "model": settings.groq_model}
+    else:
+        grok_status = {
+            "status": "degraded",
+            "configured": False,
+            "message": "Neither GROK_API_KEY nor GROQ_API_KEY is set — ASK RAKSHA unavailable",
+        }
+
+    # Database failure is fatal; everything else is degraded but functional.
+    overall = "ok" if db_status["status"] == "ok" else "degraded"
+
+    return JSONResponse(
+        status_code=200 if overall == "ok" else 503,
+        content={
+            "status": overall,
+            "app": settings.app_name,
+            "version": "1.1.0",
+            "environment": settings.app_env,
+            "database": db_status,
+            "github": github_status,
+            "grok": grok_status,
+        },
+    )
+
+
+@app.get("/api/health/db")
+@app.get("/health/db")
+async def health_db():
+    """Database-only health probe."""
+    from fastapi.responses import JSONResponse
+    result = await _probe_database()
+    return JSONResponse(
+        status_code=200 if result["status"] == "ok" else 503,
+        content=result,
+    )
+
+
+@app.get("/api/health/github")
+@app.get("/health/github")
+async def health_github():
+    """GitHub configuration health (does not make a live API call)."""
+    if settings.github_configured:
+        return {"status": "ok", "configured": True}
     return {
-        "status": "healthy",
-        "app": settings.app_name,
-        "version": "1.1.0",
-        "github_configured": settings.github_configured,
-        "grok_configured": settings.grok_configured,
-        "grok_model": settings.grok_model,
-        "ai_provider": settings.ai_provider,
-        "ai_configured": settings.ai_configured,
-        "database": "postgres" if settings.is_postgres else "sqlite",
+        "status": "degraded",
+        "configured": False,
+        "message": "GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set",
+    }
+
+
+@app.get("/api/health/grok")
+@app.get("/health/grok")
+async def health_grok():
+    """Grok/Groq configuration health check."""
+    if settings.grok_configured:
+        return {"status": "ok", "configured": True, "provider": "xai", "model": settings.grok_model}
+    if settings.groq_configured:
+        return {"status": "ok", "configured": True, "provider": "groq", "model": settings.groq_model}
+    return {
+        "status": "degraded",
+        "configured": False,
+        "message": "Set GROK_API_KEY (xAI) or GROQ_API_KEY (Groq) to enable ASK RAKSHA",
     }
 
 

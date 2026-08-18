@@ -150,8 +150,13 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
         # Determine GitHub token
         gh_token = access_token or (user.github_access_token if user else None)
 
+        # Transition PENDING → RUNNING immediately so the UI shows the correct state.
+        # This is the canonical place where RUNNING begins — not at creation time.
+        await _update_assessment(assessment_id, "index", 5, status=AssessmentStatus.RUNNING,
+                                 started_at=utcnow())
+
         # ── Step 1: Repository Indexed ──────────────────────────────────────
-        await _update_assessment(assessment_id, "repository_indexed", 10, started_at=utcnow())
+        await _update_assessment(assessment_id, "repository_indexed", 10)
 
         file_tree: List[str] = []
         file_contents: Dict[str, str] = {}

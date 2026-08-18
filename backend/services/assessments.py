@@ -55,15 +55,18 @@ async def create_assessment(
     user: Optional[User] = None,
 ) -> Assessment:
     """Create a new RUNNING assessment with the next run number."""
+    # Start as PENDING: the orchestrator transitions to RUNNING at the very
+    # beginning of run_assessment(). This prevents assessments from being
+    # stuck in RUNNING forever if the background task never starts.
     assessment = Assessment(
         repository_id=repository.id,
         branch=branch or repository.default_branch or "main",
         commit_sha=commit_sha,
-        status=AssessmentStatus.RUNNING,
+        status=AssessmentStatus.PENDING,
         run_number=await get_next_run_number(db),
         pipeline_logs=[{
             "step": "index",
-            "status": "running",
+            "status": "pending",
             "timestamp": None,
             "source": "raksha",
             "text": f"assessment queued · {repository.name}@{branch or 'main'}",

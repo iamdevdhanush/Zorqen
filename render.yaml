@@ -16,9 +16,34 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
-      - key: DEMO_MODE_ENABLED
-        value: "true"
-      # Set this to your PostgreSQL Internal Database URL (create via
-      # New -> PostgreSQL). The app normalizes postgres:// -> postgresql+asyncpg://
+      # REQUIRED: Set DATABASE_URL to your Render PostgreSQL Internal URL.
+      # Format: postgresql+asyncpg://USERNAME:PASSWORD@HOST:5432/DATABASE
+      # (Render's postgres:// URLs are normalized automatically)
       - key: DATABASE_URL
         sync: false
+      # REQUIRED: GitHub OAuth App credentials (from github.com/settings/applications/new)
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      # REQUIRED: Set to your Render backend URL for the OAuth callback
+      # e.g. https://raksha-api.onrender.com/api/auth/github/callback
+      - key: GITHUB_REDIRECT_URI
+        sync: false
+      # REQUIRED: Set to your Vercel frontend URL to allow CORS
+      # e.g. ["https://raksha-ai-pink.vercel.app"]
+      - key: CORS_ORIGINS
+        sync: false
+      # REQUIRED: Set to your Vercel frontend URL
+      # e.g. https://raksha-ai-pink.vercel.app
+      - key: FRONTEND_URL
+        sync: false
+      # OPTIONAL: Groq API key for LLM-powered security reasoning and ASK RAKSHA
+      - key: GROQ_API_KEY
+        sync: false
+      # OPTIONAL: xAI Grok API key for ASK RAKSHA (takes priority over Groq)
+      - key: GROK_API_KEY
+        sync: false
+      # OPTIONAL: Grok model name (default: grok-4-latest)
+      - key: GROK_MODEL
+        value: grok-4-latest
