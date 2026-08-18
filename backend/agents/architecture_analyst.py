@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 from typing import Dict, List, Any, Optional
-from agents.llm_client import llm
+from agents.llm_client import LLM_EXTERNAL_ERRORS, llm
 
 
 FRAMEWORK_PATTERNS = {
@@ -165,7 +165,7 @@ async def analyze_architecture(
         arch_map["ai_summary"] = result.get("summary", "")
         arch_map["primary_language"] = result.get("primary_language", "")
         arch_map["security_notes"] = result.get("security_notes", [])
-    except Exception:
+    except LLM_EXTERNAL_ERRORS:
         arch_map["ai_summary"] = f"Repository using: {', '.join(tech_list) or 'unknown stack'}"
         arch_map["primary_language"] = tech_list[0] if tech_list else "Unknown"
         arch_map["security_notes"] = []

@@ -189,7 +189,7 @@ def finding_contract(finding: Finding, validation: Optional[ValidationResult] = 
 
 
 def repo_meta(repo: Repository) -> Dict[str, Any]:
-    commit = (repo.head_commit or "main")[:7]
+    commit = (repo.head_commit or "")[:7]
     return {
         "id": repo.id,
         "name": repo.name,
@@ -303,7 +303,7 @@ def run_contract(assessment: Assessment, repository: Optional[Repository] = None
         "id": _run_id(assessment),
         "repoId": assessment.repository_id,
         "repo": repo.name if repo else "unknown",
-        "commit": (assessment.commit_sha or (repo.head_commit if repo else None) or "main")[:7],
+        "commit": (assessment.commit_sha or (repo.head_commit if repo else None) or "")[:7],
         "branch": assessment.branch or "main",
         "status": _run_status(assessment),
         "steps": _steps_from_pipeline_logs(assessment),

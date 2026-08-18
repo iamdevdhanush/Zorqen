@@ -24,18 +24,24 @@ class _LenientEnvSource(EnvSettingsSource):
     """
 
     def prepare_field_value(self, field_name, field, value, value_is_complex):
-        if value_is_complex:
-            return value
-        return self.decode_basic(value, field.metadata)
+        is_complex, _ = self._field_is_complex(field)
+        if is_complex or value_is_complex:
+            if value is None:
+                return self.explode_env_vars(field_name, field, self.env_vars) or None
+            return value  # raw string → field validator parses JSON or comma list
+        return value
 
 
 class _LenientDotEnvSource(DotEnvSettingsSource):
     """Same lenient decoding for values loaded from the .env file."""
 
     def prepare_field_value(self, field_name, field, value, value_is_complex):
-        if value_is_complex:
-            return value
-        return self.decode_basic(value, field.metadata)
+        is_complex, _ = self._field_is_complex(field)
+        if is_complex or value_is_complex:
+            if value is None:
+                return self.explode_env_vars(field_name, field, self.env_vars) or None
+            return value  # raw string → field validator parses JSON or comma list
+        return value
 
 # Documentation placeholders that must never be used as a real database in
 # production. Render/Koyeb/Heroku URLs look like

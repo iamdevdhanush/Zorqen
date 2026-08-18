@@ -12,7 +12,8 @@ The model is configured via GROQ_MODEL env var (default: openai/gpt-oss-120b).
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple, Type
+import httpx
 from groq import AsyncGroq
 from core.config import settings
 import structlog
@@ -26,6 +27,17 @@ class ModelNotFoundError(RuntimeError):
     def __init__(self, model: str):
         super().__init__(f"Groq model '{model}' is not available. Check GROQ_MODEL at https://console.groq.com/docs/models")
         self.model = model
+
+
+# The known failure modes of an external LLM call. Agents catch exactly these
+# to degrade gracefully; programming errors (TypeError, KeyError, ...) are
+# never masked as "AI unavailable".
+LLM_EXTERNAL_ERRORS: Tuple[Type[Exception], ...] = (
+    ModelNotFoundError,
+    RuntimeError,  # GROQ_API_KEY not configured
+    httpx.HTTPError,  # network / transport / timeout
+    ValueError,  # JSON decoding of the model response
+)
 
 
 class LLMClient:

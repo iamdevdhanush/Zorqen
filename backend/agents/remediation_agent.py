@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import difflib
 from typing import Dict, Any, Optional
-from agents.llm_client import llm
+from agents.llm_client import LLM_EXTERNAL_ERRORS, llm
 import structlog
 
 log = structlog.get_logger()
@@ -88,7 +88,7 @@ Generate a minimal, safe fix. Return JSON."""
             "success": bool(fixed_code),
         }
 
-    except Exception as e:
+    except LLM_EXTERNAL_ERRORS as e:
         log.error("Remediation generation failed", error=str(e))
         return {
             "code_before": code_before,

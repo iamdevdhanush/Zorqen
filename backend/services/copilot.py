@@ -313,7 +313,7 @@ async def build_rakasha_context(
             "low": assessment.low_count,
             "info": assessment.info_count,
             "branch": assessment.branch or "main",
-            "commit": (assessment.commit_sha or (repo.head_commit if repo else None) or "main")[:7],
+            "commit": (assessment.commit_sha or (repo.head_commit if repo else None) or "")[:7],
         }
         arch = assessment.architecture_map or {}
         if arch.get("ai_summary"):

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import httpx
-from typing import Optional
+from typing import List, Optional
 from core.config import settings
 
 
@@ -11,6 +11,9 @@ GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITHUB_API_USER = "https://api.github.com/user"
 
 GITHUB_SCOPES = "repo read:user user:email"
+
+# Scopes the application requires to function (private repo access + profile).
+REQUIRED_GITHUB_SCOPES = {"repo", "read:user", "user:email"}
 
 
 def get_oauth_redirect_url(state: str) -> str:
@@ -57,3 +60,29 @@ async def get_github_user(access_token: str) -> dict:
         )
         resp.raise_for_status()
         return resp.json()
+
+
+async def get_token_scopes(access_token: str) -> List[str]:
+    """Return the OAuth scopes granted to this token.
+
+    GitHub reports granted scopes via the X-OAuth-Scopes response header.
+    Returns an empty list when the header is absent (e.g. fine-grained
+    tokens, which cannot be scope-checked).
+    """
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            GITHUB_API_USER,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/vnd.github+json",
+            },
+            timeout=15,
+        )
+        resp.raise_for_status()
+        header = resp.headers.get("x-oauth-scopes", "")
+        return [s.strip() for s in header.split(",") if s.strip()]
+
+
+def missing_required_scopes(granted: List[str]) -> List[str]:
+    """Return the required scopes missing from the granted scope list."""
+    return sorted(REQUIRED_GITHUB_SCOPES - set(granted))

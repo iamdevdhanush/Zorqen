@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from typing import Dict, Any, List, Optional
-from agents.llm_client import llm
+from agents.llm_client import LLM_EXTERNAL_ERRORS, llm
 import structlog
 
 log = structlog.get_logger()
@@ -84,7 +84,7 @@ Reason about this finding and return your analysis as JSON."""
             max_tokens=1024,
         )
         return result
-    except Exception as e:
+    except LLM_EXTERNAL_ERRORS as e:
         log.error("Security reasoning failed", error=str(e))
         # Return a safe fallback — preserve the scanner's confidence, do NOT
         # fabricate AI confidence.  confidence_pct=0 means "not AI-evaluated".

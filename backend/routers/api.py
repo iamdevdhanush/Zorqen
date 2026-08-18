@@ -11,11 +11,12 @@ from typing import Optional
 from core.config import settings
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from agents.orchestrator import run_assessment
+from agents.llm_client import LLM_EXTERNAL_ERRORS
 from agents.remediation_agent import generate_fix
 from core.database import get_db
 from github.client import GitHubClient
@@ -119,7 +120,10 @@ async def list_github_repos(
         raise HTTPException(status_code=status, detail=detail)
     except Exception as e:
         log.warning("[GITHUB] unexpected_error", error=str(e))
-        raise HTTPException(status_code=502, detail=f"GitHub API error: {str(e)}")
+        raise HTTPException(
+            status_code=502,
+            detail="GitHub API unavailable. Check your connection and try again.",
+        )
 
 
 class ConnectRepoRequest(BaseModel):
@@ -522,7 +526,22 @@ async def get_branches(repo_id: str, current_user: User = Depends(get_current_us
     if not current_user.get_github_token():
         return {"branches": [{"name": repo.default_branch}]}
     client = GitHubClient(current_user.get_github_token())
-    return {"branches": await client.list_branches(repo.owner, repo.name)}
+    try:
+        branches = await client.list_branches(repo.owner, repo.name)
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        log.warning("[GITHUB] list_branches_failed", repo_id=repo_id, http_status=status)
+        raise HTTPException(
+            status_code=status,
+            detail=f"GitHub returned HTTP {status} listing branches.",
+        )
+    except httpx.HTTPError:
+        log.warning("[GITHUB] list_branches_unavailable", repo_id=repo_id)
+        raise HTTPException(
+            status_code=502,
+            detail="GitHub API unavailable. Check your connection and try again.",
+        )
+    return {"branches": branches}
 
 
 @repos_router.get("/{repo_id}/commits")
@@ -533,7 +552,22 @@ async def get_commits(repo_id: str, branch: str = "main",
     if not current_user.get_github_token():
         return {"commits": []}
     client = GitHubClient(current_user.get_github_token())
-    return {"commits": await client.list_commits(repo.owner, repo.name, branch)}
+    try:
+        commits = await client.list_commits(repo.owner, repo.name, branch)
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        log.warning("[GITHUB] list_commits_failed", repo_id=repo_id, branch=branch, http_status=status)
+        raise HTTPException(
+            status_code=status,
+            detail=f"GitHub returned HTTP {status} listing commits for branch '{branch}'.",
+        )
+    except httpx.HTTPError:
+        log.warning("[GITHUB] list_commits_unavailable", repo_id=repo_id, branch=branch)
+        raise HTTPException(
+            status_code=502,
+            detail="GitHub API unavailable. Check your connection and try again.",
+        )
+    return {"commits": commits}
 
 
 async def _get_repo_or_404(repo_id: str, user_id: str, db: AsyncSession) -> Repository:
@@ -792,37 +826,71 @@ async def debug_github_repository(
 
 async def _latest_assessment_scores(db: AsyncSession, user: User) -> dict:
     """Map full_name -> {score, findings_count} from the latest completed
-    assessment of each of the user's connected repositories."""
+    assessment of each of the user's connected repositories.
+
+    Batched (3 queries total) — one per repository + one per assessment
+    would be N+1 against the database.
+    """
     result = await db.execute(
         select(Repository).where(Repository.user_id == user.id)
     )
     repos = result.scalars().all()
+    if not repos:
+        return {}
+    repo_ids = [r.id for r in repos]
+
+    # One query: latest completed assessment per repository (window function).
+    ranked = (
+        select(
+            Assessment.id,
+            func.row_number().over(
+                partition_by=Assessment.repository_id,
+                order_by=desc(Assessment.created_at),
+            ).label("rn"),
+        )
+        .where(
+            Assessment.repository_id.in_(repo_ids),
+            Assessment.status == AssessmentStatus.COMPLETED,
+        )
+        .subquery()
+    )
+    latest = await db.execute(
+        select(
+            Assessment.id,
+            Assessment.repository_id,
+            Assessment.security_score,
+        ).join(ranked, ranked.c.id == Assessment.id)
+        .where(ranked.c.rn == 1)
+    )
+    latest_by_repo = {
+        row.repository_id: row
+        for row in latest.all()
+    }
+
+    # One query: finding counts for all of those assessments.
+    if latest_by_repo:
+        count_rows = await db.execute(
+            select(Finding.assessment_id, func.count(Finding.id))
+            .where(
+                Finding.assessment_id.in_([row.id for row in latest_by_repo.values()]),
+                Finding.status.notin_(["dismissed", "false_positive"]),
+            )
+            .group_by(Finding.assessment_id)
+        )
+        counts = dict(count_rows.all())
+    else:
+        counts = {}
+
     by_full_name: dict = {}
     for repo in repos:
         if not repo.full_name:
             continue
-        run = await db.execute(
-            select(Assessment)
-            .where(
-                Assessment.repository_id == repo.id,
-                Assessment.status == AssessmentStatus.COMPLETED,
-            )
-            .order_by(desc(Assessment.created_at))
-            .limit(1)
-        )
-        assessment = run.scalar_one_or_none()
-        if assessment is None:
+        latest_row = latest_by_repo.get(repo.id)
+        if latest_row is None:
             continue
-        findings_total = await db.execute(
-            select(Finding)
-            .where(
-                Finding.assessment_id == assessment.id,
-                Finding.status.notin_(["dismissed", "false_positive"]),
-            )
-        )
         by_full_name[repo.full_name] = {
-            "score": assessment.security_score,
-            "findings_count": len(findings_total.scalars().all()),
+            "score": latest_row.security_score,
+            "findings_count": counts.get(latest_row.id, 0),
         }
     return by_full_name
 
@@ -1023,8 +1091,12 @@ async def generate_finding_fix(
             root_cause=finding.root_cause or "",
             cwe_id=finding.cwe_id,
         )
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"AI fix generation unavailable: {str(e)}")
+    except LLM_EXTERNAL_ERRORS:
+        log.warning("[RAKSHA] fix_generation_unavailable", finding_ref=finding_ref)
+        raise HTTPException(
+            status_code=503,
+            detail="AI fix generation is temporarily unavailable. Please try again.",
+        )
 
     if existing:
         existing.code_before = fix["code_before"]

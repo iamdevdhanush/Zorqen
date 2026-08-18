@@ -13,7 +13,13 @@ from sqlalchemy import select
 from core.config import settings
 from core.database import get_db
 from core.security import create_access_token, decode_access_token
-from github.oauth import get_oauth_redirect_url, exchange_code_for_token, get_github_user
+from github.oauth import (
+    get_oauth_redirect_url,
+    exchange_code_for_token,
+    get_github_user,
+    get_token_scopes,
+    missing_required_scopes,
+)
 from models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -85,6 +91,20 @@ async def github_callback(
             return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?error=token_exchange_failed")
 
         github_user = await get_github_user(access_token)
+
+        # Fail fast when the token was granted with fewer scopes than the
+        # application requires — otherwise private-repo scanning fails later
+        # with cryptic GitHub 403s mid-assessment.
+        granted_scopes = await get_token_scopes(access_token)
+        if granted_scopes:  # only enforceable when GitHub reports scopes
+            missing = missing_required_scopes(granted_scopes)
+            if missing:
+                return RedirectResponse(
+                    url=(
+                        f"{settings.frontend_url}/auth/callback"
+                        f"?error=insufficient_scope&missing={','.join(missing)}"
+                    )
+                )
     except Exception as e:
         return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?error=github_api_error")
 

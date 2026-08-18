@@ -17,7 +17,7 @@ from sqlalchemy import select
 from core.config import settings
 from core.database import AsyncSessionLocal
 from models.assessment import Assessment, AssessmentStatus
-from models.finding import Finding, Severity, Confidence, FindingStatus
+from models.finding import Finding, FindingStatus
 from models.repository import Repository
 from models.user import User
 from agents.architecture_analyst import analyze_architecture
@@ -30,14 +30,6 @@ from security.custom_checks import scan_files as custom_scan
 from github.client import GitHubClient
 
 log = structlog.get_logger()
-
-SEVERITY_WEIGHTS = {
-    "critical": 25,
-    "high": 10,
-    "medium": 5,
-    "low": 2,
-    "info": 0,
-}
 
 IMPORTANT_EXTENSIONS = {
     ".py", ".js", ".ts", ".jsx", ".tsx", ".go", ".java", ".rb", ".php",
@@ -106,22 +98,11 @@ async def _update_assessment(
 
 def _calculate_security_score(findings: List[Finding]) -> float:
     """Score = 100 - weighted penalty for findings."""
-    penalty = 0
-    for finding in findings:
-        if finding.status == FindingStatus.FALSE_POSITIVE:
-            continue
-        weight = SEVERITY_WEIGHTS.get(finding.severity, 0)
-        # Reduce penalty for non-confirmed findings
-        conf_factor = {
-            "confirmed": 1.0,
-            "likely": 0.7,
-            "possible": 0.4,
-            "false_positive": 0.0,
-        }.get(finding.confidence, 0.5)
-        penalty += weight * conf_factor
-
-    score = max(0, min(100, 100 - penalty))
-    return round(score, 1)
+    from services.scoring import calculate_security_score
+    return calculate_security_score(
+        {"severity": f.severity, "confidence": f.confidence, "status": f.status.value}
+        for f in findings
+    )
 
 
 async def run_assessment(assessment_id: str, access_token: Optional[str] = None):
@@ -483,13 +464,15 @@ async def _save_findings(
             db.add(finding)
         await db.commit()
 
-    # Calculate score
-    total_penalty = sum(
-        SEVERITY_WEIGHTS.get(sev, 0) * count
-        for sev, count in counts.items()
-        if sev in SEVERITY_WEIGHTS
-    )
-    score = round(max(0, min(100, 100 - total_penalty)), 1)
+    # Calculate score via the canonical scoring service — the same one the
+    # API and overview use. Never maintain a local duplicate of the formula.
+    from services.scoring import calculate_security_score
+
+    scored_items = [
+        {"severity": f.severity, "confidence": f.confidence, "status": f.status.value}
+        for f in db_findings
+    ]
+    score = calculate_security_score(scored_items)
 
     return {
         "score": score,

@@ -347,6 +347,37 @@ class TestOAuthScopes:
         from github.oauth import GITHUB_SCOPES
         assert "read:user" in GITHUB_SCOPES
 
+    @pytest.mark.asyncio
+    async def test_token_scope_validation_returns_granted_scopes(self):
+        """get_token_scopes must parse the X-OAuth-Scopes header."""
+        from github.oauth import get_token_scopes
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        resp = MagicMock()
+        resp.headers = {"x-oauth-scopes": "repo, read:user, user:email, workflow"}
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=resp)
+            scopes = await get_token_scopes("tok")
+        assert "repo" in scopes
+        assert "read:user" in scopes
+        assert "user:email" in scopes
+
+    def test_missing_required_scopes_detected(self):
+        """missing_required_scopes must report missing scopes."""
+        from github.oauth import missing_required_scopes
+        assert missing_required_scopes(["repo", "read:user"]) == ["user:email"]
+        assert missing_required_scopes(["repo", "read:user", "user:email"]) == []
+        assert missing_required_scopes([]) == ["read:user", "repo", "user:email"]
+
+    def test_auth_callback_enforces_scopes(self):
+        """The OAuth callback must reject tokens with insufficient scopes."""
+        import pathlib
+        auth_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "auth.py"
+        content = auth_path.read_text()
+        assert "get_token_scopes(access_token)" in content
+        assert "missing_required_scopes(granted_scopes)" in content
+        assert "insufficient_scope" in content
+
 
 # ── Normalize Repo Contract Tests ─────────────────────────────────────────────
 
@@ -921,7 +952,7 @@ class TestProductionCORS:
             )
 
     def test_production_accepts_explicit_public_origin(self):
-        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        db = "postgresql+asyncpg://raksha_admin:realpass@db.example.com:5432/raksha"
         key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
         s = self._settings(
             APP_ENV="production", DATABASE_URL=db, ENCRYPTION_KEY=key,
@@ -934,3 +965,166 @@ class TestProductionCORS:
         from core.config import Settings
         s = Settings(_env_file=None)
         assert "http://localhost:5173" in s.cors_origins
+
+
+# ── N+1 Query Tests ─────────────────────────────────────────────────────────────
+
+class TestLatestAssessmentScores:
+    """Verify _latest_assessment_scores is batched, not N+1."""
+
+    def test_scores_uses_batched_queries(self):
+        """The function must not loop-query per repository (N+1)."""
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        fn = content.split("async def _latest_assessment_scores", 1)[1]
+        fn = fn.split("\n\n", 1)[0] if "\n\n" in fn else fn
+        full_fn = content.split("async def _latest_assessment_scores", 1)[1]
+        # One-shot windowed query for latest assessments...
+        assert "func.row_number().over(" in full_fn
+        assert "partition_by=Assessment.repository_id" in full_fn
+        # ...and a grouped count query instead of per-repo finding scans.
+        assert "func.count(Finding.id)" in full_fn
+        assert "group_by(Finding.assessment_id)" in full_fn
+        # No per-repo loop with an assessment query inside it.
+        assert "for repo in repos" in full_fn
+        assert "select(Assessment)" not in full_fn.split("ranked =")[0]
+
+    def test_scores_builds_grouped_counts(self):
+        """Finding counts must be aggregated in one query by assessment."""
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        full_fn = content.split("async def _latest_assessment_scores", 1)[1]
+        assert "Finding.assessment_id.in_(" in full_fn
+        assert "Finding.status.notin_([\"dismissed\", \"false_positive\"])" in full_fn
+
+
+# ── Agent LLM Error Handling ──────────────────────────────────────────────────
+
+class TestAgentLLMErrorHandling:
+    """Agents must degrade on external LLM failures, never mask bugs."""
+
+    def test_agents_narrow_llm_catches(self):
+        """Agents must catch only LLM_EXTERNAL_ERRORS around LLM calls."""
+        import pathlib
+        for name in ("security_reasoner", "architecture_analyst", "remediation_agent"):
+            p = pathlib.Path(__file__).resolve().parent.parent / "agents" / f"{name}.py"
+            content = p.read_text()
+            assert "LLM_EXTERNAL_ERRORS" in content
+            assert "except Exception" not in content
+
+    def test_llm_client_exports_external_error_tuple(self):
+        """llm_client must export the known external failure modes."""
+        from agents.llm_client import LLM_EXTERNAL_ERRORS
+        assert all(isinstance(e, type) for e in LLM_EXTERNAL_ERRORS)
+
+
+# ── Branches/Commits Endpoint Error Handling ──────────────────────────────────
+
+class TestBranchesCommitsErrorHandling:
+    """get_branches / get_commits must degrade gracefully on GitHub errors."""
+
+    def test_branches_endpoint_guards_github_errors(self):
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        branches = content.split('async def get_branches', 1)[1]
+        assert "except httpx.HTTPStatusError" in branches
+        assert "except httpx.HTTPError" in branches
+        assert 'detail="GitHub API unavailable. Check your connection and try again."' in branches
+
+    def test_commits_endpoint_guards_github_errors(self):
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        commits = content.split('async def get_commits', 1)[1]
+        assert "except httpx.HTTPStatusError" in commits
+        assert "except httpx.HTTPError" in commits
+
+    def test_repos_list_no_raw_error_leak(self):
+        """list_repositories must not leak raw exception text in API detail."""
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        assert "GitHub API error: {str(e)}" not in content
+
+
+# ── Orchestrator Scoring Consistency ──────────────────────────────────────────
+
+class TestOrchestratorScoringConsistency:
+    """The orchestrator must use the canonical scoring service."""
+
+    def test_save_findings_uses_canonical_scoring(self):
+        import pathlib
+        orch = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
+        content = orch.read_text()
+        save_fn = content.split("async def _save_findings", 1)[1]
+        assert "from services.scoring import calculate_security_score" in save_fn
+        assert "total_penalty" not in save_fn
+
+    def test_no_duplicate_weight_table(self):
+        import pathlib
+        orch = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
+        content = orch.read_text()
+        assert "SEVERITY_WEIGHTS = {" not in content
+
+    def test_orchestrator_score_matches_scoring_service(self):
+        """The orchestrator helper must produce identical scores to the service."""
+        import asyncio
+        from agents.orchestrator import _calculate_security_score
+        from services.scoring import calculate_security_score
+
+        findings = [
+            {"severity": "critical", "confidence": "likely", "status": "open"},
+            {"severity": "high", "confidence": "possible", "status": "open"},
+            {"severity": "medium", "confidence": "confirmed", "status": "dismissed"},
+            {"severity": "low", "confidence": "likely", "status": "open"},
+        ]
+        expected = calculate_security_score(findings)
+        assert expected == _calculate_security_score(
+            [type("F", (), {"severity": f["severity"], "confidence": f["confidence"],
+                            "status": type("S", (), {"value": f["status"]})()}) for f in findings]
+        )
+        # critical 25*0.7 + high 10*0.4 + low 2*0.7 = 22.9 → 77.1 (medium dismissed → 0)
+        assert expected == 100 - (25 * 0.7) - (10 * 0.4) - (2 * 0.7)
+
+
+# ── Migration Drift (is_demo) ────────────────────────────────────────────────
+
+class TestMigrationDrift:
+    """Models must not have is_demo columns; migrations must drop them."""
+
+    def test_models_have_no_is_demo(self):
+        import pathlib
+        for name in ("user", "repository", "assessment"):
+            p = pathlib.Path(__file__).resolve().parent.parent / "models" / f"{name}.py"
+            content = p.read_text()
+            assert "is_demo" not in content
+
+    def test_drop_is_demo_migration_exists(self):
+        import pathlib
+        versions = pathlib.Path(__file__).resolve().parent.parent / "alembic" / "versions"
+        migration = versions / "a2b3c4d5e6f7_drop_is_demo_columns.py"
+        content = migration.read_text()
+        assert "op.drop_column('assessments', 'is_demo')" in content
+        assert "op.drop_column('repositories', 'is_demo')" in content
+        assert "op.drop_column('users', 'is_demo')" in content
+        assert "down_revision: Union[str, None] = 'a1b2c3d4e5f6'" in content
+
+
+# ── Run Contract Commit Fallback ──────────────────────────────────────────────
+
+class TestRunContractCommit:
+    """The console must never show a fabricated commit hash."""
+
+    def test_no_fabricated_main_commit(self):
+        import pathlib
+        ser = pathlib.Path(__file__).resolve().parent.parent / "services" / "serializers.py"
+        content = ser.read_text()
+        assert '"commit": (assessment.commit_sha or (repo.head_commit if repo else None) or "")[:7],' in content
+        assert '(repo.head_commit or "")[:7]' in content
+        assert 'or "main")[:7]' not in content
+        copilot = pathlib.Path(__file__).resolve().parent.parent / "services" / "copilot.py"
+        copilot_content = copilot.read_text()
+        assert 'or "main")[:7]' not in copilot_content
