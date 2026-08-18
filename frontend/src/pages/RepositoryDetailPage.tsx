@@ -1,37 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { File, Folder, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { BackLink, EmptyState, PageHeader, Panel, SevBadge } from '../components/ui';
+import RepositoryTree from '../components/RepositoryTree';
 import { useWorkspace, useFindings } from '../store/WorkspaceContext';
 import { getRepoDetail } from '../services/api';
 import api from '../services/api';
 import type { RepoDetail, RepoMeta } from '../lib/types';
-
-function Tree({ paths, truncated }: { paths: string[]; truncated: boolean }) {
-  return (
-    <div className="mono text-[11.5px] leading-[19px] px-2 py-1 overflow-x-auto" style={{ background: 'var(--color-base)' }}>
-      {paths.map((p, i) => {
-        const isDir = p.endsWith('/');
-        const name = p.split('/').pop() || '/';
-        const depth = p.split('/').filter(Boolean).length - 1;
-        return (
-          <div key={`${p}-${i}`} style={{ paddingLeft: depth * 12 }} className="truncate">
-            {isDir ? (
-              <><Folder className="w-[11px] h-[11px] inline mr-1" style={{ color: 'var(--color-low)' }} /><span style={{ color: 'var(--color-ink-2)' }}>{name}/</span></>
-            ) : (
-              <><File className="w-[11px] h-[11px] inline mr-1" style={{ color: 'var(--color-ink-3)' }} /><span style={{ color: 'var(--color-ink)' }}>{name}</span></>
-            )}
-          </div>
-        );
-      })}
-      {truncated && (
-        <div className="mt-2 px-2 py-1.5 rounded border border-[#111111] text-[#666666] bg-[#FAFAFA]">
-          Tree truncated — showing the first {paths.length} paths from GitHub.
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function RepositoryDetailPage() {
   const { repoId } = useParams<{ repoId: string }>();
@@ -177,7 +152,12 @@ export default function RepositoryDetailPage() {
               Could not load repository tree — {detailError}
             </div>
           ) : detail && detail.treePaths.length > 0 ? (
-            <Tree paths={detail.treePaths} truncated={detail.treeTruncated} />
+            <RepositoryTree
+              paths={detail.treePaths}
+              truncated={detail.treeTruncated}
+              repoName={repo.name}
+              findings={findings}
+            />
           ) : (
             <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">
               {detail ? 'No files found in this repository tree.' : 'Run an assessment to populate the repository tree.'}
