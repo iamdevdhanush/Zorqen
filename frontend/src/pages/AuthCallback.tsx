@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMe } from '../services/api';
+import api from '../services/api';
 import { useWorkspace } from '../store/WorkspaceContext';
 
 export default function AuthCallback() {
@@ -9,29 +10,32 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
     const error = params.get('error');
 
     if (error) {
       navigate('/?auth=error', { replace: true });
       return;
     }
-    if (!token) {
-      navigate('/?auth=no_token', { replace: true });
-      return;
-    }
 
-    localStorage.setItem('raksha_token', token);
-
-    getMe()
+    // Retrieve JWT from secure HttpOnly cookie via backend endpoint
+    api.get('/auth/token')
       .then(({ data }) => {
-        localStorage.setItem('raksha_user', JSON.stringify(data));
-        signInGithub(data);
-        navigate('/', { replace: true });
+        const token = data.token;
+        localStorage.setItem('raksha_token', token);
+
+        getMe()
+          .then(({ data: userData }) => {
+            localStorage.setItem('raksha_user', JSON.stringify(userData));
+            signInGithub(userData);
+            navigate('/', { replace: true });
+          })
+          .catch(() => {
+            localStorage.removeItem('raksha_token');
+            navigate('/?auth=failed', { replace: true });
+          });
       })
       .catch(() => {
-        localStorage.removeItem('raksha_token');
-        navigate('/?auth=failed', { replace: true });
+        navigate('/?auth=no_token', { replace: true });
       });
   }, [navigate, signInGithub]);
 

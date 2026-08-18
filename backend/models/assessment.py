@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from sqlalchemy import String, DateTime, Boolean, Text, Integer, Float, ForeignKey, JSON
+from sqlalchemy import String, DateTime, Boolean, Text, Integer, Float, ForeignKey, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 
@@ -34,12 +34,16 @@ class AssessmentStep(str, Enum):
 
 class Assessment(Base):
     __tablename__ = "assessments"
+    __table_args__ = (
+        Index("ix_assessments_run_number_unique", "run_number", unique=True),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     repository_id: Mapped[str] = mapped_column(String(36), ForeignKey("repositories.id"), index=True)
 
-    # Human-readable run number (display id "#A-0241")
-    run_number: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    # Human-readable run number (display id "#A-0241") — unique at DB level
+    # so concurrent assessments can never claim the same run number.
+    run_number: Mapped[int] = mapped_column(Integer, default=0)
 
     # Target
     branch: Mapped[str] = mapped_column(String(255), default="main")

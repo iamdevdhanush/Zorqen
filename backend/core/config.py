@@ -8,10 +8,34 @@ import os
 from pathlib import Path
 from typing import List, Optional
 from urllib.parse import urlparse
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict, EnvSettingsSource, DotEnvSettingsSource
 from pydantic import field_validator, model_validator
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+class _LenientEnvSource(EnvSettingsSource):
+    """Env source that defers list/JSON decoding to field validators.
+
+    pydantic-settings pre-decodes complex fields with json.loads and raises
+    if the value is not JSON (e.g. CORS_ORIGINS=https://app.com). This source
+    passes raw strings through so the field validators can accept both JSON
+    and comma-separated formats.
+    """
+
+    def prepare_field_value(self, field_name, field, value, value_is_complex):
+        if value_is_complex:
+            return value
+        return self.decode_basic(value, field.metadata)
+
+
+class _LenientDotEnvSource(DotEnvSettingsSource):
+    """Same lenient decoding for values loaded from the .env file."""
+
+    def prepare_field_value(self, field_name, field, value, value_is_complex):
+        if value_is_complex:
+            return value
+        return self.decode_basic(value, field.metadata)
 
 # Documentation placeholders that must never be used as a real database in
 # production. Render/Koyeb/Heroku URLs look like
@@ -80,6 +104,22 @@ class Settings(BaseSettings):
         case_sensitive=False,
         extra="ignore",
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls,
+        init_settings,
+        env_settings,
+        dotenv_settings,
+        file_secret_settings,
+    ):
+        return (
+            init_settings,
+            _LenientEnvSource(settings_cls),
+            _LenientDotEnvSource(settings_cls),
+            file_secret_settings,
+        )
 
     # Application
     app_name: str = "RAKSHA"
@@ -169,6 +209,44 @@ class Settings(BaseSettings):
                 )
         return self
 
+    @model_validator(mode="after")
+    def validate_production_cors(self):
+        """Fail fast in production when CORS is not explicitly configured.
+
+        The localhost dev origins must never ship to production — a
+        misconfigured production CORS silently breaks every frontend request,
+        so we refuse to boot instead of failing at runtime.
+        """
+        if self.app_env == "development":
+            return self
+        origins = self.cors_origins or []
+        if not origins:
+            raise ValueError(
+                "CORS_ORIGINS is not configured. Set CORS_ORIGINS in the "
+                "deployment environment to the frontend origin(s) as JSON or "
+                "a comma-separated list, e.g. "
+                '["https://raksha.app"] or https://raksha.app.'
+            )
+        if "*" in origins:
+            raise ValueError(
+                "CORS_ORIGINS must not contain '*' when credentials are "
+                "enabled — browsers reject the combination. List the exact "
+                "frontend origin(s) instead."
+            )
+        for origin in origins:
+            try:
+                parsed = urlparse(origin)
+            except ValueError:
+                parsed = None
+            host = (parsed.hostname or "") if parsed else ""
+            if host in ("localhost", "127.0.0.1"):
+                raise ValueError(
+                    "CORS_ORIGINS contains a localhost origin "
+                    f"({origin!r}). Production must list the real public "
+                    "frontend origin(s), e.g. https://raksha.app."
+                )
+        return self
+
     # Snapshot retention for the overview score chart
     snapshot_retention_days: int = 90
 
@@ -225,7 +303,7 @@ class Settings(BaseSettings):
             try:
                 return json.loads(v)
             except Exception:
-                return [origin.strip() for origin in v.split(",")]
+                return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
     # Trusted hosts for TrustedHostMiddleware.
@@ -242,7 +320,7 @@ class Settings(BaseSettings):
             try:
                 return json.loads(v)
             except Exception:
-                return [host.strip() for host in v.split(",")]
+                return [host.strip() for host in v.split(",") if host.strip()]
         return v
 
     @property

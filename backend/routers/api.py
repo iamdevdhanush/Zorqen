@@ -141,28 +141,76 @@ async def connect_repository(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    gh_token = current_user.get_github_token()
+    if not gh_token:
+        raise HTTPException(
+            status_code=401,
+            detail="GitHub account not connected. Re-connect your GitHub account and retry.",
+        )
+
+    # Verify the repository really exists on GitHub and is accessible with
+    # this user's token.  Never create a record from unverified client
+    # metadata — the canonical data comes from the GitHub API response.
+    client = GitHubClient(gh_token)
+    try:
+        gh_repo = await client.get_repo(req.owner, req.name)
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        if status == 404:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Repository '{req.owner}/{req.name}' not found or not accessible on GitHub.",
+            )
+        raise HTTPException(
+            status_code=status,
+            detail="GitHub API error while verifying the repository.",
+        )
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=503,
+            detail="GitHub is unreachable. Please retry.",
+        )
+
+    full_name = gh_repo.get("full_name") or f"{req.owner}/{req.name}"
+    owner = (gh_repo.get("owner") or {}).get("login") or req.owner
+    name = gh_repo.get("name") or req.name
+
     existing = await db.execute(
         select(Repository).where(
             Repository.user_id == current_user.id,
-            Repository.full_name == req.full_name,
+            Repository.full_name == full_name,
         )
     )
     repo = existing.scalar_one_or_none()
     if repo:
+        # Refresh stored metadata from the canonical GitHub response.
+        repo.owner = owner
+        repo.name = name
+        repo.description = gh_repo.get("description")
+        repo.language = gh_repo.get("language")
+        repo.default_branch = gh_repo.get("default_branch") or "main"
+        repo.is_private = bool(gh_repo.get("private"))
+        repo.html_url = gh_repo.get("html_url")
+        repo.clone_url = gh_repo.get("clone_url")
+        repo.github_repo_id = gh_repo.get("id") or req.github_repo_id
+        repo.stars = gh_repo.get("stargazers_count") or 0
+        await db.commit()
+        await db.refresh(repo)
         return repo_meta(repo)
 
     repo = Repository(
         user_id=current_user.id,
-        full_name=req.full_name,
-        owner=req.owner,
-        name=req.name,
-        description=req.description,
-        language=req.language,
-        default_branch=req.default_branch,
-        html_url=req.html_url,
-        clone_url=req.clone_url,
-        github_repo_id=req.github_repo_id,
-        stars=req.stars,
+        full_name=full_name,
+        owner=owner,
+        name=name,
+        description=gh_repo.get("description"),
+        language=gh_repo.get("language"),
+        default_branch=gh_repo.get("default_branch") or "main",
+        is_private=bool(gh_repo.get("private")),
+        html_url=gh_repo.get("html_url"),
+        clone_url=gh_repo.get("clone_url"),
+        github_repo_id=gh_repo.get("id") or req.github_repo_id,
+        stars=gh_repo.get("stargazers_count") or 0,
         head_commit=None,
     )
     db.add(repo)
@@ -798,18 +846,52 @@ async def start_assessment(
     db: AsyncSession = Depends(get_db),
 ):
     repo = await _get_repo_or_404(req.repository_id, current_user.id, db)
+    gh_token = current_user.get_github_token()
+    if not gh_token:
+        raise HTTPException(
+            status_code=401,
+            detail="GitHub account not connected. Re-connect your GitHub account and retry.",
+        )
+
+    # Strict commit resolution: pin the exact commit SHA this assessment
+    # scans.  Never fall back to a branch HEAD at fetch time — the recorded
+    # commit_sha must always match the data actually scanned.
+    try:
+        client = GitHubClient(gh_token)
+        resolved_sha = await client.resolve_commit_sha(
+            repo.owner, repo.name, req.commit_sha or req.branch
+        )
+    except httpx.HTTPStatusError as e:
+        if e.response is not None and e.response.status_code == 404:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Commit or branch '{req.commit_sha or req.branch}' not found "
+                    f"in {repo.owner}/{repo.name}."
+                ),
+            )
+        raise HTTPException(
+            status_code=503,
+            detail="GitHub could not resolve the requested commit. Please retry.",
+        )
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=503,
+            detail="GitHub is unreachable. Please retry.",
+        )
+
     assessment = await create_assessment(
         db,
         repo,
         branch=req.branch,
-        commit_sha=req.commit_sha or repo.head_commit,
+        commit_sha=resolved_sha,
         user=current_user,
     )
     # Only launch the background pipeline if this is a freshly created
     # (PENDING) assessment.  If create_assessment returned an existing
     # active one, the pipeline is already running — do not duplicate it.
     if assessment.status == AssessmentStatus.PENDING:
-        background_tasks.add_task(run_assessment, assessment.id, current_user.get_github_token())
+        background_tasks.add_task(run_assessment, assessment.id, gh_token)
     return await get_run(db, assessment, with_findings=False)
 
 

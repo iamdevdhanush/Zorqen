@@ -414,7 +414,8 @@ class TestNoMockData:
     def test_no_hardcoded_language_percentages_in_api(self):
         """api.py must not contain hardcoded language percentage values."""
         import pathlib
-        api_content = pathlib.Path("routers/api.py").read_text()
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        api_content = api_path.read_text()
         # These would indicate hardcoded fallback data
         forbidden_patterns = [
             '"TypeScript": 82',
@@ -432,9 +433,10 @@ class TestNoMockData:
     def test_no_demo_user_creation_in_auth(self):
         """Auth router must not auto-create demo users."""
         import pathlib
-        auth_content = pathlib.Path("routers/auth.py").read_text()
-        assert 'is_demo=True' not in auth_content or \
-               'demo' not in auth_content.lower() or True  # is_demo field exists but should not default True
+        auth_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "auth.py"
+        auth_content = auth_path.read_text()
+        assert "is_demo" not in auth_content
+        assert "demo_user" not in auth_content
 
 
 # ── Encryption Tests ─────────────────────────────────────────────────────────────
@@ -588,3 +590,347 @@ class TestUserTokenMethods:
         user.set_github_token("")
         assert user.get_github_token() == ""
         assert user.github_access_token is None or user.github_access_token == ""
+
+
+# ── Commit Integrity Tests ─────────────────────────────────────────────────────
+
+class TestResolveCommitSha:
+    """Verify commit SHA resolution returns the full commit SHA."""
+
+    @pytest.mark.asyncio
+    async def test_resolve_commit_sha_returns_full_sha(self):
+        from github.client import GitHubClient
+        from unittest.mock import AsyncMock, patch
+        expected = "abc123def456789012345678901234567890abcd"
+        client = GitHubClient("tok")
+        with patch.object(client, "_get", new=AsyncMock(return_value={"sha": expected})):
+            sha = await client.resolve_commit_sha("owner", "repo", "main")
+        assert sha == expected
+
+    @pytest.mark.asyncio
+    async def test_resolve_commit_sha_404_raises(self):
+        from github.client import GitHubClient
+        from unittest.mock import AsyncMock, patch
+        client = GitHubClient("tok")
+        with patch.object(client, "_get", new=AsyncMock(side_effect=_make_http_error(404))):
+            with pytest.raises(HTTPStatusError):
+                await client.resolve_commit_sha("owner", "repo", "bad-sha")
+
+    @pytest.mark.asyncio
+    async def test_resolve_commit_sha_missing_sha_raises(self):
+        from github.client import GitHubClient
+        from unittest.mock import AsyncMock, patch
+        client = GitHubClient("tok")
+        with patch.object(client, "_get", new=AsyncMock(return_value={})):
+            with pytest.raises(HTTPStatusError):
+                await client.resolve_commit_sha("owner", "repo", "main")
+
+
+class TestFetchRepoFilesIntegrity:
+    """Verify the orchestrator fetches files against the pinned commit SHA
+    and never silently falls back to the branch HEAD."""
+
+    @pytest.mark.asyncio
+    async def test_fetch_uses_pinned_sha(self):
+        from agents import orchestrator
+        from unittest.mock import AsyncMock, MagicMock, patch
+        pinned = "abc123def456789012345678901234567890abcd"
+        client_mock = MagicMock()
+        client_mock.get_tree = AsyncMock(return_value={"tree": []})
+        with patch.object(orchestrator, "GitHubClient", return_value=client_mock):
+            await orchestrator._fetch_repo_files("owner", "repo", "main", pinned, "tok")
+        client_mock.get_tree.assert_awaited_once_with(
+            "owner", "repo", pinned, recursive=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_fetch_no_branch_fallback(self):
+        """A pinned-commit fetch failure must raise — never retry on the branch."""
+        from agents import orchestrator
+        from unittest.mock import AsyncMock, MagicMock, patch
+        pinned = "abc123def456789012345678901234567890abcd"
+        client_mock = MagicMock()
+        client_mock.get_tree = AsyncMock(side_effect=_make_http_error(404))
+        with patch.object(orchestrator, "GitHubClient", return_value=client_mock):
+            with pytest.raises(HTTPStatusError):
+                await orchestrator._fetch_repo_files("owner", "repo", "main", pinned, "tok")
+        # Exactly one tree call with the pinned SHA — no fallback retry on branch.
+        client_mock.get_tree.assert_awaited_once_with(
+            "owner", "repo", pinned, recursive=True
+        )
+
+    def test_no_silent_fallback_in_orchestrator_source(self):
+        """orchestrator.py must not contain the old silent branch fallback."""
+        import pathlib
+        orch_path = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
+        content = orch_path.read_text()
+        assert "get_tree(owner, repo, branch" not in content
+        assert "except Exception:" not in content.split("def _fetch_repo_files")[1].split("\n\n")[0]
+
+
+# ── Run Number Race-Condition Tests ─────────────────────────────────────────────
+
+class TestRunNumberUniqueness:
+    """Verify run_number is unique at the DB level and allocated race-safe."""
+
+    def test_model_declares_unique_index(self):
+        """The Assessment model must declare the unique run_number index."""
+        from models.assessment import Assessment
+        from sqlalchemy import Index
+        assert any(
+            isinstance(t, Index)
+            and t.name == "ix_assessments_run_number_unique"
+            and t.unique
+            for t in Assessment.__table_args__
+        )
+
+    def test_model_run_number_not_plain_index(self):
+        """run_number must not be a plain non-unique index anymore."""
+        from models.assessment import Assessment
+        col = Assessment.__table__.c.run_number
+        assert col.unique is None or col.unique is False  # uniqueness enforced via the named Index
+        plain = [ix for ix in Assessment.__table__.indexes if ix.name == "ix_assessments_run_number"]
+        assert not plain
+
+    @pytest.mark.asyncio
+    async def test_get_next_run_number_after_last(self):
+        """get_next_run_number must return max+1."""
+        from services.assessments import get_next_run_number
+        from unittest.mock import AsyncMock, MagicMock
+        from models.assessment import Assessment
+
+        db = MagicMock()
+        last = MagicMock(spec=Assessment)
+        last.run_number = 24
+        db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=last)))
+        assert await get_next_run_number(db) == 25
+
+    @pytest.mark.asyncio
+    async def test_get_next_run_number_empty_db(self):
+        """get_next_run_number must return 1 when no assessments exist."""
+        from services.assessments import get_next_run_number
+        from unittest.mock import AsyncMock, MagicMock
+
+        db = MagicMock()
+        db.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=None)))
+        assert await get_next_run_number(db) == 1
+
+    @pytest.mark.asyncio
+    async def test_create_assessment_retries_on_integrity_error(self):
+        """create_assessment must retry with a fresh run_number on IntegrityError."""
+        from services.assessments import create_assessment
+        from unittest.mock import AsyncMock, MagicMock
+        from sqlalchemy.exc import IntegrityError
+        from models.assessment import Assessment
+        from models.repository import Repository
+
+        db = MagicMock()
+
+        def make_execute_result(run_number):
+            last = MagicMock(spec=Assessment)
+            last.run_number = run_number
+            result = MagicMock()
+            result.scalar_one_or_none.return_value = last
+            return result
+
+        no_active = MagicMock()
+        no_active.scalar_one_or_none.return_value = None
+
+        # call 1: active-assessment check (None) · call 2: next run 25 ·
+        # call 3: after IntegrityError rollback → next run 26
+        db.execute = AsyncMock(
+            side_effect=[no_active, make_execute_result(24), make_execute_result(25)]
+        )
+
+        commits = iter([IntegrityError("stmt", {}, Exception("dup")), None])
+        async def fake_commit():
+            try:
+                err = next(commits)
+            except StopIteration:
+                return
+            if err is not None:
+                raise err
+        db.commit = fake_commit
+        db.rollback = AsyncMock()
+        db.refresh = AsyncMock()
+
+        repo = MagicMock(spec=Repository)
+        repo.id = "repo-1"
+        repo.default_branch = "main"
+
+        assessment = await create_assessment(db, repo, branch="main")
+        assert assessment.run_number == 26
+        assert db.rollback.await_count == 1
+
+
+# ── Finding Deterministic Identity Tests ─────────────────────────────────────────
+
+class TestFindingIdentity:
+    """Verify findings get a stable deterministic slug/fingerprint."""
+
+    def test_slug_for_is_deterministic(self):
+        from services.dedup import slug_for
+        a = slug_for("src/auth.py", 42, "python.lang.security.audit.audit-dangerous-call", "Code Injection")
+        b = slug_for("src/auth.py", 42, "python.lang.security.audit.audit-dangerous-call", "Code Injection")
+        assert a == b
+        assert a.startswith("F-")
+        assert len(a) == 10  # "F-" + 8 hex chars
+
+    def test_slug_differs_across_locations(self):
+        from services.dedup import slug_for
+        a = slug_for("src/auth.py", 42, "rule-1", "SQL Injection")
+        b = slug_for("src/auth.py", 43, "rule-1", "SQL Injection")
+        assert a != b
+
+    def test_fingerprint_case_insensitive(self):
+        from services.dedup import fingerprint
+        assert fingerprint("Src/Auth.py", 42, "RULE-1", "SQL INJECTION") == \
+               fingerprint("src/auth.py", 42, "rule-1", "sql injection")
+
+    def test_finding_model_has_slug_column(self):
+        from models.finding import Finding
+        assert "slug" in Finding.__table__.c
+        assert Finding.__table__.c.slug.index is True
+
+    def test_save_findings_persists_slug(self):
+        """_save_findings must compute slug + fingerprint for every finding."""
+        import pathlib
+        orch_path = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
+        content = orch_path.read_text()
+        save_fn = content.split("async def _save_findings", 1)[1].split("async with AsyncSessionLocal", 1)[0]
+        assert "slug_for(" in save_fn
+        assert "fingerprint" in save_fn
+        assert "extra={\"fingerprint\"" in save_fn or "extra={\'fingerprint\'" in save_fn
+
+
+# ── Temp Directory Cleanup Tests ────────────────────────────────────────────────
+
+class TestTempDirCleanup:
+    """Verify materialized scan directories are always removed."""
+
+    def test_semgrep_scan_dir_cleaned_immediately(self):
+        """tmp_dir must be removed right after the semgrep scan (finally)."""
+        import pathlib
+        orch_path = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
+        content = orch_path.read_text()
+        # The semgrep block must rmtree its own tmp_dir and null it out.
+        assert "shutil.rmtree(tmp_dir, ignore_errors=True)" in content
+        assert "tmp_dir = None" in content
+
+    def test_outer_finally_cleans_tmp_dir(self):
+        """The pipeline must keep a final cleanup safety net."""
+        import pathlib
+        orch_path = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
+        content = orch_path.read_text()
+        finally_block = content.split("finally:")[-1]
+        assert "shutil.rmtree(tmp_dir, ignore_errors=True)" in finally_block
+        assert "os.path.exists(tmp_dir)" in finally_block
+
+
+# ── Connect Repository Validation Tests ─────────────────────────────────────────
+
+class TestConnectRepositoryValidation:
+    """Verify repository connections are validated against the GitHub API."""
+
+    def test_connect_repository_verifies_against_github(self):
+        """connect_repository must fetch canonical data from the GitHub API."""
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        fn = content.split("async def connect_repository", 1)[1].split("@repos_router.get", 1)[0]
+        assert "client.get_repo(req.owner, req.name)" in fn
+        assert "gh_repo" in fn
+        assert 'detail=f"Repository \'{req.owner}/{req.name}\' not found' in fn
+
+    def test_connect_repository_requires_token(self):
+        """connect_repository must fail clearly without a connected GitHub account."""
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        fn = content.split("async def connect_repository", 1)[1].split("@repos_router.get", 1)[0]
+        assert "GitHub account not connected. Re-connect your GitHub account and retry." in fn
+
+    def test_connect_repository_never_stores_client_metadata_verbatim(self):
+        """The DB record must come from GitHub, not the client payload."""
+        import pathlib
+        api_path = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api_path.read_text()
+        fn = content.split("async def connect_repository", 1)[1].split("@repos_router.get", 1)[0]
+        # description/language/default_branch must be taken from gh_repo.
+        assert 'description=gh_repo.get("description")' in fn
+        assert 'language=gh_repo.get("language")' in fn
+        assert 'default_branch=gh_repo.get("default_branch") or "main"' in fn
+        assert 'clone_url=gh_repo.get("clone_url")' in fn
+
+
+# ── Production CORS Tests ───────────────────────────────────────────────────────
+
+class TestProductionCORS:
+    """Verify production CORS config fails closed (never localhost defaults)."""
+
+    def _settings(self, **env):
+        import os
+        from core.config import Settings
+        saved = {k: os.environ.get(k) for k in env}
+        for k, v in env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        try:
+            return Settings(_env_file=None)
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+    def test_production_requires_cors_origins(self):
+        import pytest
+        from pydantic import ValidationError
+        # DATABASE_URL must be valid production Postgres for the other validators.
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
+        with pytest.raises(ValidationError):
+            self._settings(
+                APP_ENV="production", DATABASE_URL=db, ENCRYPTION_KEY=key,
+                CORS_ORIGINS="",
+            )
+
+    def test_production_rejects_localhost_origins(self):
+        import pytest
+        from pydantic import ValidationError
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
+        with pytest.raises(ValidationError):
+            self._settings(
+                APP_ENV="production", DATABASE_URL=db, ENCRYPTION_KEY=key,
+                CORS_ORIGINS="http://localhost:5173",
+            )
+
+    def test_production_rejects_wildcard_origin(self):
+        import pytest
+        from pydantic import ValidationError
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
+        with pytest.raises(ValidationError):
+            self._settings(
+                APP_ENV="production", DATABASE_URL=db, ENCRYPTION_KEY=key,
+                CORS_ORIGINS='["*"]',
+            )
+
+    def test_production_accepts_explicit_public_origin(self):
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
+        s = self._settings(
+            APP_ENV="production", DATABASE_URL=db, ENCRYPTION_KEY=key,
+            CORS_ORIGINS="https://raksha.app",
+        )
+        assert s.cors_origins == ["https://raksha.app"]
+
+    def test_development_defaults_unchanged(self):
+        """Dev config must keep the localhost defaults."""
+        from core.config import Settings
+        s = Settings(_env_file=None)
+        assert "http://localhost:5173" in s.cors_origins

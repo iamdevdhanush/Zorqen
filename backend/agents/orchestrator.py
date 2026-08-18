@@ -165,14 +165,24 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
         tmp_dir: Optional[str] = None
 
         if gh_token and repository.clone_url:
-            # Fetch files via GitHub API
-            file_tree, file_contents = await _fetch_repo_files(
-                repository.owner,
-                repository.name,
-                assessment.branch,
-                assessment.commit_sha or assessment.branch,
-                gh_token,
-            )
+            # Fetch files via GitHub API against the pinned commit SHA.
+            try:
+                file_tree, file_contents = await _fetch_repo_files(
+                    repository.owner,
+                    repository.name,
+                    assessment.branch,
+                    assessment.commit_sha or assessment.branch,
+                    gh_token,
+                )
+            except Exception as e:
+                await _update_assessment(
+                    assessment_id, "failed", 0, status=AssessmentStatus.FAILED,
+                    error_message=(
+                        f"Could not fetch repository contents at pinned commit "
+                        f"{assessment.commit_sha or assessment.branch}: {str(e)[:200]}"
+                    ),
+                )
+                return
         else:
             await _update_assessment(assessment_id, "failed", 0, status=AssessmentStatus.FAILED,
                                      error_message="No GitHub access token available. Re-connect your GitHub account and retry.")
@@ -260,6 +270,11 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
                     })
             except Exception as e:
                 log.warning("Semgrep scan failed", error=str(e))
+            finally:
+                # Clean up the scan directory as soon as the scan finishes —
+                # never leave temp materialized files behind, even on failure.
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+                tmp_dir = None
 
         # Record secrets + dependency analysis as completed pipeline steps
         await _update_assessment(assessment_id, "secrets", 50)
@@ -356,13 +371,16 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
 async def _fetch_repo_files(
     owner: str, repo: str, branch: str, ref: str, token: str
 ) -> tuple[List[str], Dict[str, str]]:
-    """Fetch important source files from GitHub API."""
+    """Fetch important source files from GitHub API.
+
+    `ref` is the pinned commit SHA resolved at assessment start. It is used
+    strictly — if the pinned commit cannot be fetched, this raises so the
+    assessment fails explicitly instead of silently scanning a different
+    commit (which would corrupt the assessment's integrity).
+    """
     client = GitHubClient(token)
 
-    try:
-        tree_data = await client.get_tree(owner, repo, ref, recursive=True)
-    except Exception:
-        tree_data = await client.get_tree(owner, repo, branch, recursive=True)
+    tree_data = await client.get_tree(owner, repo, ref, recursive=True)
 
     all_paths = [item["path"] for item in tree_data.get("tree", []) if item.get("type") == "blob"]
     file_tree = all_paths
@@ -402,7 +420,14 @@ async def _save_findings(
     enriched: List[Dict[str, Any]],
     arch_map: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Persist enriched findings to DB and return score summary."""
+    """Persist enriched findings to DB and return score summary.
+
+    Every finding gets a deterministic fingerprint + human slug (F-XXXX)
+    computed from its primary identifying attributes, so the same
+    vulnerability at the same location is correlate-able across runs.
+    """
+    from services.dedup import fingerprint as fp_of, slug_for
+
     counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0, "secrets": 0, "dependencies": 0}
     db_findings = []
 
@@ -417,10 +442,15 @@ async def _save_findings(
         if confidence_raw == "false_positive":
             continue
 
+        file_path = ef.get("file_path")
+        line_number = ef.get("line_number")
+        rule_id = ef.get("rule_id")
+        vuln_type = ef.get("vulnerability_type", "Unknown")
+
         finding = Finding(
             assessment_id=assessment_id,
-            title=ef.get("vulnerability_type", "Unknown Vulnerability"),
-            vulnerability_type=ef.get("vulnerability_type", "Unknown"),
+            title=vuln_type,
+            vulnerability_type=vuln_type,
             severity=severity,
             confidence=confidence_raw,
             confidence_pct=confidence_pct,
@@ -428,8 +458,8 @@ async def _save_findings(
             cwe_id=ef.get("cwe_id"),
             cwe_name=_cwe_name(ef.get("cwe_id")),
             owasp_category=ef.get("owasp_category"),
-            file_path=ef.get("file_path"),
-            line_number=ef.get("line_number"),
+            file_path=file_path,
+            line_number=line_number,
             code_snippet=ef.get("code_snippet", "")[:2000],
             root_cause=ef.get("root_cause", ""),
             attack_path=ef.get("attack_path", []),
@@ -438,7 +468,9 @@ async def _save_findings(
             ai_reasoning=ef.get("ai_reasoning", ""),
             is_exploitable=ef.get("is_exploitable", False),
             source_tool=ef.get("source_tool", "unknown"),
-            rule_id=ef.get("rule_id"),
+            rule_id=rule_id,
+            slug=slug_for(file_path, line_number, rule_id, vuln_type),
+            extra={"fingerprint": fp_of(file_path, line_number, rule_id, vuln_type)},
         )
         db_findings.append(finding)
 

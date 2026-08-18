@@ -139,6 +139,21 @@ class GitHubClient:
         params = {"recursive": "1"} if recursive else {}
         return await self._get(f"/repos/{owner}/{repo}/git/trees/{sha}", params=params)
 
+    async def resolve_commit_sha(self, owner: str, repo: str, ref: str) -> str:
+        """Resolve a branch/tag/SHA to the full 40-char commit SHA.
+
+        Raises httpx.HTTPStatusError (404) when the ref does not exist.
+        """
+        data = await self._get(f"/repos/{owner}/{repo}/commits/{ref}")
+        sha = data.get("sha")
+        if not sha:
+            raise httpx.HTTPStatusError(
+                "Commit response missing sha",
+                request=None,
+                response=None,
+            )
+        return sha
+
     async def get_file_content(self, owner: str, repo: str, path: str, ref: str = "main") -> Optional[str]:
         try:
             data = await self._get(f"/repos/{owner}/{repo}/contents/{path}", params={"ref": ref})
