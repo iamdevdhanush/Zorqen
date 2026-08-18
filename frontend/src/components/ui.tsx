@@ -250,7 +250,7 @@ export function SkeletonRows({ rows = 5 }: { rows?: number }) {
 
 /* ── Animated metric ───────────────────────────────────────────────────── */
 
-export function AnimatedNumber({ value, duration = 600 }: { value: number; duration?: number }) {
+export function AnimatedNumber({ value, duration = 400 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {

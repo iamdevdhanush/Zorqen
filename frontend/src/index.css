@@ -438,31 +438,67 @@ body {
   padding: 1px 5px;
 }
 
-/* ── Animations ───────────────────────────────────────────────────────── */
+/* ── Animations & Motion System ────────────────────────────────────────── */
+
+/* Motion System Tokens (State-driven, precise security console timing) */
+:root {
+  --motion-fast: 100ms cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-base: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-slow: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in-up {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
 @keyframes slide-in-right {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+
 @keyframes slide-in-down {
   from { transform: translateY(-8px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
+
 @keyframes slide-up-in {
-  from { transform: translateY(12px); opacity: 0; }
+  from { transform: translateY(10px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
+
 @keyframes toast-in {
   from { transform: translateX(110%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+
 @keyframes toast-out {
   from { transform: translateX(0);    opacity: 1; }
   to   { transform: translateX(110%); opacity: 0; }
 }
 
-.slide-right  { animation: slide-in-right 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-down   { animation: slide-in-down  0.16s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-up     { animation: slide-up-in    0.18s cubic-bezier(0.16, 1, 0.3, 1); }
+/* Reusable Motion Classes */
+.fade-in      { animation: fade-in-up 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards; will-change: transform, opacity; }
+.slide-right  { animation: slide-in-right 0.22s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, opacity; }
+.slide-down   { animation: slide-in-down  0.16s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, opacity; }
+.slide-up     { animation: slide-up-in    0.18s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, opacity; }
+
+/* Interactive Cards Micro-Interactions */
+.interactive-card {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 120ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.interactive-card:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4px 4px 0px #111111;
+}
+.interactive-card:active {
+  transform: translate(0px, 0px);
+  box-shadow: 2px 2px 0px #111111;
+}
 
 /* ── Command Palette Overlay ───────────────────────────────────────────── */
 .cmd-backdrop {
@@ -661,5 +697,23 @@ kbd {
   body.copilot-open #bmc-widget-container,
   #bmc-widget-container.copilot-open {
     display: none !important;
+  }
+}
+
+/* ── Accessibility: Prefers Reduced Motion ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .pulse-dot::after {
+    animation: none !important;
+  }
+  .fade-in, .slide-right, .slide-down, .slide-up, .toast {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

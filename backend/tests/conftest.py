@@ -23,7 +23,7 @@ os.environ.setdefault("GITHUB_CLIENT_SECRET", "test_client_secret")
 os.environ.setdefault("GITHUB_REDIRECT_URI", "http://localhost:8000/api/auth/github/callback")
 os.environ.setdefault("GROQ_API_KEY", "")  # no LLM in tests
 os.environ.setdefault("CORS_ORIGINS", '["http://localhost:5173"]')
-os.environ.setdefault("ENCRYPTION_KEY", "dGVzdC1lbmNyeXB0aW9uLWtleS1tdXN0LWJlLTMyLWJ5dGVzLQ==")  # base64("test-encryption-key-must-be-32-bytes-")
+os.environ.setdefault("ENCRYPTION_KEY", "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw=")  # 32-byte base64 key
 
 
 @pytest.fixture(scope="session")

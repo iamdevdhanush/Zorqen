@@ -19,7 +19,7 @@ const RepositoryCard = memo(function RepositoryCard({
   const findingsCount = r.latestFindingsCount ?? null;
 
   return (
-    <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 hover:bg-[#FAFAFA] transition-all">
+    <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 interactive-card hover:bg-[#FAFAFA]">
       <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[#111111] text-white border border-[#111111] flex items-center justify-center shrink-0">
           <GithubIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#C5F82A]" />

@@ -483,31 +483,23 @@ class TestTokenEncryption:
 
     def test_decrypt_wrong_key_fails(self):
         """Ciphertext encrypted with different key should fail to decrypt."""
-        from core.crypto import encrypt_token, decrypt_token, EncryptionError, _get_encryption_key
+        from core.crypto import encrypt_token, decrypt_token, EncryptionError, AESGCM
         import os
         import base64
-        # Save original key
-        original_key = _get_encryption_key()
+        # Create ciphertext with a known different key
+        different_key = os.urandom(32)
+        aesgcm = AESGCM(different_key)
+        nonce = os.urandom(12)
+        ciphertext = aesgcm.encrypt(nonce, b"ghp_test_token", None)
+        combined = nonce + ciphertext
+        encrypted_b64 = base64.b64encode(combined).decode("ascii")
+        
+        # Try to decrypt with our actual key - should fail
         try:
-            # Temporarily change key
-            os.environ["ENCRYPTION_KEY"] = base64.b64encode(os.urandom(32)).decode()
-            from importlib import reload
-            import core.crypto as crypto
-            reload(crypto)
-            token = "ghp_test_token"
-            encrypted = crypto.encrypt_token(token)
-            # Restore original key
-            os.environ["ENCRYPTION_KEY"] = base64.b64encode(original_key).decode()
-            reload(crypto)
-            try:
-                crypto.decrypt_token(encrypted)
-                assert False, "Should have raised EncryptionError"
-            except EncryptionError:
-                pass
-        finally:
-            os.environ["ENCRYPTION_KEY"] = base64.b64encode(original_key).decode()
-            import core.crypto as crypto
-            reload(crypto)
+            decrypt_token(encrypted_b64)
+            assert False, "Should have raised EncryptionError"
+        except EncryptionError:
+            pass  # Expected
 
     def test_token_never_in_serialized_api_response(self):
         """GitHub access token should never appear in serialized API responses."""
