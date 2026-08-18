@@ -22,7 +22,6 @@ class User(Base):
     github_avatar_url: Mapped[str] = mapped_column(Text, nullable=True)
     github_access_token: Mapped[str] = mapped_column(Text, nullable=True)  # encrypted
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 

@@ -29,7 +29,6 @@ export interface AuthUser {
   github_login: string;
   github_name?: string;
   github_avatar_url?: string;
-  is_demo: boolean;
 }
 
 function PageFallback() {

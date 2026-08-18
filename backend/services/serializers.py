@@ -22,7 +22,7 @@ PIPELINE_STEPS: List[Dict[str, str]] = [
     {"id": "static", "label": "Static analysis completed"},
     {"id": "secrets", "label": "Secrets scan completed"},
     {"id": "reasoning", "label": "AI reasoning completed"},
-    {"id": "validation", "label": "Sandbox validation"},
+    {"id": "validation", "label": "Sandbox validation unavailable"},
 ]
 
 LANGUAGE_BY_EXT = {
@@ -198,7 +198,7 @@ def repo_meta(repo: Repository) -> Dict[str, Any]:
         "language": repo.language or "Unknown",
         "defaultBranch": repo.default_branch or "main",
         "commit": commit,
-        "isDemo": repo.is_demo,
+        "githubRepoId": repo.github_repo_id,
     }
 
 
@@ -213,6 +213,8 @@ def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
         "repository_indexed": "index",
         "architecture_generated": "architecture",
         "security_scan": "static",
+        "secrets": "secrets",
+        "dependencies": "dependencies",
         "ai_reasoning": "reasoning",
     }
     latest: Dict[str, str] = {}
@@ -224,11 +226,15 @@ def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
             latest[step] = entry["status"]
     if assessment.status == AssessmentStatus.COMPLETED:
         for step in latest:
-            latest[step] = "completed"
+            if step != "validation":  # Sandbox is never run
+                latest[step] = "completed"
     steps = []
     for step in PIPELINE_STEPS:
         state = latest.get(step["id"])
-        if state in {"completed", "running", "failed"}:
+        if step["id"] == "validation":
+            # Sandbox validation is not implemented — always show as unavailable
+            status = "unavailable"
+        elif state in {"completed", "running", "failed"}:
             status = state
         else:
             status = "pending"

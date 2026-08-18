@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Circle, Play, ShieldAlert, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Circle, Play, ShieldAlert, Zap, MinusCircle } from 'lucide-react';
 import { PageHeader, Panel, RunStatus, SevBadge, ValidationBadge } from '../components/ui';
 import AssessmentModal from '../components/AssessmentModal';
 import { useWorkspace } from '../store/WorkspaceContext';
@@ -130,6 +130,7 @@ export default function AssessmentsPage() {
                 const isDone = step?.status === 'completed';
                 const isFailed = step?.status === 'failed';
                 const isRun = isRunning && step?.status === 'running';
+                const isUnavailable = step?.status === 'unavailable';
 
                 return (
                   <div
@@ -141,6 +142,8 @@ export default function AssessmentsPage() {
                         ? 'border-[#111111] bg-[#FEE2E2]'
                         : isDone
                         ? 'border-[#111111] bg-white'
+                        : isUnavailable
+                        ? 'border-[#DCDCD5] bg-[#FAFAFA] opacity-60'
                         : 'border-[#DCDCD5] bg-[#FAFAFA]'
                     }`}
                   >
@@ -152,17 +155,19 @@ export default function AssessmentsPage() {
                         <ShieldAlert className="w-4 h-4 text-[#DC2626]" />
                       ) : isRun ? (
                         <span className="pulse-dot" />
+                      ) : isUnavailable ? (
+                        <MinusCircle className="w-4 h-4 text-[#999999]" />
                       ) : (
                         <Circle className="w-3.5 h-3.5 text-[#4A4A4A]" />
                       )}
                     </div>
 
                     <div>
-                      <div className={`mono text-[10px] sm:text-[10.5px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : 'text-[#333333]'}`}>
+                      <div className={`mono text-[10px] sm:text-[10.5px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : isUnavailable ? 'text-[#999999]' : 'text-[#333333]'}`}>
                         {stageLabel}
                       </div>
-                      <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : 'text-[#4A4A4A]'}`}>
-                        {isDone ? '✓ COMPLETE' : isFailed ? '✕ FAILED' : isRun ? '● RUNNING' : '○ QUEUED'}
+                      <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : isUnavailable ? 'text-[#999999]' : 'text-[#4A4A4A]'}`}>
+                        {isDone ? '✓ COMPLETE' : isFailed ? '✕ FAILED' : isRun ? '● RUNNING' : isUnavailable ? '— UNAVAILABLE' : '○ QUEUED'}
                       </div>
                     </div>
                   </div>

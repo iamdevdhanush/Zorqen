@@ -82,10 +82,22 @@ async def list_github_repos(
             public_repositories=len(repos) - private_count,
         )
 
+        # Build a lookup from GitHub integer ID → RAKSHA UUID for all connected repos
+        connected = await db.execute(
+            select(Repository).where(Repository.user_id == current_user.id)
+        )
+        github_to_raksha = {
+            r.github_repo_id: r.id
+            for r in connected.scalars().all()
+            if r.github_repo_id
+        }
+
         latest = await _latest_assessment_scores(db, current_user)
         contracts = []
         for r in repos:
-            c = GitHubClient.normalize_repo(r)
+            gh_id = r.get("id")
+            raksha_id = github_to_raksha.get(gh_id)
+            c = GitHubClient.normalize_repo(r, raksha_id=raksha_id)
             meta = latest.get(c["fullName"])
             if meta:
                 c["latestScore"] = meta["score"]
@@ -804,9 +816,16 @@ async def list_repo_assessments(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await _get_repo_or_404(repo_id, current_user.id, db)
+    repo = await _get_repo_or_404(repo_id, current_user.id, db)
+    log.info(
+        "[ASSESSMENTS] list_repo_assessments",
+        github_repo_id=repo.github_repo_id,
+        raksha_repository_id=repo.id,
+        owner=repo.owner,
+        name=repo.name,
+    )
     result = await db.execute(
-        select(Assessment).where(Assessment.repository_id == repo_id)
+        select(Assessment).where(Assessment.repository_id == repo.id)
         .order_by(desc(Assessment.created_at))
     )
     runs = []

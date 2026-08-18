@@ -1,103 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, CheckCircle2, RotateCcw, ShieldCheck, XCircle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, ExternalLink, ShieldAlert } from 'lucide-react';
 import { SevBadge } from '../components/ui';
-import { useFinding, useWorkspace } from '../store/WorkspaceContext';
-import type { Finding, LogLine } from '../lib/types';
-
-interface TestStep {
-  at: number;
-  kind: 'log' | 'result';
-  log?: [string, string, 'ok' | 'err' | 'info' | 'warn'];
-  before?: boolean;
-  after?: boolean;
-}
-
-function testSchedule(finding: Finding): TestStep[] {
-  const payload = finding.severity === 'critical' ? `?q=' OR '1'='1` : `?file=../../../etc/passwd`;
-  return [
-    { at: 0,    kind: 'log', log: ['validator', `probe ${finding.endpoint ?? finding.file_path}${payload}`, 'info'] },
-    { at: 500,  kind: 'log', log: ['sandbox',   'container secure-sandbox-vrfy created (image from assessed commit)', 'info'] },
-    { at: 1100, kind: 'log', log: ['validator', 'request 1 — baseline build', 'info'] },
-    { at: 1600, kind: 'log', log: ['validator', `response 500 · payload reproduced (${finding.cwe_id})`, 'err'] },
-    { at: 2200, kind: 'result', before: true, log: ['security-test', 'FAILED — vulnerability reproduced on baseline', 'err'] },
-    { at: 2800, kind: 'log', log: ['raksha',    'applying review-approved patch to sandbox build', 'info'] },
-    { at: 3400, kind: 'log', log: ['builder',   'image rebuilt · regression suite compiled', 'info'] },
-    { at: 4000, kind: 'log', log: ['validator', 'request 2 — patched build', 'info'] },
-    { at: 4600, kind: 'log', log: ['validator', 'response 400 · payload blocked as data, not SQL', 'ok'] },
-    { at: 5200, kind: 'result', after: true, log: ['security-test', 'PASSED — vulnerability no longer reproduced', 'ok'] },
-    { at: 5900, kind: 'log', log: ['pytest',    'regression suite · 12/12 passed (0 failures)', 'ok'] },
-    { at: 6500, kind: 'log', log: ['health',    'application health: healthy · latency p99 unchanged', 'ok'] },
-    { at: 7100, kind: 'log', log: ['sandbox',   'container destroyed · artifacts purged · build cache cleared', 'info'] },
-  ];
-}
+import { useFinding } from '../store/WorkspaceContext';
 
 export default function VerificationPage() {
   const { id } = useParams();
   const finding = useFinding(id);
-  const { markFinding, currentRepo } = useWorkspace();
   const navigate = useNavigate();
-
-  const [logs, setLogs]     = useState<LogLine[]>([]);
-  const [before, setBefore] = useState<boolean | null>(null);
-  const [after, setAfter]   = useState<boolean | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const runTest = () => {
-    if (!finding) return;
-    if (timerRef.current) clearInterval(timerRef.current);
-    setLogs([]); setBefore(null); setAfter(null);
-    const t0 = Date.now();
-    const schedule = testSchedule(finding);
-
-    timerRef.current = setInterval(() => {
-      const now = Date.now();
-      let done = true;
-      const newLogs: LogLine[] = [];
-      let b: boolean | null = null;
-      let a: boolean | null = null;
-
-      for (const s of schedule) {
-        if (now < t0 + s.at) { done = false; break; }
-        if (s.kind === 'log' && s.log) {
-          newLogs.push({
-            time: new Date(t0 + s.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            source: s.log[0],
-            text: s.log[1],
-            tone: s.log[2],
-          });
-        }
-        if (s.kind === 'result' && s.log) {
-          if (s.before) b = true;
-          if (s.after)  a = true;
-        }
-      }
-      setLogs(newLogs);
-      if (b !== null) setBefore(b);
-      if (a !== null) setAfter(a);
-      if (done && timerRef.current) {
-        clearInterval(timerRef.current);
-        markFinding(finding.id, 'VERIFIED');
-      }
-    }, 150);
-  };
-
-  useEffect(() => {
-    runTest();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finding?.id]);
 
   if (!finding) {
     return (
       <div className="max-w-[800px] mx-auto py-16 text-center space-y-4">
-        <div className="mono text-[12px] text-[var(--color-ink-3)]">Finding &lsquo;#{id}&lsquo; not found.</div>
+        <div className="mono text-[12px] text-[var(--color-ink-3)]">Finding &lsquo;#{id}&rsquo; not found.</div>
         <button onClick={() => navigate('/findings')} className="btn btn-primary btn-sm">← Back to Findings</button>
       </div>
     );
   }
-
-  const isComplete = before === true && after === true;
 
   return (
     <div className="max-w-[1100px] mx-auto space-y-8 fade-in py-2">
@@ -105,14 +23,14 @@ export default function VerificationPage() {
       {/* Navigation & Protocol Tag */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate(`/remediation/${finding.id}`)}
+          onClick={() => navigate(-1)}
           className="btn btn-ghost btn-sm text-[12px] font-semibold text-[var(--color-ink-2)]"
         >
           <ArrowLeft className="w-4 h-4" />
-          ← REMEDIATION PROPOSAL
+          ← BACK
         </button>
 
-        <div className="protocol-tag">raksha://verification/verified</div>
+        <div className="protocol-tag">raksha://verification</div>
       </div>
 
       {/* Header Banner */}
@@ -128,88 +46,182 @@ export default function VerificationPage() {
             {finding.cwe_id} • {finding.file_path}:{finding.line_number}
           </p>
         </div>
-
-        <button onClick={() => runTest()} className="btn btn-primary btn-sm">
-          <RotateCcw className="w-3.5 h-3.5" /> Re-run Verification
-        </button>
       </div>
 
-      {/* BEFORE VS AFTER PROOF CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        
-        {/* BEFORE CARD */}
-        <div className="p-4 sm:p-6 rounded-xl bg-white border border-red-200 shadow-xs space-y-3">
-          <div className="mono text-[11px] font-bold text-red-600 uppercase tracking-wider">
-            BEFORE (BASELINE BUILD)
+      {/* SANDBOX UNAVAILABLE NOTICE */}
+      <div className="p-5 sm:p-8 rounded-xl bg-[#FAFAFA] border-2 border-[#DCDCD5] space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#FEF3C7] border border-[#B45309] flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-[#B45309]" />
           </div>
+          <div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">SANDBOX VALIDATION UNAVAILABLE</h2>
+            <p className="mono text-[11px] text-[#666666] font-bold mt-0.5">Runtime exploit verification requires sandbox infrastructure</p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <XCircle className="w-6 h-6 text-red-600 shrink-0" />
-            <div className="font-bold text-[15px] sm:text-[16px] text-red-700">
-              {before ? '✕ Payload Reproduced' : 'Testing Baseline Probe…'}
+        <div className="p-4 rounded-lg bg-white border border-[#DCDCD5] space-y-3">
+          <p className="text-[13px] text-[#333333] font-medium leading-relaxed">
+            Sandbox-based exploit reproduction is not currently available for this finding. 
+            Runtime verification requires an isolated container environment to safely execute 
+            exploit probes against the assessed codebase.
+          </p>
+          <p className="text-[12.5px] text-[#555555] font-medium leading-relaxed">
+            The finding below was identified through <span className="font-bold text-[#111111]">static analysis</span> and 
+            <span className="font-bold text-[#111111]"> AI reasoning</span>. Manual verification or sandbox infrastructure 
+            is required to confirm exploitability at runtime.
+          </p>
+        </div>
+      </div>
+
+      {/* STATIC ANALYSIS EVIDENCE */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="w-5 h-5 text-[#111111]" />
+          <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">STATIC ANALYSIS EVIDENCE</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {/* File Location */}
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              FILE LOCATION
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="mono text-[12px] font-bold text-[#111111] break-all">{finding.file_path}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="mono text-[12px] text-[#333333]">Line {finding.line_number}</span>
+              </div>
+              {finding.endpoint && (
+                <div className="flex items-center gap-2">
+                  <span className="mono text-[12px] text-[#333333]">Endpoint: {finding.endpoint}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          <p className="text-[12.5px] text-[var(--color-ink-2)] leading-relaxed">
-            Vulnerability probe executed against baseline commit <span className="mono">{currentRepo?.commit ? currentRepo.commit.slice(0, 7) : '—'}</span>. HTTP 500 error triggered.
-          </p>
-        </div>
-
-        {/* AFTER CARD */}
-        <div className="p-4 sm:p-6 rounded-xl bg-white border border-emerald-200 shadow-xs space-y-3">
-          <div className="mono text-[11px] font-bold text-[#0F8A5A] uppercase tracking-wider">
-            AFTER (PATCHED BUILD)
-          </div>
-
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-[#0F8A5A] shrink-0" />
-            <div className="font-bold text-[15px] sm:text-[16px] text-[#0F8A5A]">
-              {after ? '✓ Payload Blocked' : 'Testing Patched Build…'}
+          {/* Confidence & Classification */}
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              CONFIDENCE & CLASSIFICATION
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] text-[#555555]">Confidence:</span>
+                <span className="mono text-[12px] font-bold text-[#111111]">{finding.confidence_pct}%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] text-[#555555]">Source:</span>
+                <span className="mono text-[12px] font-bold text-[#111111]">{finding.source_tool}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] text-[#555555]">Status:</span>
+                <span className="mono text-[12px] font-bold text-[#111111]">{finding.status}</span>
+              </div>
             </div>
           </div>
-
-          <p className="text-[12.5px] text-[var(--color-ink-2)] leading-relaxed">
-            Same payload replayed against patched container build. User input treated as sanitized data.
-          </p>
         </div>
 
+        {/* Root Cause */}
+        {finding.root_cause && (
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              ROOT CAUSE
+            </div>
+            <p className="text-[13px] text-[#333333] font-medium leading-relaxed">
+              {finding.root_cause}
+            </p>
+          </div>
+        )}
+
+        {/* Impact */}
+        {finding.impact && (
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              IMPACT
+            </div>
+            <p className="text-[13px] text-[#333333] font-medium leading-relaxed">
+              {finding.impact}
+            </p>
+          </div>
+        )}
+
+        {/* Attack Path */}
+        {finding.attack_path && finding.attack_path.length > 0 && (
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              ATTACK PATH
+            </div>
+            <div className="space-y-2">
+              {finding.attack_path.map((step, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="mono text-[11px] font-bold text-[#C5F82A] bg-[#111111] px-1.5 py-0.5 rounded shrink-0">
+                    {idx + 1}
+                  </span>
+                  <span className="text-[12.5px] text-[#333333] font-medium leading-relaxed">{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Evidence */}
+        {finding.evidence && (
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              EVIDENCE
+            </div>
+            <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#DCDCD5]">
+              <pre className="mono text-[11.5px] text-[#333333] whitespace-pre-wrap break-words leading-relaxed">
+                {typeof finding.evidence === 'string' 
+                  ? finding.evidence 
+                  : finding.evidence.static_analysis || finding.evidence.ai_reasoning || JSON.stringify(finding.evidence, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* Code Snippet */}
+        {finding.code && (
+          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+              AFFECTED CODE
+            </div>
+            <div className="p-3 rounded-lg bg-[#1A1A1A] border border-[#333333] overflow-x-auto">
+              <pre className="mono text-[11.5px] text-[#C5F82A] whitespace-pre-wrap break-words leading-relaxed">
+                {finding.code.snippet || 'No code snippet available'}
+              </pre>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* REGRESSION & SANDBOX STATUS */}
-      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[var(--color-line)] shadow-xs flex flex-wrap items-center justify-between gap-4 sm:gap-6">
+      {/* ACTIONS */}
+      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="mono text-[10.5px] font-bold text-[var(--color-ink-3)] uppercase tracking-wider">REGRESSION TEST SUITE</div>
-          <div className="text-[13.5px] sm:text-[14px] font-bold text-[var(--color-ink)] flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#0F8A5A]" />
-            ✓ 12 / 12 Tests Passed
-          </div>
+          <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">NEXT STEPS</div>
+          <p className="text-[12.5px] text-[#555555] font-medium">
+            Review the evidence above and assess whether this finding requires remediation.
+          </p>
         </div>
-
-        <div className="space-y-1">
-          <div className="mono text-[10.5px] font-bold text-[var(--color-ink-3)] uppercase tracking-wider">SANDBOX CONTAINER</div>
-          <div className="text-[13.5px] sm:text-[14px] font-bold text-[var(--color-ink)] flex items-center gap-2 flex-wrap">
-            <Check className="w-4 h-4 text-[#0F8A5A]" />
-            <span>✓ Container Destroyed &amp; Purged</span>
-            <span className="mono text-[10.5px] text-[var(--color-ink-3)]">({logs.length} probe events)</span>
-          </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="btn btn-ghost btn-sm text-[12px] font-semibold"
+          >
+            ← Back
+          </button>
+          <button
+            onClick={() => navigate(`/findings/${finding.id}`)}
+            className="btn btn-primary btn-sm text-[12px]"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            View Full Finding
+          </button>
         </div>
       </div>
-
-      {/* HUGE GREEN RESULT BANNER */}
-      {isComplete && (
-        <div className="p-5 sm:p-8 rounded-xl bg-[#16C784] text-[#111111] border border-[#111111] shadow-hard space-y-3 fade-in">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-[#111111] shrink-0" />
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">VERIFIED</h2>
-          </div>
-          <p className="text-[14px] sm:text-[15px] font-bold leading-relaxed max-w-[800px] text-[#111111]">
-            &ldquo;Vulnerability could not be reproduced against the patched build.&rdquo;
-          </p>
-          <div className="mono text-[11px] sm:text-[11.5px] text-[#111111] font-bold pt-2 border-t border-[#111111]/30">
-            Audit proof recorded for assessment snapshot. Vulnerability status set to VERIFIED.
-          </div>
-        </div>
-      )}
 
     </div>
   );

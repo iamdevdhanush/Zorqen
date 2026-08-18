@@ -117,7 +117,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setCommit(repo.commit || 'main');
       setAssessments([]);
       setCurrentAssessment(null);
-      if (repo.id) void loadAssessments(repo.id);
+      const dbId = repo.rakshaId || repo.id;
+      if (dbId) void loadAssessments(dbId);
     },
     [loadAssessments, stopPolling]
   );
@@ -177,7 +178,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!currentRepo) return;
     stopPolling();
     try {
-      const { data } = await apiStartAssessment({ repository_id: currentRepo.id, branch });
+      const dbId = currentRepo.rakshaId || currentRepo.id;
+      const { data } = await apiStartAssessment({ repository_id: dbId, branch });
       const run = data as AssessmentRun;
       setAssessments((prev) => [run, ...prev]);
       setCurrentAssessment(run);
@@ -228,7 +230,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setCurrentRepo(r);
         setBranch(r.defaultBranch || 'main');
         setCommit(r.commit || 'main');
-        if (r.id) void loadAssessments(r.id);
+        const dbId = r.rakshaId || r.id;
+        if (dbId) void loadAssessments(dbId);
       } catch {
         /* ignore malformed session */
       }

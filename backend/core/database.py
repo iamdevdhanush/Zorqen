@@ -40,25 +40,13 @@ class Base(DeclarativeBase):
 
 
 async def init_db():
-    """Create all tables on startup and purge any legacy demo records.
+    """Create all tables on startup.
 
-    Demo mode was removed; any leftover seeded rows (is_demo users, their
-    repositories, snapshots, assessments, findings) are deleted so the console
-    never surfaces fabricated data. Models are imported here to avoid the
-    circular import (models import Base from this module).
+    Models are imported here to avoid the circular import (models import Base
+    from this module).
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-    async with AsyncSessionLocal() as db:
-        from models.user import User
-        result = await db.execute(select(User).where(User.is_demo.is_(True)))
-        demo_users = result.scalars().all()
-        for u in demo_users:
-            await db.delete(u)
-        if demo_users:
-            await db.commit()
-            log.info("purged legacy demo records", users=len(demo_users))
 
 
 async def get_db():

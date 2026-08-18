@@ -74,9 +74,6 @@ class Assessment(Base):
     # Rich pipeline log lines [{step, status, timestamp, source, text, tone}]
     pipeline_logs: Mapped[list] = mapped_column(JSON, default=list)
 
-    # Is this a demo assessment
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
-
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

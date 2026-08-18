@@ -297,7 +297,6 @@ async def build_rakasha_context(
             "owner": repo.owner,
             "branch": branch,
             "commit": commit,
-            "is_demo": repo.is_demo,
         }
         context["retrieved"].append("repository")
 

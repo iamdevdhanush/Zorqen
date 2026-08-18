@@ -86,7 +86,7 @@ class GitHubClient:
         return repos
 
     @staticmethod
-    def normalize_repo(raw: dict) -> dict:
+    def normalize_repo(raw: dict, raksha_id: str | None = None) -> dict:
         """Map a GitHub /user/repos item to the frontend RepoMeta contract.
 
         Preserves the fields the UI reads (id, name, owner, private, language,
@@ -94,9 +94,13 @@ class GitHubClient:
         updatedAt, visibility, permissions, description). The list endpoint does
         not include the HEAD commit sha, so `commit` is null and the UI renders
         a dash rather than crashing. No token data is ever included.
+
+        When raksha_id is provided, it is included as `rakshaId` so the frontend
+        can use the RAKSHA internal UUID for database operations (assessments,
+        findings) while keeping the GitHub integer ID for navigation.
         """
         owner = (raw.get("owner") or {}).get("login", "")
-        return {
+        result = {
             "id": str(raw.get("id") or ""),
             "name": raw.get("name") or "",
             "fullName": raw.get("full_name") or f"{owner}/{raw.get('name') or ''}",
@@ -111,6 +115,9 @@ class GitHubClient:
             "permissions": raw.get("permissions"),
             "description": raw.get("description"),
         }
+        if raksha_id:
+            result["rakshaId"] = raksha_id
+        return result
 
     async def get_repo(self, owner: str, repo: str) -> dict:
         return await self._get(f"/repos/{owner}/{repo}")

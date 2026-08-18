@@ -124,5 +124,4 @@ async def get_current_user_info(request: Request, db: AsyncSession = Depends(get
         "github_name": user.github_name,
         "github_email": user.github_email,
         "github_avatar_url": user.github_avatar_url,
-        "is_demo": user.is_demo,
     }

@@ -133,13 +133,13 @@ export interface ActivityItem {
 
 export interface RepoMeta {
   id: string;
+  rakshaId?: string;
   name: string;
   owner: string;
   private: boolean;
   language: string;
   defaultBranch: string;
   commit?: string;
-  isDemo?: boolean;
   fullName?: string;
   htmlUrl?: string;
   updatedAt?: string;

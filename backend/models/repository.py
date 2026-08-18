@@ -33,7 +33,6 @@ class Repository(Base):
 
     # Connection state
     is_connected: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Last scanned HEAD commit (short sha) for the console contract
     head_commit: Mapped[str] = mapped_column(String(64), nullable=True)

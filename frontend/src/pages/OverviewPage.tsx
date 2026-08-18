@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import {
+  AlertTriangle,
   ArrowRight,
   CheckCircle2,
   Circle,
@@ -393,18 +394,20 @@ export default function OverviewPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          {[
-            ['01', 'DETECT', 'Static analysis & repo mapping.', 'Complete'],
-            ['02', 'REASON', 'AI correlates source & attack paths.', 'Complete'],
-            ['03', 'VALIDATE', 'Sandbox runtime reproduction.', 'Not run'],
-            ['04', 'REMEDIATE', 'Minimal patch diff generation.', 'Ready'],
-            ['05', 'VERIFY', 'Confirm patch fixes vulnerability.', 'Pending'],
-          ].map(([stepNum, stepTitle, stepDesc, stepStatus]) => (
+          {([
+            ['01', 'DETECT', 'Static analysis & repo mapping.', currentAssessment?.steps?.some(s => s.status === 'completed') ? 'Complete' : currentAssessment?.status === 'RUNNING' ? 'Running' : 'Pending'],
+            ['02', 'REASON', 'AI correlates source & attack paths.', currentAssessment?.steps?.find(s => s.id === 'reasoning')?.status === 'completed' ? 'Complete' : 'Pending'],
+            ['03', 'VALIDATE', 'Sandbox runtime reproduction.', 'Unavailable'],
+            ['04', 'REMEDIATE', 'Minimal patch diff generation.', findings.some(f => f.status === 'FIX_PENDING' || f.status === 'FIX_APPLIED') ? 'In Progress' : findings.length > 0 ? 'Ready' : 'Pending'],
+            ['05', 'VERIFY', 'Confirm patch fixes vulnerability.', findings.some(f => f.status === 'VERIFIED') ? 'Verified' : 'Pending'],
+          ] as const).map(([stepNum, stepTitle, stepDesc, stepStatus]) => (
             <div key={stepNum} className="p-4 rounded-xl bg-white border border-[#111111] shadow-hard space-y-2">
               <div className="flex items-center justify-between">
                 <span className="mono text-[11px] font-extrabold bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111]">{stepNum}</span>
-                {stepStatus === 'Complete' ? (
+                {stepStatus === 'Complete' || stepStatus === 'Verified' ? (
                   <CheckCircle2 className="w-4 h-4 text-[#111111]" />
+                ) : stepStatus === 'Unavailable' ? (
+                  <AlertTriangle className="w-4 h-4 text-[#B45309]" />
                 ) : (
                   <Circle className="w-3.5 h-3.5 text-[#4A4A4A]" />
                 )}
@@ -412,7 +415,7 @@ export default function OverviewPage() {
               <div className="font-extrabold text-[13.5px] text-[#111111] tracking-tight">{stepTitle}</div>
               <div className="text-[11.5px] text-[#555555] leading-snug font-medium">{stepDesc}</div>
               <div className="pt-1">
-                <span className={`chip text-[9.5px] font-bold ${stepStatus === 'Complete' ? 'ok' : ''}`}>{stepStatus}</span>
+                <span className={`chip text-[9.5px] font-bold ${stepStatus === 'Complete' || stepStatus === 'Verified' ? 'ok' : stepStatus === 'Unavailable' ? '' : ''}`}>{stepStatus}</span>
               </div>
             </div>
           ))}

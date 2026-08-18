@@ -62,7 +62,7 @@ export default function RepositoryDetailPage() {
     let cancelled = false;
     setDetailLoading(true);
     setDetailError(null);
-    getRepoDetail(currentRepo.id)
+    getRepoDetail(currentRepo.rakshaId || currentRepo.id)
       .then((d) => {
         if (!cancelled) setDetail(d.data);
       })
