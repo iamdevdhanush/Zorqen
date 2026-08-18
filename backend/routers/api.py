@@ -8,10 +8,12 @@ import structlog
 from datetime import datetime, timezone
 from typing import Optional
 
+from core.config import settings
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from agents.orchestrator import run_assessment
 from agents.remediation_agent import generate_fix
@@ -167,6 +169,82 @@ async def get_repository(
     return repo_meta(repo)
 
 
+@repos_router.get("/github/{github_id}")
+async def get_repo_by_github_id(
+    github_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Resolve a GitHub integer repository ID to the RAKSHA repository record.
+
+    If the repository has not been connected yet, auto-connect it from GitHub
+    using the authenticated user's token and return the created record.
+    """
+    if not current_user.github_access_token:
+        raise HTTPException(status_code=400, detail="No GitHub access token — re-connect your GitHub account.")
+
+    # Check if already connected in RAKSHA DB
+    result = await db.execute(
+        select(Repository).where(
+            Repository.github_repo_id == github_id,
+            Repository.user_id == current_user.id,
+        )
+    )
+    repo = result.scalar_one_or_none()
+    if repo:
+        return repo_meta(repo)
+
+    # Not connected — fetch from GitHub and auto-create
+    client = GitHubClient(current_user.github_access_token)
+    try:
+        # Search through user's repos to find the one with this ID
+        all_repos = await client.list_repos()
+        gh_repo = next((r for r in all_repos if r.get("id") == github_id), None)
+        if not gh_repo:
+            raise HTTPException(
+                status_code=404,
+                detail=f"GitHub repository with ID {github_id} not found in your accessible repositories.",
+            )
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        log.warning(
+            "[GITHUB] auto_connect_list_failed",
+            github_id=github_id,
+            http_status=status,
+        )
+        raise HTTPException(status_code=status, detail="GitHub API error fetching repositories.")
+
+    owner = (gh_repo.get("owner") or {}).get("login", "")
+    name = gh_repo.get("name") or ""
+    full_name = gh_repo.get("full_name") or f"{owner}/{name}"
+
+    repo = Repository(
+        user_id=current_user.id,
+        full_name=full_name,
+        owner=owner,
+        name=name,
+        description=gh_repo.get("description"),
+        language=gh_repo.get("language"),
+        default_branch=gh_repo.get("default_branch") or "main",
+        is_private=bool(gh_repo.get("private")),
+        html_url=gh_repo.get("html_url"),
+        clone_url=gh_repo.get("clone_url"),
+        github_repo_id=github_id,
+        stars=gh_repo.get("stargazers_count") or 0,
+        head_commit=None,
+    )
+    db.add(repo)
+    await db.commit()
+    await db.refresh(repo)
+    log.info(
+        "[RAKSHA] auto_connected_repository",
+        github_id=github_id,
+        full_name=full_name,
+        raksha_id=repo.id,
+    )
+    return repo_meta(repo)
+
+
 @repos_router.get("/{repo_id}/detail")
 async def get_repository_detail(
     repo_id: str,
@@ -175,11 +253,16 @@ async def get_repository_detail(
 ):
     """Real GitHub-backed repo detail: default branch, HEAD commit, tree, languages.
 
-    All values come from the GitHub API (git/trees recursive + languages). The
-    file tree is capped for the console; `treeTruncated` reports the GitHub
-    truncation flag so the UI can say the tree is partial.
+    Resolution chain:
+      1. Resolve repo_id → RAKSHA record (UUID or GitHub integer ID).
+      2. If GitHub ID provided but not in DB, auto-connect from GitHub API.
+      3. Fetch fresh repository metadata from GitHub (default_branch, etc.).
+      4. Resolve HEAD commit SHA from the branch ref (never use a stale SHA).
+      5. Fetch the recursive git tree using the real HEAD SHA.
+      6. Fetch language bytes from GitHub languages API.
+
+    Returns structured errors — never fabricates data.
     """
-    repo = await _get_repo_or_404(repo_id, current_user.id, db)
     if not current_user.github_access_token:
         raise HTTPException(
             status_code=400,
@@ -187,34 +270,176 @@ async def get_repository_detail(
         )
     client = GitHubClient(current_user.github_access_token)
 
-    default_branch = repo.default_branch or "main"
-    ref = repo.head_commit or default_branch
+    # --- Step 1: Resolve the repository record ---
+    # Try UUID first; fall back to GitHub integer ID; auto-connect if missing.
+    repo = await _resolve_repo_with_auto_connect(repo_id, current_user, db, client)
+
+    log.info(
+        "[RAKSHA] repository_detail_start",
+        raksha_id=repo.id,
+        github_repo_id=repo.github_repo_id,
+        owner=repo.owner,
+        name=repo.name,
+    )
+
+    # --- Step 2: Fetch fresh repository metadata from GitHub ---
+    try:
+        gh_repo_data = await client.get_repo(repo.owner, repo.name)
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        log.warning(
+            "[GITHUB] get_repo_failed",
+            owner=repo.owner,
+            name=repo.name,
+            http_status=status,
+        )
+        if status == 404:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": "GITHUB_REPOSITORY_NOT_FOUND",
+                    "message": (
+                        "GitHub could not find this repository. It may have been deleted, "
+                        "renamed, or the token may not have access to a private repository."
+                    ),
+                    "repository": f"{repo.owner}/{repo.name}",
+                    "github_status": 404,
+                },
+            )
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "error": "GITHUB_API_ERROR",
+                "message": f"GitHub API returned HTTP {status}.",
+                "repository": f"{repo.owner}/{repo.name}",
+                "github_status": status,
+            },
+        )
+
+    # Sync fresh metadata from GitHub into the RAKSHA record
+    fresh_default_branch = gh_repo_data.get("default_branch") or repo.default_branch or "main"
+    fresh_language = gh_repo_data.get("language") or repo.language
+    fresh_private = bool(gh_repo_data.get("private"))
+    if (
+        repo.default_branch != fresh_default_branch
+        or repo.language != fresh_language
+        or repo.is_private != fresh_private
+    ):
+        repo.default_branch = fresh_default_branch
+        repo.language = fresh_language
+        repo.is_private = fresh_private
+        await db.commit()
+        log.info(
+            "[RAKSHA] repository_metadata_synced",
+            owner=repo.owner,
+            name=repo.name,
+            default_branch=fresh_default_branch,
+        )
+
+    default_branch = fresh_default_branch
+
+    # --- Step 3: Resolve HEAD commit SHA from branch ref ---
+    # Never use a stale stored SHA as the tree ref — always resolve fresh.
+    head_sha: Optional[str] = None
     try:
         commits = await client.list_commits(repo.owner, repo.name, default_branch, per_page=1)
+        if commits:
+            head_sha = commits[0].get("sha")
     except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail="GitHub API error fetching commits.")
-    head_sha = None
-    if commits:
-        head_sha = commits[0].get("sha")
-        if head_sha and head_sha != repo.head_commit:
-            repo.head_commit = head_sha
-            await db.commit()
+        status_code = e.response.status_code
+        log.warning(
+            "[GITHUB] list_commits_failed",
+            owner=repo.owner,
+            name=repo.name,
+            branch=default_branch,
+            http_status=status_code,
+        )
+        # Non-fatal: we'll try with branch name as ref
 
-    tree_data = await client.get_tree(repo.owner, repo.name, ref, recursive=True)
+    if head_sha and head_sha != repo.head_commit:
+        repo.head_commit = head_sha
+        await db.commit()
+        log.info(
+            "[RAKSHA] head_commit_updated",
+            owner=repo.owner,
+            name=repo.name,
+            head_sha=head_sha[:7] if head_sha else None,
+        )
+
+    # Use the resolved SHA as tree ref; fall back to branch name (GitHub accepts both)
+    tree_ref = head_sha or default_branch
+
+    # --- Step 4: Fetch recursive git tree ---
+    try:
+        tree_data = await client.get_tree(repo.owner, repo.name, tree_ref, recursive=True)
+    except httpx.HTTPStatusError as e:
+        status_code = e.response.status_code
+        log.warning(
+            "[GITHUB] get_tree_failed",
+            owner=repo.owner,
+            name=repo.name,
+            tree_ref=tree_ref[:7] if len(tree_ref) > 10 else tree_ref,
+            http_status=status_code,
+        )
+        raise HTTPException(
+            status_code=status_code,
+            detail={
+                "error": "GITHUB_TREE_FETCH_FAILED",
+                "message": f"GitHub returned HTTP {status_code} fetching the repository tree.",
+                "repository": f"{repo.owner}/{repo.name}",
+                "github_status": status_code,
+            },
+        )
+
     entries = tree_data.get("tree") or []
-    paths = [
+    # Count only blob (file) entries — exclude trees (directories)
+    blob_paths = [
         item["path"]
         for item in entries
         if item.get("type") == "blob" and item.get("path")
     ]
+    total_file_count = len(blob_paths)
     truncated = bool(tree_data.get("truncated"))
     MAX_TREE_PATHS = 500
-    tree_paths = paths[:MAX_TREE_PATHS]
+    tree_paths = blob_paths[:MAX_TREE_PATHS]
 
+    if truncated:
+        log.warning(
+            "[GITHUB] tree_truncated",
+            owner=repo.owner,
+            name=repo.name,
+            shown=len(tree_paths),
+            total_known=total_file_count,
+        )
+
+    # --- Step 5: Fetch language byte breakdown ---
     try:
         languages = await client.get_languages(repo.owner, repo.name)
-    except httpx.HTTPStatusError:
+        log.info(
+            "[GITHUB] languages_fetched",
+            owner=repo.owner,
+            name=repo.name,
+            language_count=len(languages),
+        )
+    except httpx.HTTPStatusError as e:
+        log.warning(
+            "[GITHUB] get_languages_failed",
+            owner=repo.owner,
+            name=repo.name,
+            http_status=e.response.status_code,
+        )
         languages = {}
+
+    log.info(
+        "[RAKSHA] repository_detail_complete",
+        owner=repo.owner,
+        name=repo.name,
+        default_branch=default_branch,
+        head_commit=head_sha[:7] if head_sha else None,
+        file_count=total_file_count,
+        tree_truncated=truncated,
+        language_count=len(languages),
+    )
 
     return {
         "repoId": repo.id,
@@ -223,7 +448,7 @@ async def get_repository_detail(
         "fullName": repo.full_name,
         "defaultBranch": default_branch,
         "headCommit": head_sha or repo.head_commit,
-        "fileCount": len(paths),
+        "fileCount": total_file_count,
         "treeTruncated": truncated,
         "treePaths": tree_paths,
         "languages": languages,
@@ -252,10 +477,257 @@ async def get_commits(repo_id: str, branch: str = "main",
 
 
 async def _get_repo_or_404(repo_id: str, user_id: str, db: AsyncSession) -> Repository:
+    """Resolve a repository by RAKSHA UUID OR GitHub integer database ID.
+
+    The frontend URL /repos/{id} contains the GitHub integer ID returned by
+    normalize_repo().  The RAKSHA DB uses UUID primary keys.  When a UUID
+    lookup misses, fall back to a github_repo_id integer lookup so that either
+    form of the ID works transparently.
+    """
+    # 1. Try UUID primary key lookup (fast path — RAKSHA-internal navigation)
     repo = await db.get(Repository, repo_id)
-    if not repo or repo.user_id != user_id:
+    if repo and repo.user_id == user_id:
+        return repo
+    if repo and repo.user_id != user_id:
         raise HTTPException(status_code=404, detail="Repository not found")
+
+    # 2. Try GitHub integer ID lookup (GitHub ID passed from list endpoint)
+    try:
+        github_id_int = int(repo_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=404, detail="Repository not found")
+
+    result = await db.execute(
+        select(Repository).where(
+            Repository.github_repo_id == github_id_int,
+            Repository.user_id == user_id,
+        )
+    )
+    repo = result.scalar_one_or_none()
+    if not repo:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Repository with GitHub ID {github_id_int} not found. "
+                "Click 'Assess Repository' from the Repositories page to connect it first."
+            ),
+        )
     return repo
+
+
+async def _resolve_repo_with_auto_connect(
+    repo_id: str,
+    current_user: User,
+    db: AsyncSession,
+    client: "GitHubClient",
+) -> Repository:
+    """Resolve a repository for the detail endpoint, auto-connecting if needed.
+
+    Resolution order:
+      1. RAKSHA UUID primary key lookup.
+      2. GitHub integer ID lookup (finds already-connected repos by GitHub ID).
+      3. Auto-connect: fetch the GitHub repo via the integer ID, create RAKSHA record.
+
+    Never creates a record for a repo the user's token can't actually access.
+    """
+    # 1. Try UUID primary key
+    repo = await db.get(Repository, repo_id)
+    if repo and repo.user_id == current_user.id:
+        return repo
+    if repo and repo.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Repository not found")
+
+    # 2. Try GitHub integer ID lookup
+    try:
+        github_id_int = int(repo_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=404, detail="Repository not found")
+
+    result = await db.execute(
+        select(Repository).where(
+            Repository.github_repo_id == github_id_int,
+            Repository.user_id == current_user.id,
+        )
+    )
+    repo = result.scalar_one_or_none()
+    if repo:
+        return repo
+
+    # 3. Auto-connect: look up in user's GitHub repos list and create RAKSHA record
+    log.info(
+        "[RAKSHA] auto_connect_attempt",
+        github_id=github_id_int,
+        user_id=current_user.id,
+    )
+    try:
+        all_repos = await client.list_repos()
+        gh_repo = next((r for r in all_repos if r.get("id") == github_id_int), None)
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        log.warning(
+            "[GITHUB] auto_connect_list_repos_failed",
+            github_id=github_id_int,
+            http_status=status,
+        )
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "error": "GITHUB_API_ERROR",
+                "message": f"Could not list GitHub repositories (HTTP {status}).",
+                "github_status": status,
+            },
+        )
+
+    if not gh_repo:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "GITHUB_REPOSITORY_NOT_ACCESSIBLE",
+                "message": (
+                    f"GitHub repository ID {github_id_int} was not found in the "
+                    "repositories accessible to your account. If this is a private "
+                    "repository, ensure your OAuth token has 'repo' scope."
+                ),
+                "github_id": github_id_int,
+            },
+        )
+
+    owner = (gh_repo.get("owner") or {}).get("login", "")
+    name = gh_repo.get("name") or ""
+    full_name = gh_repo.get("full_name") or f"{owner}/{name}"
+
+    repo = Repository(
+        user_id=current_user.id,
+        full_name=full_name,
+        owner=owner,
+        name=name,
+        description=gh_repo.get("description"),
+        language=gh_repo.get("language"),
+        default_branch=gh_repo.get("default_branch") or "main",
+        is_private=bool(gh_repo.get("private")),
+        html_url=gh_repo.get("html_url"),
+        clone_url=gh_repo.get("clone_url"),
+        github_repo_id=github_id_int,
+        stars=gh_repo.get("stargazers_count") or 0,
+        head_commit=None,
+    )
+    db.add(repo)
+    await db.commit()
+    await db.refresh(repo)
+    log.info(
+        "[RAKSHA] auto_connected_repository",
+        github_id=github_id_int,
+        full_name=full_name,
+        raksha_id=repo.id,
+    )
+    return repo
+
+
+# ── Development-Only Debug Endpoint ────────────────────────────────────────
+
+
+debug_router = APIRouter(prefix="/debug", tags=["debug"])
+
+
+@debug_router.get("/github/repository/{repo_id}")
+async def debug_github_repository(
+    repo_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Sanitized diagnostic endpoint for debugging repository data flow.
+
+    DEVELOPMENT ONLY — returns diagnostic information to trace the
+    GitHub API resolution chain. Never returns tokens or secrets.
+    Disabled in production.
+    """
+    if not settings.is_development:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    result: dict = {
+        "repo_id_received": repo_id,
+        "raksha_repository_id": None,
+        "github_repository_id": None,
+        "owner": None,
+        "name": None,
+        "full_name": None,
+        "authenticated_user": None,
+        "default_branch": None,
+        "head_commit": None,
+        "github_repo_status": None,
+        "tree_status": None,
+        "languages_status": None,
+        "errors": [],
+    }
+
+    if not current_user.github_access_token:
+        result["errors"].append("NO_GITHUB_ACCESS_TOKEN")
+        return result
+
+    client = GitHubClient(current_user.github_access_token)
+
+    # Authenticated user
+    try:
+        gh_user = await client.get_user()
+        result["authenticated_user"] = gh_user.get("login")
+    except Exception as exc:
+        result["errors"].append(f"GET_USER_FAILED: {type(exc).__name__}")
+
+    # Resolve repo record
+    repo = await db.get(Repository, repo_id)
+    if not repo:
+        try:
+            github_id_int = int(repo_id)
+            db_result = await db.execute(
+                select(Repository).where(
+                    Repository.github_repo_id == github_id_int,
+                    Repository.user_id == current_user.id,
+                )
+            )
+            repo = db_result.scalar_one_or_none()
+        except (ValueError, TypeError):
+            pass
+
+    if repo:
+        result["raksha_repository_id"] = repo.id
+        result["github_repository_id"] = repo.github_repo_id
+        result["owner"] = repo.owner
+        result["name"] = repo.name
+        result["full_name"] = repo.full_name
+        result["default_branch"] = repo.default_branch
+        result["head_commit"] = repo.head_commit[:7] if repo.head_commit else None
+
+        # Test GitHub repo access
+        try:
+            gh_repo_data = await client.get_repo(repo.owner, repo.name)
+            result["github_repo_status"] = "ok"
+            result["default_branch"] = gh_repo_data.get("default_branch")
+        except httpx.HTTPStatusError as e:
+            result["github_repo_status"] = f"HTTP_{e.response.status_code}"
+            result["errors"].append(f"GET_REPO_FAILED: HTTP {e.response.status_code}")
+
+        # Test tree access
+        if repo.head_commit or result.get("default_branch"):
+            try:
+                ref = repo.head_commit or result.get("default_branch") or "main"
+                tree_data = await client.get_tree(repo.owner, repo.name, ref, recursive=False)
+                entry_count = len(tree_data.get("tree") or [])
+                result["tree_status"] = f"ok ({entry_count} top-level entries)"
+            except httpx.HTTPStatusError as e:
+                result["tree_status"] = f"HTTP_{e.response.status_code}"
+                result["errors"].append(f"GET_TREE_FAILED: HTTP {e.response.status_code}")
+
+        # Test languages access
+        try:
+            languages = await client.get_languages(repo.owner, repo.name)
+            result["languages_status"] = f"ok ({len(languages)} languages)"
+        except httpx.HTTPStatusError as e:
+            result["languages_status"] = f"HTTP_{e.response.status_code}"
+            result["errors"].append(f"GET_LANGUAGES_FAILED: HTTP {e.response.status_code}")
+    else:
+        result["errors"].append(f"REPO_NOT_IN_RAKSHA_DB: id={repo_id}")
+
+    return result
 
 
 async def _latest_assessment_scores(db: AsyncSession, user: User) -> dict:

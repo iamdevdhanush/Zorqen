@@ -4,7 +4,8 @@ import { File, Folder, Play } from 'lucide-react';
 import { BackLink, EmptyState, PageHeader, Panel, SevBadge } from '../components/ui';
 import { useWorkspace, useFindings } from '../store/WorkspaceContext';
 import { getRepoDetail } from '../services/api';
-import type { RepoDetail } from '../lib/types';
+import api from '../services/api';
+import type { RepoDetail, RepoMeta } from '../lib/types';
 
 function Tree({ paths, truncated }: { paths: string[]; truncated: boolean }) {
   return (
@@ -33,15 +34,51 @@ function Tree({ paths, truncated }: { paths: string[]; truncated: boolean }) {
 }
 
 export default function RepositoryDetailPage() {
-  useParams();
-  const { currentRepo, currentAssessment, startAssessment } = useWorkspace();
+  const { repoId } = useParams<{ repoId: string }>();
+  const { currentRepo, currentAssessment, startAssessment, loadRepo } = useWorkspace();
   const findings = useFindings();
   const navigate = useNavigate();
 
   const [detail, setDetail] = useState<RepoDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [repoLoading, setRepoLoading] = useState(false);
 
+  // When currentRepo doesn't match the URL repoId, try to fetch the repo.
+  // This handles direct URL navigation (e.g. bookmark to /repos/1331115680)
+  // where the workspace context is cold. The /repositories/github/{id} endpoint
+  // auto-connects the repo by GitHub integer ID.
+  useEffect(() => {
+    if (!repoId) return;
+    // Already loaded and matching — no fetch needed
+    if (currentRepo && (currentRepo.id === repoId || String(currentRepo.id) === repoId)) return;
+
+    let cancelled = false;
+    setRepoLoading(true);
+    // Try GitHub integer ID auto-connect endpoint first
+    api.get(`/repositories/github/${repoId}`)
+      .then(({ data }) => {
+        if (!cancelled) {
+          loadRepo(data as RepoMeta);
+        }
+      })
+      .catch(() => {
+        // Fall back: try direct RAKSHA UUID lookup
+        api.get(`/repositories/${repoId}`)
+          .then(({ data }) => {
+            if (!cancelled) loadRepo(data as RepoMeta);
+          })
+          .catch(() => {
+            // Repository not accessible — detail fetch will show the error
+          });
+      })
+      .finally(() => {
+        if (!cancelled) setRepoLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [repoId, currentRepo, loadRepo]);
+
+  // Fetch detail once we have a valid currentRepo that matches our URL
   useEffect(() => {
     if (!currentRepo) {
       setDetail(null);
@@ -71,7 +108,11 @@ export default function RepositoryDetailPage() {
         <BackLink to="/repos" label="Repositories" />
         <PageHeader kicker="raksha://workspace/repositories" title="REPOSITORY DETAIL" />
         <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
-          No repository loaded — select a repository from the Repositories page.
+          {repoLoading
+            ? 'Connecting repository from GitHub…'
+            : repoId
+            ? `Repository ${repoId} not accessible — ensure you are connected to GitHub with the correct account.`
+            : 'No repository loaded — select a repository from the Repositories page.'}
         </div>
       </div>
     );

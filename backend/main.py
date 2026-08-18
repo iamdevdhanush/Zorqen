@@ -24,6 +24,7 @@ from routers.api import (
     assessments_router,
     findings_router,
     copilot_router,
+    debug_router,
 )
 from routers.overview import router as overview_router
 from routers.activity import router as activity_router
@@ -179,6 +180,8 @@ app.include_router(findings_router, prefix="/api")
 app.include_router(copilot_router, prefix="/api")
 app.include_router(overview_router, prefix="/api")
 app.include_router(activity_router, prefix="/api")
+# Development-only debug router (returns 404 in production)
+app.include_router(debug_router, prefix="/api")
 
 
 # ── Health Check ────────────────────────────────────────────────────────────────────────────
