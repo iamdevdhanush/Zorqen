@@ -66,9 +66,9 @@ async def list_github_repos(
     annotated with the latest completed assessment's score and open finding
     count (when one exists).
     """
-    if not current_user.github_access_token:
+    if not current_user.get_github_token():
         raise HTTPException(status_code=400, detail="No GitHub access token")
-    client = GitHubClient(current_user.github_access_token)
+    client = GitHubClient(current_user.get_github_token())
     try:
         gh_user = await client.get_user()
         log.info("[GITHUB] authenticated_user", username=gh_user.get("login"))
@@ -192,7 +192,7 @@ async def get_repo_by_github_id(
     If the repository has not been connected yet, auto-connect it from GitHub
     using the authenticated user's token and return the created record.
     """
-    if not current_user.github_access_token:
+    if not current_user.get_github_token():
         raise HTTPException(status_code=400, detail="No GitHub access token — re-connect your GitHub account.")
 
     # Check if already connected in RAKSHA DB
@@ -207,7 +207,7 @@ async def get_repo_by_github_id(
         return repo_meta(repo)
 
     # Not connected — fetch from GitHub and auto-create
-    client = GitHubClient(current_user.github_access_token)
+    client = GitHubClient(current_user.get_github_token())
     try:
         # Search through user's repos to find the one with this ID
         all_repos = await client.list_repos()
@@ -275,12 +275,12 @@ async def get_repository_detail(
 
     Returns structured errors — never fabricates data.
     """
-    if not current_user.github_access_token:
+    if not current_user.get_github_token():
         raise HTTPException(
             status_code=400,
             detail="No GitHub access token — re-connect your GitHub account.",
         )
-    client = GitHubClient(current_user.github_access_token)
+    client = GitHubClient(current_user.get_github_token())
 
     # --- Step 1: Resolve the repository record ---
     # Try UUID first; fall back to GitHub integer ID; auto-connect if missing.
@@ -471,9 +471,9 @@ async def get_repository_detail(
 async def get_branches(repo_id: str, current_user: User = Depends(get_current_user),
                        db: AsyncSession = Depends(get_db)):
     repo = await _get_repo_or_404(repo_id, current_user.id, db)
-    if not current_user.github_access_token:
+    if not current_user.get_github_token():
         return {"branches": [{"name": repo.default_branch}]}
-    client = GitHubClient(current_user.github_access_token)
+    client = GitHubClient(current_user.get_github_token())
     return {"branches": await client.list_branches(repo.owner, repo.name)}
 
 
@@ -482,9 +482,9 @@ async def get_commits(repo_id: str, branch: str = "main",
                       current_user: User = Depends(get_current_user),
                       db: AsyncSession = Depends(get_db)):
     repo = await _get_repo_or_404(repo_id, current_user.id, db)
-    if not current_user.github_access_token:
+    if not current_user.get_github_token():
         return {"commits": []}
-    client = GitHubClient(current_user.github_access_token)
+    client = GitHubClient(current_user.get_github_token())
     return {"commits": await client.list_commits(repo.owner, repo.name, branch)}
 
 
@@ -672,11 +672,11 @@ async def debug_github_repository(
         "errors": [],
     }
 
-    if not current_user.github_access_token:
+    if not current_user.get_github_token():
         result["errors"].append("NO_GITHUB_ACCESS_TOKEN")
         return result
 
-    client = GitHubClient(current_user.github_access_token)
+    client = GitHubClient(current_user.get_github_token())
 
     # Authenticated user
     try:
@@ -809,7 +809,7 @@ async def start_assessment(
     # (PENDING) assessment.  If create_assessment returned an existing
     # active one, the pipeline is already running — do not duplicate it.
     if assessment.status == AssessmentStatus.PENDING:
-        background_tasks.add_task(run_assessment, assessment.id, current_user.github_access_token)
+        background_tasks.add_task(run_assessment, assessment.id, current_user.get_github_token())
     return await get_run(db, assessment, with_findings=False)
 
 

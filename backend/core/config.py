@@ -88,6 +88,11 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     backend_url: str = "http://localhost:8000"
 
+    # Encryption key for sensitive data at rest (GitHub tokens, etc.)
+    # Must be 32 bytes (256 bits) base64-encoded.
+    # Generate with: python -c 'import base64, os; print(base64.b64encode(os.urandom(32)).decode())'
+    encryption_key: str = ""
+
     # Database
     database_url: str = "sqlite+aiosqlite:///./raksha.db"
 
@@ -150,6 +155,18 @@ class Settings(BaseSettings):
             raise ValueError("DATABASE_URL is missing a hostname (HOST).")
         if not (parsed.path or "").lstrip("/"):
             raise ValueError("DATABASE_URL is missing a database name.")
+        return self
+
+    @model_validator(mode="after")
+    def validate_production_encryption_key(self):
+        """Fail fast in production if encryption key is not configured."""
+        if self.app_env != "development":
+            if not self.encryption_key:
+                raise ValueError(
+                    "ENCRYPTION_KEY is not configured. Set ENCRYPTION_KEY in the "
+                    "deployment environment to a base64-encoded 32-byte key. "
+                    "Generate with: python -c 'import base64, os; print(base64.b64encode(os.urandom(32)).decode())'"
+                )
         return self
 
     # Snapshot retention for the overview score chart

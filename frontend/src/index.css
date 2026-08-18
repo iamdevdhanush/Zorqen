@@ -624,8 +624,9 @@ kbd {
   position: fixed !important;
   bottom: 24px !important;
   right: 24px !important;
-  z-index: 9999 !important;
+  z-index: 40 !important;
   margin: 0 !important;
+  transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 @media (max-width: 768px) {
@@ -639,5 +640,26 @@ kbd {
   #bmc-wbtn, .bmc-btn-container, #bmc-widget-wrapper, #bmc-widget-container {
     bottom: 16px !important;
     right: 16px !important;
+  }
+}
+
+/* When ASK RAKSHA (SecurityCopilot) is open, shift or hide BMC widget to prevent collision */
+@media (min-width: 640px) {
+  body.copilot-open #bmc-wbtn,
+  body.copilot-open .bmc-btn-container,
+  body.copilot-open #bmc-widget-wrapper,
+  body.copilot-open #bmc-widget-container,
+  #bmc-widget-container.copilot-open {
+    right: calc(420px + 24px) !important;
+  }
+}
+
+@media (max-width: 639px) {
+  body.copilot-open #bmc-wbtn,
+  body.copilot-open .bmc-btn-container,
+  body.copilot-open #bmc-widget-wrapper,
+  body.copilot-open #bmc-widget-container,
+  #bmc-widget-container.copilot-open {
+    display: none !important;
   }
 }

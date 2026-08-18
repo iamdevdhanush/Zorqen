@@ -77,15 +77,15 @@ async def github_callback(
             github_name=github_user.get("name"),
             github_email=github_user.get("email"),
             github_avatar_url=github_user.get("avatar_url"),
-            github_access_token=access_token,
         )
+        user.set_github_token(access_token)
         db.add(user)
     else:
         user.github_login = github_user["login"]
         user.github_name = github_user.get("name")
         user.github_email = github_user.get("email")
         user.github_avatar_url = github_user.get("avatar_url")
-        user.github_access_token = access_token
+        user.set_github_token(access_token)
 
     await db.commit()
     await db.refresh(user)

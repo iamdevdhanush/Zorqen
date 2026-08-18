@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
+import { useWorkspaceUI } from '../store/WorkspaceContext';
 
 export default function BuyMeACoffeeWidget() {
+  const { copilotOpen } = useWorkspaceUI();
+
   useEffect(() => {
     // Ensure Google Font Cookie is loaded for Buy Me a Coffee font style
     if (!document.querySelector('link[href*="fonts.googleapis.com/css?family=Cookie"]')) {
@@ -11,16 +14,24 @@ export default function BuyMeACoffeeWidget() {
     }
   }, []);
 
+  // Sync body class for copilot open state so global CSS rules apply seamlessly
+  useEffect(() => {
+    if (copilotOpen) {
+      document.body.classList.add('copilot-open');
+    } else {
+      document.body.classList.remove('copilot-open');
+    }
+    return () => {
+      document.body.classList.remove('copilot-open');
+    };
+  }, [copilotOpen]);
+
   return (
     <div
       id="bmc-widget-container"
-      className="fixed z-[9999] pointer-events-auto"
-      style={{
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        zIndex: 9999,
-      }}
+      className={`fixed pointer-events-auto transition-all duration-200 ${
+        copilotOpen ? 'copilot-open' : ''
+      }`}
     >
       <a
         className="bmc-btn flex items-center gap-2.5 px-5 py-2.5 rounded-[12px] text-[#000000] bg-[#FFDD00] shadow-[0px_4px_14px_rgba(0,0,0,0.18)] hover:shadow-[0px_6px_20px_rgba(0,0,0,0.24)] hover:-translate-y-0.5 transition-all no-underline font-['Cookie',cursive]"

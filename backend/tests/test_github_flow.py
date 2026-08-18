@@ -435,3 +435,164 @@ class TestNoMockData:
         auth_content = pathlib.Path("routers/auth.py").read_text()
         assert 'is_demo=True' not in auth_content or \
                'demo' not in auth_content.lower() or True  # is_demo field exists but should not default True
+
+
+# ── Encryption Tests ─────────────────────────────────────────────────────────────
+
+class TestTokenEncryption:
+    """Verify GitHub token encryption at rest."""
+
+    def test_encrypt_decrypt_roundtrip(self):
+        """Encrypt and decrypt should preserve the original token."""
+        from core.crypto import encrypt_token, decrypt_token
+        original = "ghp_test_token_123456789012345678901234567890"
+        encrypted = encrypt_token(original)
+        assert encrypted != original
+        assert len(encrypted) > 0
+        decrypted = decrypt_token(encrypted)
+        assert decrypted == original
+
+    def test_encrypt_empty_string(self):
+        """Empty string should return empty string."""
+        from core.crypto import encrypt_token, decrypt_token
+        assert encrypt_token("") == ""
+        assert decrypt_token("") == ""
+
+    def test_encrypt_none_like(self):
+        """None-like values should return empty string."""
+        from core.crypto import encrypt_token, decrypt_token
+        assert encrypt_token(None) == ""
+        assert decrypt_token(None) == ""
+
+    def test_different_tokens_different_ciphertext(self):
+        """Same token encrypted twice should produce different ciphertext (nonce)."""
+        from core.crypto import encrypt_token
+        token = "ghp_same_token_123456789012345678901234567890"
+        enc1 = encrypt_token(token)
+        enc2 = encrypt_token(token)
+        assert enc1 != enc2  # Different nonce each time
+
+    def test_decrypt_corrupted_ciphertext_fails(self):
+        """Corrupted ciphertext should raise EncryptionError."""
+        from core.crypto import decrypt_token, EncryptionError
+        try:
+            decrypt_token("not_valid_base64!!!")
+            assert False, "Should have raised EncryptionError"
+        except EncryptionError:
+            pass
+
+    def test_decrypt_wrong_key_fails(self):
+        """Ciphertext encrypted with different key should fail to decrypt."""
+        from core.crypto import encrypt_token, decrypt_token, EncryptionError, _get_encryption_key
+        import os
+        import base64
+        # Save original key
+        original_key = _get_encryption_key()
+        try:
+            # Temporarily change key
+            os.environ["ENCRYPTION_KEY"] = base64.b64encode(os.urandom(32)).decode()
+            from importlib import reload
+            import core.crypto as crypto
+            reload(crypto)
+            token = "ghp_test_token"
+            encrypted = crypto.encrypt_token(token)
+            # Restore original key
+            os.environ["ENCRYPTION_KEY"] = base64.b64encode(original_key).decode()
+            reload(crypto)
+            try:
+                crypto.decrypt_token(encrypted)
+                assert False, "Should have raised EncryptionError"
+            except EncryptionError:
+                pass
+        finally:
+            os.environ["ENCRYPTION_KEY"] = base64.b64encode(original_key).decode()
+            import core.crypto as crypto
+            reload(crypto)
+
+    def test_token_never_in_serialized_api_response(self):
+        """GitHub access token should never appear in serialized API responses."""
+        from models.user import User
+        import uuid
+        user = User(
+            id=str(uuid.uuid4()),
+            github_id=12345,
+            github_login="testuser",
+            github_access_token="encrypted_token_here"
+        )
+        # The model should not expose the raw token in __repr__ or default serialization
+        repr_str = repr(user)
+        assert "encrypted_token_here" not in repr_str
+        assert "github_access_token" not in repr_str
+
+
+class TestUserTokenMethods:
+    """Verify User model token encryption methods."""
+
+    @pytest.mark.asyncio
+    async def test_set_and_get_token(self):
+        """set_github_token should encrypt, get_github_token should decrypt."""
+        from models.user import User
+        import uuid
+        user = User(
+            id=str(uuid.uuid4()),
+            github_id=12345,
+            github_login="testuser",
+        )
+        plaintext = "ghp_test_token_123456789012345678901234567890"
+        user.set_github_token(plaintext)
+        # Stored value should be encrypted
+        assert user.github_access_token != plaintext
+        assert user.github_access_token != ""
+        # get_github_token should return plaintext
+        assert user.get_github_token() == plaintext
+
+    @pytest.mark.asyncio
+    async def test_migrate_plaintext_to_encrypted(self):
+        """migrate_github_token should encrypt plaintext tokens."""
+        from models.user import User
+        import uuid
+        user = User(
+            id=str(uuid.uuid4()),
+            github_id=12345,
+            github_login="testuser",
+            github_access_token="ghp_plaintext_token_123456789012345678901234567890"
+        )
+        user.migrate_github_token()
+        # Token should now be encrypted
+        assert user.github_access_token != "ghp_plaintext_token_123456789012345678901234567890"
+        assert user.get_github_token() == "ghp_plaintext_token_123456789012345678901234567890"
+
+    @pytest.mark.asyncio
+    async def test_migrate_already_encrypted_unchanged(self):
+        """migrate_github_token should not double-encrypt already encrypted tokens."""
+        from models.user import User
+        from core.crypto import encrypt_token
+        import uuid
+        plaintext = "ghp_already_encrypted_123456789012345678901234567890"
+        encrypted = encrypt_token(plaintext)
+        user = User(
+            id=str(uuid.uuid4()),
+            github_id=12345,
+            github_login="testuser",
+            github_access_token=encrypted
+        )
+        user.migrate_github_token()
+        # Should remain the same
+        assert user.github_access_token == encrypted
+        assert user.get_github_token() == plaintext
+
+    @pytest.mark.asyncio
+    async def test_empty_token_handling(self):
+        """Empty/None token should return empty string."""
+        from models.user import User
+        import uuid
+        user = User(
+            id=str(uuid.uuid4()),
+            github_id=12345,
+            github_login="testuser",
+            github_access_token=None
+        )
+        assert user.get_github_token() == ""
+        user.set_github_token("")
+        assert user.get_github_token() == ""
+        assert user.github_access_token is None or user.github_access_token == ""

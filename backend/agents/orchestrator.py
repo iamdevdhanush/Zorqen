@@ -150,7 +150,7 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
             user = await db.get(User, repository.user_id)
 
         # Determine GitHub token
-        gh_token = access_token or (user.github_access_token if user else None)
+        gh_token = access_token or (user.get_github_token() if user else None)
 
         # Transition PENDING → RUNNING immediately so the UI shows the correct state.
         # This is the canonical place where RUNNING begins — not at creation time.
