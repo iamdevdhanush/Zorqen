@@ -805,8 +805,11 @@ async def start_assessment(
         commit_sha=req.commit_sha or repo.head_commit,
         user=current_user,
     )
-    # Run the pipeline in the background against the real repository.
-    background_tasks.add_task(run_assessment, assessment.id, current_user.github_access_token)
+    # Only launch the background pipeline if this is a freshly created
+    # (PENDING) assessment.  If create_assessment returned an existing
+    # active one, the pipeline is already running — do not duplicate it.
+    if assessment.status == AssessmentStatus.PENDING:
+        background_tasks.add_task(run_assessment, assessment.id, current_user.github_access_token)
     return await get_run(db, assessment, with_findings=False)
 
 

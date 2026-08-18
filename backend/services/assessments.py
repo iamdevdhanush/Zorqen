@@ -29,12 +29,20 @@ def display_to_run_number(ref: str) -> Optional[int]:
 
 
 async def resolve_assessment(db: AsyncSession, ref: str) -> Optional[Assessment]:
-    """Resolve a console ref (UUID or '#A-xxxx' style) to an Assessment row."""
+    """Resolve a console ref (UUID or '#A-xxxx' style) to an Assessment row.
+
+    Uses ORDER BY created_at DESC + LIMIT 1 when resolving by run_number so that
+    even if duplicate run_number rows exist (pre-unique-constraint data), exactly
+    one row is returned deterministically (the most recent).
+    """
     cleaned = ref.lstrip("#")
     run_number = display_to_run_number(cleaned)
     if run_number is not None:
         result = await db.execute(
-            select(Assessment).where(Assessment.run_number == run_number)
+            select(Assessment)
+            .where(Assessment.run_number == run_number)
+            .order_by(desc(Assessment.created_at))
+            .limit(1)
         )
         return result.scalar_one_or_none()
     return await db.get(Assessment, cleaned)
@@ -54,10 +62,29 @@ async def create_assessment(
     commit_sha: Optional[str] = None,
     user: Optional[User] = None,
 ) -> Assessment:
-    """Create a new RUNNING assessment with the next run number."""
-    # Start as PENDING: the orchestrator transitions to RUNNING at the very
-    # beginning of run_assessment(). This prevents assessments from being
-    # stuck in RUNNING forever if the background task never starts.
+    """Create a new assessment with the next run number.
+
+    Idempotency guard: if a PENDING or RUNNING assessment already exists for
+    this repository, return it instead of creating a duplicate. This prevents
+    rapid double-clicks or frontend retries from spawning parallel pipelines
+    against the same repo.
+    """
+    existing = await db.execute(
+        select(Assessment).where(
+            Assessment.repository_id == repository.id,
+            Assessment.status.in_([AssessmentStatus.PENDING, AssessmentStatus.RUNNING]),
+        ).order_by(desc(Assessment.created_at)).limit(1)
+    )
+    active = existing.scalar_one_or_none()
+    if active:
+        log.info(
+            "Returning existing active assessment",
+            assessment_id=active.id,
+            run_number=active.run_number,
+            status=active.status,
+        )
+        return active
+
     assessment = Assessment(
         repository_id=repository.id,
         branch=branch or repository.default_branch or "main",

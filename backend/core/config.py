@@ -162,9 +162,9 @@ class Settings(BaseSettings):
     github_api_base: str = "https://api.github.com"
     github_oauth_base: str = "https://github.com"
 
-    # Groq LLM
+    # Groq LLM — used for architecture analysis, security reasoning, remediation
     groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
 
     # Grok (xAI) — ASK RAKSHA investigation copilot (backend only, never exposed)
     grok_api_key: str = ""

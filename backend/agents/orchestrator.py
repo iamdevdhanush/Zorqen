@@ -14,12 +14,14 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from core.config import settings
 from core.database import AsyncSessionLocal
 from models.assessment import Assessment, AssessmentStatus
 from models.finding import Finding, Severity, Confidence, FindingStatus
 from models.repository import Repository
 from models.user import User
 from agents.architecture_analyst import analyze_architecture
+from agents.llm_client import ModelNotFoundError
 from agents.security_reasoner import reason_about_finding
 from security.repo_intel import analyze_repository
 from security.semgrep_runner import run_semgrep
@@ -266,6 +268,9 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
         # ── Step 4: AI Reasoning ─────────────────────────────────────────────
         await _update_assessment(assessment_id, "ai_reasoning", 65)
 
+        # Detect model availability once; if unavailable, skip AI enrichment
+        # for all findings rather than failing the entire assessment.
+        ai_model_available = True
         enriched_findings = []
         for raw in all_raw_findings[:50]:  # Cap at 50 to avoid token limits
             try:
@@ -279,6 +284,25 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
                     architecture_context=arch_map,
                 )
                 enriched_findings.append({**raw, **reasoning})
+            except ModelNotFoundError:
+                if ai_model_available:
+                    log.warning(
+                        "Groq model unavailable — AI reasoning skipped",
+                        model=settings.groq_model,
+                    )
+                    ai_model_available = False
+                enriched_findings.append({
+                    **raw,
+                    "confidence": raw.get("confidence", "possible"),
+                    "confidence_pct": 50,
+                    "is_exploitable": False,
+                    "root_cause": raw.get("message", ""),
+                    "attack_path": [],
+                    "impact": "Manual assessment required.",
+                    "evidence": raw.get("code_snippet", ""),
+                    "ai_reasoning": f"AI reasoning unavailable — model '{settings.groq_model}' not found. Manual review required.",
+                    "false_positive_reason": None,
+                })
             except Exception as e:
                 log.warning("Reasoning failed for finding", error=str(e))
                 enriched_findings.append({
