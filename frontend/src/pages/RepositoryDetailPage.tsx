@@ -8,9 +8,24 @@ import { getRepoDetail } from '../services/api';
 import api from '../services/api';
 import type { RepoDetail, RepoMeta } from '../lib/types';
 
+/** Read and validate the JWT from localStorage without importing the context. */
+function localTokenValid(): boolean {
+  const token = localStorage.getItem('raksha_token');
+  if (!token) return false;
+  try {
+    const payloadB64 = token.split('.')[1];
+    if (!payloadB64) return false;
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload?.exp) return true;
+    return Date.now() < (payload.exp - 30) * 1000;
+  } catch {
+    return false;
+  }
+}
+
 export default function RepositoryDetailPage() {
   const { repoId } = useParams<{ repoId: string }>();
-  const { currentRepo, currentAssessment, startAssessment, loadRepo } = useWorkspace();
+  const { currentRepo, currentAssessment, startAssessment, loadRepo, authReady } = useWorkspace();
   const findings = useFindings();
   const navigate = useNavigate();
 
@@ -23,8 +38,15 @@ export default function RepositoryDetailPage() {
   // This handles direct URL navigation (e.g. bookmark to /repos/1331115680)
   // where the workspace context is cold. The /repositories/github/{id} endpoint
   // auto-connects the repo by GitHub integer ID.
+  //
+  // CRITICAL: must NOT run until authReady=true AND a valid token exists.
+  // Without this guard, a 401 clearing currentRepo → effect fires → loadRepo →
+  // loadAssessments → 401 again → infinite loop at ~0.5 s intervals.
   useEffect(() => {
     if (!repoId) return;
+    if (!authReady) return;   // wait until session restore has completed
+    if (!localTokenValid()) return; // do not hit auth-gated endpoints without a JWT
+
     // Check if currentRepo matches either by GitHub integer ID or RAKSHA UUID
     const matchesCurrent = Boolean(
       currentRepo && (
@@ -58,14 +80,16 @@ export default function RepositoryDetailPage() {
         if (!cancelled) setRepoLoading(false);
       });
     return () => { cancelled = true; };
-  }, [repoId, currentRepo?.id, currentRepo?.rakshaId, loadRepo]);
+  }, [repoId, currentRepo?.id, currentRepo?.rakshaId, loadRepo, authReady]);
 
-  // Fetch detail once we have a valid currentRepo that matches our URL
+  // Fetch detail once we have a valid currentRepo that matches our URL.
+  // Gated on authReady and token validity to prevent auth-race requests.
   useEffect(() => {
     if (!currentRepo) {
       setDetail(null);
       return;
     }
+    if (!authReady || !localTokenValid()) return;
     let cancelled = false;
     const targetId = currentRepo.rakshaId || currentRepo.id;
     setDetailLoading(true);
@@ -83,7 +107,7 @@ export default function RepositoryDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentRepo?.id, currentRepo?.rakshaId]);
+  }, [currentRepo?.id, currentRepo?.rakshaId, authReady]);
 
   if (!currentRepo) {
     return (

@@ -75,16 +75,17 @@ const RepositoryCard = memo(function RepositoryCard({
 
 export default function RepositoriesPage() {
   const { setGithubModalOpen } = useWorkspaceUI();
-  const { githubConnected, user, repos, reposLoading, reposError, refreshRepos, loadRepo, currentRepo } = useWorkspaceData();
+  const { githubConnected, user, repos, reposLoading, reposError, refreshRepos, loadRepo, currentRepo, authReady } = useWorkspaceData();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearch = useDeferredValue(searchQuery);
 
   /* Refresh live GitHub repositories whenever a connected account views the page,
-     so results are never stale from an earlier session. */
+     so results are never stale from an earlier session.
+     authReady guard ensures we don't fire before session restore completes. */
   useEffect(() => {
-    if (githubConnected) refreshRepos();
-  }, [githubConnected, refreshRepos]);
+    if (authReady && githubConnected) refreshRepos();
+  }, [authReady, githubConnected, refreshRepos]);
 
   const filteredRepos = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();

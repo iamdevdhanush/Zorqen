@@ -14,6 +14,23 @@ function fmtTime(d: Date): string {
   return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+/** Returns true when localStorage has a JWT that has not expired yet. */
+function hasValidToken(): boolean {
+  const token = localStorage.getItem('raksha_token');
+  if (!token) return false;
+  try {
+    // JWT payload is the middle base64url segment
+    const payloadB64 = token.split('.')[1];
+    if (!payloadB64) return false;
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload?.exp) return true; // no exp claim — treat as valid
+    // Give 30 s leeway so a near-expiry token isn't called mid-request
+    return Date.now() < (payload.exp - 30) * 1000;
+  } catch {
+    return false; // malformed token → treat as invalid
+  }
+}
+
 export interface WorkspaceUIState {
   copilotOpen: boolean;
   setCopilotOpen: (open: boolean) => void;
@@ -24,6 +41,8 @@ export interface WorkspaceUIState {
 export interface WorkspaceDataState {
   user: AuthUser | null;
   githubConnected: boolean;
+  /** true once session-restore has completed (regardless of auth outcome) */
+  authReady: boolean;
   repos: RepoMeta[];
   reposLoading: boolean;
   reposError: string | null;
@@ -68,10 +87,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [notifications, setNotifications] = useState<LogLine[]>([]);
 
+  // authReady: true once session restore has run (whether authenticated or not).
+  // All auth-gated API calls MUST wait for authReady before firing.
+  const [authReady, setAuthReady] = useState(false);
+
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activePollRef = useRef<string | null>(null);
   const assessmentsReqIdRef = useRef(0);
   const initialRestoredRef = useRef(false);
+
+  // Tracks the last repoId for which loadAssessments succeeded, so we never
+  // fire a duplicate call for the same repo while one is already in flight.
+  const assessmentsFetchedForRef = useRef<string | null>(null);
+  const assessmentsInFlightRef = useRef(false);
 
   // Stable ref to currentRepo — allows loadRepo to read latest value without being in deps
   const currentRepoRef = useRef<RepoMeta | null>(null);
@@ -95,6 +123,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   /* Fetch the connected GitHub account's repositories (all pages, live data) */
   const refreshRepos = useCallback(async () => {
+    if (!hasValidToken()) return; // never fire without a valid JWT
     setReposLoading(true);
     setReposError(null);
     try {
@@ -102,18 +131,61 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setRepos((data.repositories ?? []) as RepoMeta[]);
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 401) return; // session cleared by interceptor — don't set error UI
       setReposError(status ? `GitHub repositories unavailable (HTTP ${status})` : 'GitHub repositories unavailable');
     } finally {
       setReposLoading(false);
     }
   }, []);
 
-  /* Load the real assessments for a repository from the backend */
+  /* Load the real assessments for a repository from the backend.
+     Guards:
+       1. Token must be present and valid before the request fires.
+       2. Concurrent calls for the same repoId are debounced (one in-flight at a time).
+       3. 401 responses are silently discarded — the interceptor already dispatches
+          raksha:401 which clears the session. We must NOT retry or loop here.
+  */
   const loadAssessments = useCallback(async (repoId: string) => {
+    // Guard 1: require a valid JWT before touching auth-gated endpoints.
+    if (!hasValidToken()) {
+      if (import.meta.env.DEV) {
+        console.warn('[RAKSHA][ASSESSMENTS] skipped — no valid token', { repoId });
+      }
+      return;
+    }
+
+    // Guard 2: debounce — skip if a request is already in flight.
+    if (assessmentsInFlightRef.current) {
+      if (import.meta.env.DEV) {
+        console.warn('[RAKSHA][ASSESSMENTS] skipped — request already in flight', { repoId });
+      }
+      return;
+    }
+
     const reqId = ++assessmentsReqIdRef.current;
+    assessmentsInFlightRef.current = true;
+
+    if (import.meta.env.DEV) {
+      console.log('[RAKSHA][ASSESSMENTS] request_start', {
+        repoId,
+        reqId,
+        hasToken: true,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     try {
       const { data } = await listRepoAssessments(repoId);
-      if (reqId !== assessmentsReqIdRef.current) return;
+
+      // Guard 3: stale response — a newer call superseded this one.
+      if (reqId !== assessmentsReqIdRef.current) {
+        if (import.meta.env.DEV) {
+          console.log('[RAKSHA][ASSESSMENTS] stale response discarded', { repoId, reqId });
+        }
+        return;
+      }
+
+      assessmentsFetchedForRef.current = repoId;
       const runs = (data.runs ?? []) as AssessmentRun[];
       setAssessments(runs);
       const active = runs.find((r) => r.status === 'RUNNING');
@@ -127,8 +199,31 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         return runs[0];
       });
       if (runs[0]?.commit) setCommit(runs[0].commit);
-    } catch {
-      // Do not erase existing valid data on transient network errors
+
+      if (import.meta.env.DEV) {
+        console.log('[RAKSHA][ASSESSMENTS] response_ok', {
+          repoId,
+          reqId,
+          runCount: runs.length,
+        });
+      }
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+
+      if (import.meta.env.DEV) {
+        console.warn('[RAKSHA][ASSESSMENTS] response_error', {
+          repoId,
+          reqId,
+          status,
+          reason: 'will NOT retry — caller must re-invoke explicitly',
+        });
+      }
+
+      // 401: the Axios interceptor already dispatches raksha:401 which clears the
+      // session. Do NOT retry, do NOT loop — just bail out silently.
+      // Any other error: also do NOT erase existing valid data.
+    } finally {
+      assessmentsInFlightRef.current = false;
     }
   }, []);
 
@@ -136,6 +231,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   // This prevents loadRepo from being recreated on every currentRepo state change
   const loadRepo = useCallback(
     (repo: RepoMeta) => {
+      if (!hasValidToken()) return; // never load a repo without a valid session
+
       const dbId = repo.rakshaId || repo.id;
       const prev = currentRepoRef.current;
 
@@ -161,6 +258,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setCurrentRepo(repo);
       setBranch(repo.defaultBranch || 'main');
       setCommit(repo.commit || 'main');
+      // Reset the "fetched-for" tracking so the new repo's assessments load fresh
+      assessmentsFetchedForRef.current = null;
       if (dbId) {
         void loadAssessments(dbId);
       } else {
@@ -187,7 +286,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  /* Poll a real run until it leaves RUNNING, then load its final contract */
+  /* Poll a real run until it leaves RUNNING, then load its final contract.
+     Uses GET /api/assessments/{assessment_id} — a specific assessment endpoint,
+     NOT the repository history endpoint. Polling is intentional here because
+     we know an assessment is actively running. */
   const pollAssessment = useCallback(
     (assessmentRef: string) => {
       stopPolling();
@@ -195,6 +297,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       let attempts = 0;
       const tick = async () => {
         if (activePollRef.current !== assessmentRef) return;
+        // Stop if token expired mid-poll
+        if (!hasValidToken()) {
+          stopPolling();
+          return;
+        }
         attempts += 1;
         try {
           const { data } = await getAssessment(assessmentRef);
@@ -225,7 +332,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   // startAssessment: uses branchRef and currentRepoRef so it never needs them in deps
   const startAssessment = useCallback(async () => {
     const repo = currentRepoRef.current;
-    if (!repo) return;
+    if (!repo || !hasValidToken()) return;
     stopPolling();
     try {
       const dbId = repo.rakshaId || repo.id;
@@ -244,7 +351,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         tone: 'err',
       });
     }
-  }, [pollAssessment, pushNotification, stopPolling]); // currentRepo & branch removed — read via refs
+  }, [pollAssessment, pushNotification, stopPolling]);
 
   const markFinding = useCallback((findingId: string, status: FindingStatus) => {
     setCurrentAssessment((prev) => {
@@ -269,7 +376,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     stopPolling();
     localStorage.removeItem('raksha_token');
     localStorage.removeItem('raksha_user');
-    localStorage.removeItem('raksha_repo');
+    localStorage.removeItem('raksha_repo'); // must be cleared to prevent retry on next load
     setUser(null);
     setGithubConnected(false);
     setCurrentRepo(null);
@@ -278,6 +385,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setRepos([]);
     setReposError(null);
     setNotifications([]);
+    assessmentsFetchedForRef.current = null;
+    assessmentsInFlightRef.current = false;
   }, [stopPolling]);
 
   const connectGithub = useCallback(() => setGithubModalOpen(true), []);
@@ -293,6 +402,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setCurrentAssessment(null);
     setAssessments([]);
     setRepos([]);
+    localStorage.removeItem('raksha_repo');
+    assessmentsFetchedForRef.current = null;
   }, [stopPolling]);
 
   /* Derive activity from the current assessment's logs */
@@ -310,14 +421,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [currentAssessment]);
 
   /* Restore session: user + repositories + previously selected repo.
-     Uses empty deps + initialRestoredRef guard so it runs exactly once
-     on mount regardless of React StrictMode double-invocation. */
+     Runs exactly once on mount. Sets authReady=true when complete so that
+     all auth-gated API calls know the session has been initialized.
+
+     KEY RULE: loadAssessments is only called here if there is a valid JWT token.
+     If the token is absent or expired, we do NOT call any protected endpoints. */
   useEffect(() => {
     if (initialRestoredRef.current) return;
     initialRestoredRef.current = true;
+
     const storedUser = localStorage.getItem('raksha_user');
     const storedRepo = localStorage.getItem('raksha_repo');
-    if (storedUser) {
+    const tokenValid = hasValidToken();
+
+    if (storedUser && tokenValid) {
       try {
         const u = JSON.parse(storedUser) as AuthUser;
         setUser(u);
@@ -326,8 +443,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       } catch {
         /* ignore malformed session */
       }
+    } else if (!tokenValid) {
+      // Token expired or absent — clear stale session data so we don't attempt
+      // auth-gated requests with a dead token.
+      localStorage.removeItem('raksha_token');
+      localStorage.removeItem('raksha_user');
+      localStorage.removeItem('raksha_repo');
     }
-    if (storedRepo) {
+
+    if (storedRepo && tokenValid) {
       try {
         const r = JSON.parse(storedRepo) as RepoMeta;
         setCurrentRepo(r);
@@ -339,6 +463,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         /* ignore malformed session */
       }
     }
+
+    // Signal that session restore is complete regardless of outcome.
+    // Components can now make decisions based on auth state.
+    setAuthReady(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Intentionally empty — session restore runs once on mount only
 
@@ -354,10 +482,18 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   /* Listen for 401 events dispatched by the Axios interceptor.
      The interceptor no longer does window.location.href = '/' (which caused full reloads).
-     Instead it fires this event so the WorkspaceProvider can call signOut() in React. */
+     Instead it fires this event so the WorkspaceProvider can handle session expiry cleanly.
+
+     IMPORTANT: must clear localStorage.raksha_repo here so that the next cold start
+     does NOT attempt to reload assessments with an invalid/missing token. */
   useEffect(() => {
     const handle = () => {
       stopPolling();
+      // Clear persisted repo — otherwise on next load session restore will call
+      // loadAssessments again with no token → immediate 401 → loop
+      localStorage.removeItem('raksha_token');
+      localStorage.removeItem('raksha_user');
+      localStorage.removeItem('raksha_repo');
       setUser(null);
       setGithubConnected(false);
       setCurrentRepo(null);
@@ -366,6 +502,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setRepos([]);
       setReposError(null);
       setNotifications([]);
+      assessmentsFetchedForRef.current = null;
+      assessmentsInFlightRef.current = false;
     };
     window.addEventListener('raksha:401', handle);
     return () => window.removeEventListener('raksha:401', handle);
@@ -385,6 +523,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       githubConnected,
+      authReady,
       repos,
       reposLoading,
       reposError,
@@ -406,9 +545,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       startAssessment,
       markFinding,
     }),
-    // stopPolling intentionally removed — it is not part of the public interface
-    // and including it caused dataValue to rebuild on every poll stop/start
-    [user, githubConnected, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, signInGithub, signOut, connectGithub, proceedGithubAuth, disconnectGithub, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding]
+    [user, githubConnected, authReady, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, signInGithub, signOut, connectGithub, proceedGithubAuth, disconnectGithub, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding]
   );
 
   return (
