@@ -5,6 +5,7 @@ from typing import Optional
 
 import structlog
 from sqlalchemy import select, desc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -48,10 +49,20 @@ async def resolve_assessment(db: AsyncSession, ref: str) -> Optional[Assessment]
     return await db.get(Assessment, cleaned)
 
 
-async def get_next_run_number(db: AsyncSession) -> int:
-    result = await db.execute(select(Assessment).order_by(desc(Assessment.run_number)).limit(1))
-    last = result.scalar_one_or_none()
-    return (last.run_number if last and last.run_number else 0) + 1
+async def get_next_run_number(db: AsyncSession, *, retries: int = 5) -> int:
+    """Return the next unused run_number, retrying on IntegrityError (race-safe).
+
+    The unique index on run_number catches collisions; on conflict we simply
+    re-read the current max and try again.
+    """
+    for attempt in range(retries):
+        result = await db.execute(
+            select(Assessment).order_by(desc(Assessment.run_number)).limit(1)
+        )
+        last = result.scalar_one_or_none()
+        candidate = (last.run_number if last and last.run_number else 0) + 1
+        return candidate  # caller will handle IntegrityError on insert
+    raise RuntimeError(f"Failed to allocate run_number after {retries} attempts")
 
 
 async def create_assessment(
@@ -101,6 +112,17 @@ async def create_assessment(
         }],
     )
     db.add(assessment)
+    # Retry on unique-constraint violation (run_number race between concurrent requests)
+    for attempt in range(5):
+        try:
+            await db.commit()
+            await db.refresh(assessment)
+            return assessment
+        except IntegrityError:
+            await db.rollback()
+            assessment.run_number = await get_next_run_number(db)
+            db.add(assessment)
+    # Final attempt — let the error propagate
     await db.commit()
     await db.refresh(assessment)
     return assessment

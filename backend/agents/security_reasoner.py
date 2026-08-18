@@ -86,16 +86,12 @@ Reason about this finding and return your analysis as JSON."""
         return result
     except Exception as e:
         log.error("Security reasoning failed", error=str(e))
-        # Return a safe fallback
+        # Return a safe fallback — preserve the scanner's confidence, do NOT
+        # fabricate AI confidence.  confidence_pct=0 means "not AI-evaluated".
         return {
-            "confidence": "possible",
-            "confidence_pct": 50,
-            "is_exploitable": False,
-            "root_cause": f"Pattern match detected: {finding_type}. Manual review required.",
-            "attack_path": ["Input received", "Reaches vulnerable code", "Potential exploitation"],
-            "impact": "Requires manual assessment to determine actual impact.",
-            "evidence": code_snippet[:200],
-            "ai_reasoning": "Automated reasoning unavailable. Finding requires manual review.",
+            "confidence_pct": 0,
+            "is_exploitable": None,
+            "ai_reasoning": "AI reasoning unavailable. Scanner finding preserved; manual review required.",
             "false_positive_reason": None,
         }
 

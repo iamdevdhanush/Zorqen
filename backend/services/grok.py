@@ -2,7 +2,7 @@
 
 Provider-first strategy (server-side ONLY):
   1. GROK_API_KEY set       → xAI Grok via https://api.x.ai/v1 (OpenAI-compatible)
-  2. GROQ_API_KEY set       → Groq via the shared agents.llm_client (llama-3.3-70b-versatile)
+  2. GROQ_API_KEY set       → Groq via the shared agents.llm_client (openai/gpt-oss-120b)
   3. neither set            → GrokConfigurationError (GROK_CONFIGURATION_ERROR)
 
 API keys live only in the environment and are never exposed to the frontend or

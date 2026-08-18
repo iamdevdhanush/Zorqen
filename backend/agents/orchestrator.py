@@ -270,7 +270,13 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
 
         # Detect model availability once; if unavailable, skip AI enrichment
         # for all findings rather than failing the entire assessment.
+        # When AI is unavailable:
+        #   - confidence: preserved from the scanner (semgrep/custom/secret detector)
+        #   - confidence_pct: 0 = "not AI-evaluated" (display-only field)
+        #   - ai_reasoning: explicit unavailability message
+        #   - scoring: uses the scanner's confidence string, unaffected by AI absence
         ai_model_available = True
+        ai_unavailable_reason = ""
         enriched_findings = []
         for raw in all_raw_findings[:50]:  # Cap at 50 to avoid token limits
             try:
@@ -284,8 +290,9 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
                     architecture_context=arch_map,
                 )
                 enriched_findings.append({**raw, **reasoning})
-            except ModelNotFoundError:
+            except ModelNotFoundError as e:
                 if ai_model_available:
+                    ai_unavailable_reason = str(e)
                     log.warning(
                         "Groq model unavailable — AI reasoning skipped",
                         model=settings.groq_model,
@@ -293,28 +300,20 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
                     ai_model_available = False
                 enriched_findings.append({
                     **raw,
-                    "confidence": raw.get("confidence", "possible"),
-                    "confidence_pct": 50,
-                    "is_exploitable": False,
-                    "root_cause": raw.get("message", ""),
-                    "attack_path": [],
-                    "impact": "Manual assessment required.",
-                    "evidence": raw.get("code_snippet", ""),
-                    "ai_reasoning": f"AI reasoning unavailable — model '{settings.groq_model}' not found. Manual review required.",
+                    # Preserve the scanner's confidence — do NOT override with "possible"
+                    "confidence_pct": 0,
+                    "is_exploitable": None,
+                    "ai_reasoning": f"AI reasoning unavailable — model '{settings.groq_model}' not found. Scanner finding preserved; manual review required.",
                     "false_positive_reason": None,
                 })
             except Exception as e:
                 log.warning("Reasoning failed for finding", error=str(e))
                 enriched_findings.append({
                     **raw,
-                    "confidence": raw.get("confidence", "possible"),
-                    "confidence_pct": 50,
-                    "is_exploitable": False,
-                    "root_cause": raw.get("message", ""),
-                    "attack_path": [],
-                    "impact": "Manual assessment required.",
-                    "evidence": raw.get("code_snippet", ""),
-                    "ai_reasoning": "AI reasoning unavailable.",
+                    # Preserve the scanner's confidence — do NOT override
+                    "confidence_pct": 0,
+                    "is_exploitable": None,
+                    "ai_reasoning": "AI reasoning unavailable. Scanner finding preserved; manual review required.",
                     "false_positive_reason": None,
                 })
 
@@ -410,7 +409,9 @@ async def _save_findings(
     for ef in enriched:
         severity = ef.get("severity", "medium")
         confidence_raw = ef.get("confidence", "possible")
-        confidence_pct = ef.get("confidence_pct", 50)
+        # confidence_pct=0 means "not AI-evaluated".  Only set a positive
+        # value when AI actually provided a confidence assessment.
+        confidence_pct = ef.get("confidence_pct") or 0
 
         # Filter out false positives
         if confidence_raw == "false_positive":

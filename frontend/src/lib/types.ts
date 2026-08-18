@@ -54,7 +54,7 @@ export type AssessmentStatus = 'IDLE' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 export interface StepState {
   id: string;
   label: string;
-  status: 'completed' | 'running' | 'pending' | 'failed';
+  status: 'completed' | 'running' | 'pending' | 'failed' | 'unavailable';
   detail?: string;
 }
 

@@ -25,8 +25,15 @@ export default function RepositoryDetailPage() {
   // auto-connects the repo by GitHub integer ID.
   useEffect(() => {
     if (!repoId) return;
-    // Already loaded and matching — no fetch needed
-    if (currentRepo && (currentRepo.id === repoId || String(currentRepo.id) === repoId)) return;
+    // Check if currentRepo matches either by GitHub integer ID or RAKSHA UUID
+    const matchesCurrent = Boolean(
+      currentRepo && (
+        currentRepo.id === repoId ||
+        String(currentRepo.id) === String(repoId) ||
+        (currentRepo.rakshaId && currentRepo.rakshaId === repoId)
+      )
+    );
+    if (matchesCurrent) return;
 
     let cancelled = false;
     setRepoLoading(true);
@@ -51,7 +58,7 @@ export default function RepositoryDetailPage() {
         if (!cancelled) setRepoLoading(false);
       });
     return () => { cancelled = true; };
-  }, [repoId, currentRepo, loadRepo]);
+  }, [repoId, currentRepo?.id, currentRepo?.rakshaId, loadRepo]);
 
   // Fetch detail once we have a valid currentRepo that matches our URL
   useEffect(() => {
@@ -60,9 +67,10 @@ export default function RepositoryDetailPage() {
       return;
     }
     let cancelled = false;
+    const targetId = currentRepo.rakshaId || currentRepo.id;
     setDetailLoading(true);
     setDetailError(null);
-    getRepoDetail(currentRepo.rakshaId || currentRepo.id)
+    getRepoDetail(targetId)
       .then((d) => {
         if (!cancelled) setDetail(d.data);
       })
@@ -75,7 +83,7 @@ export default function RepositoryDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentRepo]);
+  }, [currentRepo?.id, currentRepo?.rakshaId]);
 
   if (!currentRepo) {
     return (

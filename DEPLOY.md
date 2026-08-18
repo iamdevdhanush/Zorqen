@@ -99,7 +99,7 @@ Do not commit real values. `frontend/.env.example` documents the name only.
 | `GITHUB_CLIENT_SECRET` | No | — | GitHub OAuth client secret |
 | `GITHUB_REDIRECT_URI` | No | `https://your-koyeb-service.koyeb.app/api/auth/github/callback` | OAuth callback URL |
 | `GROQ_API_KEY` | No | — | Groq LLM key (AI agents + copilot) |
-| `GROQ_MODEL` | No | `llama-3.3-70b-versatile` | LLM model |
+| `GROQ_MODEL` | No | `openai/gpt-oss-120b` | LLM model |
 | `DEMO_MODE_ENABLED` | No | `true` | Seed demo workspace at startup |
 | `JWT_EXPIRE_HOURS` | No | `24` | Token lifetime |
 | `LOG_LEVEL` | No | `INFO` | Logging verbosity |

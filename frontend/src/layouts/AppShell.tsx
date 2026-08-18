@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import TopNav from '../components/TopNav';
 import Seo from '../components/Seo';
 import SecurityCopilot from '../components/SecurityCopilot';
@@ -12,7 +12,6 @@ import { useWorkspaceData, useWorkspaceUI } from '../store/WorkspaceContext';
 function AppShellInner() {
   const { copilotOpen, setCopilotOpen, githubModalOpen } = useWorkspaceUI();
   const { currentAssessment, currentRepo } = useWorkspaceData();
-  const location = useLocation();
   const [cmdOpen, setCmdOpen] = useState(false);
 
   const handleOpenCmd = useCallback(() => setCmdOpen(true), []);
@@ -48,7 +47,7 @@ function AppShellInner() {
       <TopNav onOpenCmd={handleOpenCmd} />
 
       {/* Main Page Area */}
-      <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-4 sm:py-8" key={location.pathname}>
+      <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <Outlet />
       </main>
 

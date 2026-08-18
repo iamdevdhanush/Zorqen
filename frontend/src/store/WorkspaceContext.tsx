@@ -70,6 +70,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activePollRef = useRef<string | null>(null);
+  const assessmentsReqIdRef = useRef(0);
+  const initialRestoredRef = useRef(false);
 
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
@@ -96,31 +98,64 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   /* Load the real assessments for a repository from the backend */
   const loadAssessments = useCallback(async (repoId: string) => {
+    const reqId = ++assessmentsReqIdRef.current;
     try {
       const { data } = await listRepoAssessments(repoId);
+      if (reqId !== assessmentsReqIdRef.current) return;
       const runs = (data.runs ?? []) as AssessmentRun[];
       setAssessments(runs);
       const active = runs.find((r) => r.status === 'RUNNING');
-      setCurrentAssessment(active ?? runs[0] ?? null);
+      setCurrentAssessment((prev) => {
+        if (!runs.length) return null;
+        if (active) return active;
+        if (prev) {
+          const match = runs.find((r) => r.id === prev.id);
+          if (match) return match;
+        }
+        return runs[0];
+      });
       if (runs[0]?.commit) setCommit(runs[0].commit);
     } catch {
-      setAssessments([]);
-      setCurrentAssessment(null);
+      if (reqId === assessmentsReqIdRef.current) {
+        // Do not erase existing valid data on transient network errors
+      }
     }
   }, []);
 
   const loadRepo = useCallback(
     (repo: RepoMeta) => {
+      const dbId = repo.rakshaId || repo.id;
+
+      // Check if this is the same repository already loaded in workspace
+      const isSameRepo = currentRepo && (
+        currentRepo.id === repo.id ||
+        String(currentRepo.id) === String(repo.id) ||
+        (repo.rakshaId && currentRepo.rakshaId === repo.rakshaId) ||
+        (repo.rakshaId && currentRepo.id === repo.rakshaId) ||
+        (currentRepo.rakshaId && currentRepo.rakshaId === repo.id)
+      );
+
+      if (isSameRepo) {
+        // Preserve existing assessment/polling state when updating metadata
+        setCurrentRepo((prev) => (prev ? { ...prev, ...repo } : repo));
+        if (repo.defaultBranch) setBranch(repo.defaultBranch);
+        if (repo.commit) setCommit(repo.commit);
+        if (dbId) void loadAssessments(dbId);
+        return;
+      }
+
       stopPolling();
       setCurrentRepo(repo);
       setBranch(repo.defaultBranch || 'main');
       setCommit(repo.commit || 'main');
-      setAssessments([]);
-      setCurrentAssessment(null);
-      const dbId = repo.rakshaId || repo.id;
-      if (dbId) void loadAssessments(dbId);
+      if (dbId) {
+        void loadAssessments(dbId);
+      } else {
+        setAssessments([]);
+        setCurrentAssessment(null);
+      }
     },
-    [loadAssessments, stopPolling]
+    [currentRepo, loadAssessments, stopPolling]
   );
 
   const selectRepo = useCallback(
@@ -212,6 +247,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   /* Restore session: user + repositories + previously selected repo */
   useEffect(() => {
+    if (initialRestoredRef.current) return;
+    initialRestoredRef.current = true;
     const storedUser = localStorage.getItem('raksha_user');
     const storedRepo = localStorage.getItem('raksha_repo');
     if (storedUser) {
