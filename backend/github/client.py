@@ -23,7 +23,11 @@ class GitHubClient:
         }
 
     async def _get(self, path: str, params: Optional[dict] = None) -> Any:
-        async with httpx.AsyncClient(base_url=self.BASE, timeout=30) as client:
+        # follow_redirects=True: GitHub answers renamed/transferred repositories
+        # with 301 Moved Permanently (Location points at the canonical resource,
+        # e.g. /repositories/{id}). Without redirect following the 301 is raised
+        # as an error and every repo endpoint breaks against a renamed repo.
+        async with httpx.AsyncClient(base_url=self.BASE, timeout=30, follow_redirects=True) as client:
             resp = await client.get(path, headers=self._headers, params=params)
             resp.raise_for_status()
             return resp.json()
@@ -50,7 +54,7 @@ class GitHubClient:
         repos: List[dict] = []
         page = 1
         last_page: Optional[int] = None
-        async with httpx.AsyncClient(base_url=self.BASE, timeout=30) as client:
+        async with httpx.AsyncClient(base_url=self.BASE, timeout=30, follow_redirects=True) as client:
             while True:
                 params = {
                     "per_page": per_page,

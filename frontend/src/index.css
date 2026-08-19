@@ -700,6 +700,52 @@ kbd {
   }
 }
 
+/* ── Security Scan Visual Animations ───────────────────────────────────── */
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes signal-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.18); }
+}
+
+@keyframes scan-line-h {
+  0%   { top: 0%; opacity: 0; }
+  15%  { opacity: 0.8; }
+  85%  { opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes node-signal {
+  0% { box-shadow: 0 0 0 0 rgba(197, 248, 42, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(197, 248, 42, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(197, 248, 42, 0); }
+}
+
+.animate-radar-sweep {
+  transform-origin: center;
+  animation: radar-sweep 6s linear infinite;
+}
+
+.animate-signal-pulse {
+  animation: signal-pulse 2.5s ease-in-out infinite;
+}
+
+.animate-scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #C5F82A 50%, transparent 100%);
+  animation: scan-line-h 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.animate-node-ping {
+  animation: node-signal 2s infinite;
+}
+
 /* ── Accessibility: Prefers Reduced Motion ─────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
@@ -709,6 +755,9 @@ kbd {
     scroll-behavior: auto !important;
   }
   .pulse-dot::after {
+    animation: none !important;
+  }
+  .animate-radar-sweep, .animate-signal-pulse, .animate-scan-line, .animate-node-ping {
     animation: none !important;
   }
   .fade-in, .slide-right, .slide-down, .slide-up, .toast {

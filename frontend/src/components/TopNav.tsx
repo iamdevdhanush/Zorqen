@@ -1,7 +1,8 @@
 import { memo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Bot, Menu, Search, User, X } from 'lucide-react';
+import { Bot, LogOut, Menu, Search, User, X } from 'lucide-react';
 import GithubIcon from './GithubIcon';
+import { Dropdown } from './ui';
 import { useWorkspaceData, useWorkspaceUI } from '../store/WorkspaceContext';
 
 interface TopNavProps {
@@ -123,15 +124,71 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             )}
           </div>
 
-          {/* User Profile / Sign Out (Desktop) */}
+          {/* User Profile / Account Dropdown Menu (Desktop) */}
           {user && (
-            <button
-              onClick={signOut}
-              className="hidden sm:flex p-1.5 rounded-md border border-[#111111] bg-white shadow-hard-sm text-[#111111] hover:bg-[#FEE2E2] transition-all"
-              title="Sign Out"
+            <Dropdown
+              align="right"
+              trigger={(open) => (
+                <div
+                  className={`hidden sm:flex items-center justify-center p-2 rounded-md border border-[#111111] shadow-hard-sm transition-all cursor-pointer ${
+                    open ? 'bg-[#C5F82A] text-[#111111]' : 'bg-white text-[#111111] hover:bg-[#FAFAFA]'
+                  }`}
+                  title="Account Menu"
+                  aria-label="Open Account Menu"
+                >
+                  <User className="w-4 h-4" />
+                </div>
+              )}
             >
-              <User className="w-4 h-4" />
-            </button>
+              {(close) => (
+                <div className="p-3 w-[260px] space-y-3 font-sans">
+                  {/* User Account Header */}
+                  <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#111111]">
+                    {user.github_avatar_url ? (
+                      <img src={user.github_avatar_url} alt="" className="w-7 h-7 rounded-full border border-[#111111] shrink-0" />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-[#C5F82A] border border-[#111111] flex items-center justify-center font-bold text-[#111111] text-[11px] shrink-0">
+                        {(user.github_name || user.github_login || '?').slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1 leading-tight">
+                      <div className="font-extrabold text-[13px] text-[#111111] truncate">
+                        {user.github_name || user.github_login}
+                      </div>
+                      <div className="mono text-[10px] font-semibold text-[#555555]">
+                        @{user.github_login}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Action Links */}
+                  <div className="space-y-1">
+                    <NavLink
+                      to="/settings"
+                      onClick={close}
+                      className="flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-bold text-[#111111] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111] transition-all"
+                    >
+                      <span>Account Settings</span>
+                      <span className="mono text-[10px] text-[#666666]">→</span>
+                    </NavLink>
+                  </div>
+
+                  {/* Explicit Sign Out Action */}
+                  <div className="pt-2 border-t border-[#111111]">
+                    <button
+                      onClick={() => {
+                        close();
+                        signOut();
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#DC2626] bg-[#FEE2E2] border border-[#111111] hover:bg-[#FCA5A5] transition-all shadow-hard-sm"
+                    >
+                      <span>Sign Out</span>
+                      <LogOut className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </Dropdown>
           )}
 
           {/* Mobile Hamburger Toggle (< md) */}

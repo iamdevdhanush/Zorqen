@@ -377,13 +377,39 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (run.commit) setCommit(run.commit);
       pollAssessment(run.id.replace('#', ''));
     } catch (err) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      const rawDetail = (err as { response?: { data?: { detail?: string | { message?: string } } } })?.response?.data?.detail;
+      const safeMsg = typeof rawDetail === 'string'
+        ? rawDetail
+        : rawDetail?.message || 'Assessment backend unavailable (HTTP 503). Please retry.';
+      
       pushNotification({
         time: fmtTime(new Date()),
         source: 'zorqen',
-        text: detail || 'failed to start assessment',
+        text: safeMsg,
         tone: 'err',
       });
+
+      const failedRun: AssessmentRun = {
+        id: '#FAIL',
+        repoId: dbId,
+        repo: repo.name,
+        commit: repo.commit || 'HEAD',
+        branch: branchRef.current,
+        status: 'FAILED',
+        errorMessage: safeMsg,
+        steps: [
+          { id: 'index', label: 'Repository indexed', status: 'failed' },
+          { id: 'architecture', label: 'Architecture analyzed', status: 'pending' },
+          { id: 'dependencies', label: 'Dependencies analyzed', status: 'pending' },
+          { id: 'static', label: 'Static analysis completed', status: 'pending' },
+          { id: 'secrets', label: 'Secrets scan completed', status: 'pending' },
+          { id: 'reasoning', label: 'AI reasoning completed', status: 'pending' },
+          { id: 'validation', label: 'Sandbox validation unavailable', status: 'unavailable' },
+        ],
+        logs: [{ time: fmtTime(new Date()), source: 'zorqen', text: safeMsg, tone: 'err' }],
+        findings: [],
+      };
+      setCurrentAssessment(failedRun);
     } finally {
       assessmentStartInFlightRef.current = false;
     }

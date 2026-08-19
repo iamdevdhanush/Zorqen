@@ -257,6 +257,31 @@ async def get_repo_by_github_id(
     )
     repo = result.scalar_one_or_none()
     if repo:
+        # Self-heal a stale identity: a renamed/transferred repository keeps its
+        # GitHub integer ID, so this record can be found under its OLD owner/name.
+        # get_repo follows the 301 redirect to the canonical resource; persist the
+        # current owner/name/full_name so the frontend and all API calls use the
+        # canonical name instead of re-hitting the redirect.
+        client = GitHubClient(current_user.get_github_token())
+        try:
+            gh_repo = await client.get_repo(repo.owner, repo.name)
+            new_full = gh_repo.get("full_name") or repo.full_name
+            new_owner = (gh_repo.get("owner") or {}).get("login") or repo.owner
+            new_name = gh_repo.get("name") or repo.name
+            if (new_full, new_owner, new_name) != (repo.full_name, repo.owner, repo.name):
+                previous = f"{repo.owner}/{repo.name}"
+                repo.full_name = new_full
+                repo.owner = new_owner
+                repo.name = new_name
+                await db.commit()
+                log.info(
+                    "[ZORQEN] repository_identity_refreshed",
+                    github_id=github_id,
+                    full_name=new_full,
+                    previous=previous,
+                )
+        except (httpx.HTTPStatusError, httpx.HTTPError):
+            pass  # fall through — return stored metadata; detail surfaces errors
         return repo_meta(repo)
 
     # Not connected — fetch from GitHub and auto-create
@@ -381,15 +406,28 @@ async def get_repository_detail(
             },
         )
 
-    # Sync fresh metadata from GitHub into the ZORQEN record
+    # Sync fresh metadata from GitHub into the ZORQEN record. This includes the
+    # canonical owner/name/full_name: a renamed or transferred repo makes GitHub
+    # answer 301 Moved Permanently and `get_repo` follows the redirect to the
+    # canonical resource, so the stored identity is corrected here instead of
+    # re-hitting the redirect on every subsequent request.
+    fresh_owner = (gh_repo_data.get("owner") or {}).get("login") or repo.owner
+    fresh_name = gh_repo_data.get("name") or repo.name
+    fresh_full_name = gh_repo_data.get("full_name") or repo.full_name
     fresh_default_branch = gh_repo_data.get("default_branch") or repo.default_branch or "main"
     fresh_language = gh_repo_data.get("language") or repo.language
     fresh_private = bool(gh_repo_data.get("private"))
     if (
-        repo.default_branch != fresh_default_branch
+        repo.owner != fresh_owner
+        or repo.name != fresh_name
+        or repo.full_name != fresh_full_name
+        or repo.default_branch != fresh_default_branch
         or repo.language != fresh_language
         or repo.is_private != fresh_private
     ):
+        repo.owner = fresh_owner
+        repo.name = fresh_name
+        repo.full_name = fresh_full_name
         repo.default_branch = fresh_default_branch
         repo.language = fresh_language
         repo.is_private = fresh_private

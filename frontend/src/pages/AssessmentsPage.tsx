@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Circle, Play, ShieldAlert, Zap, MinusCircle } from 'lucide-react';
-import { PageHeader, Panel, RunStatus, SevBadge, ValidationBadge } from '../components/ui';
+import { ArrowRight, Play } from 'lucide-react';
+import { PageHeader, Panel, RunStatus } from '../components/ui';
 import AssessmentModal from '../components/AssessmentModal';
+import AssessmentOperationConsole from '../components/AssessmentOperationConsole';
 import { useWorkspace, useAssessmentActive } from '../store/WorkspaceContext';
 
 export default function AssessmentsPage() {
@@ -13,19 +14,8 @@ export default function AssessmentsPage() {
 
   const run = currentAssessment ?? assessments[0];
 
-  /* Counts calculation for active assessment workspace */
-  const runFindings = run?.findings ?? [];
-  const counts = {
-    critical: runFindings.filter((f) => f.severity === 'critical').length,
-    high:     runFindings.filter((f) => f.severity === 'high').length,
-    medium:   runFindings.filter((f) => f.severity === 'medium').length,
-    low:      runFindings.filter((f) => f.severity === 'low').length,
-  };
-
-  const topFindings = runFindings.slice(0, 4);
-
   return (
-    <div className="max-w-[1140px] mx-auto space-y-10 fade-in py-2">
+    <div className="max-w-[1240px] mx-auto space-y-10 fade-in py-2">
       
       {/* Page Header */}
       <PageHeader
@@ -43,234 +33,21 @@ export default function AssessmentsPage() {
         }
       />
 
-      {/* ── 1. PRIMARY ASSESSMENT WORKSPACE HERO ─────────────────────── */}
-      {run && (
-        <div className="space-y-6 sm:space-y-8">
-          
-          {/* Metadata Card Header */}
-          <div className="p-4 sm:p-7 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4 sm:space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="protocol-tag">zorqen://assessment/{run.id.replace('#', '')}</div>
-                <div className="flex items-center gap-3 flex-wrap pt-1">
-                  <h2 className="text-xl sm:text-3xl font-extrabold text-[#111111] tracking-tight">
-                    ASSESSMENT {run.id}
-                  </h2>
-                  <RunStatus status={run.status} />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <button
-                  onClick={() => navigate(`/assessments/${run.id.replace('#', '')}`)}
-                  className="btn btn-ghost btn-sm text-[12.5px] font-bold text-[#111111]"
-                >
-                  View Console Logs →
-                </button>
-                {!isRunning && (
-                  <button
-                    onClick={startAssessment}
-                    disabled={!currentRepo}
-                    className="btn btn-accent px-4 sm:px-5 py-2 text-[12.5px] sm:text-[13px]"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    Re-run Pipeline
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Key Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 pt-2">
-              <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Repository</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] truncate mt-0.5">{run.repo}</div>
-              </div>
-              <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Commit</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">@{run.commit?.slice(0, 7) ?? '—'}</div>
-              </div>
-              <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Status</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.status}</div>
-              </div>
-              <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Posture Score</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.score ?? '—'} / 100</div>
-              </div>
-              <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Findings</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{runFindings.length} Total</div>
-              </div>
-              <div className="p-3 sm:p-3.5 rounded-lg bg-[#FAFAFA] border border-[#111111] shadow-hard-sm">
-                <div className="mono text-[9.5px] sm:text-[10px] font-extrabold text-[#4A4A4A] uppercase">Duration</div>
-                <div className="mono text-[12px] sm:text-[13px] font-extrabold text-[#111111] mt-0.5">{run.duration ?? 'in progress'}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 2. ASSESSMENT PIPELINE STAGES ──────────────────────────── */}
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#111111]" />
-              <h3 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">ASSESSMENT PIPELINE</h3>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5 sm:gap-3">
-              {[
-                'INDEX',
-                'ARCHITECTURE',
-                'DEPENDENCIES',
-                'STATIC ANALYSIS',
-                'SECRETS',
-                'AI REASONING',
-                'SANDBOX VALIDATION',
-              ].map((stageLabel, idx) => {
-                const step = run.steps?.[idx];
-                const isDone = step?.status === 'completed';
-                const isFailed = step?.status === 'failed';
-                const isRun = isRunning && step?.status === 'running';
-                const isUnavailable = step?.status === 'unavailable';
-
-                return (
-                  <div
-                    key={stageLabel}
-                    className={`p-3 sm:p-3.5 rounded-lg border text-left space-y-1.5 sm:space-y-2 transition-all ${
-                      isRun
-                        ? 'border-[#111111] bg-[#C5F82A] shadow-hard-sm'
-                        : isFailed
-                        ? 'border-[#111111] bg-[#FEE2E2]'
-                        : isDone
-                        ? 'border-[#111111] bg-white'
-                        : isUnavailable
-                        ? 'border-[#DCDCD5] bg-[#FAFAFA] opacity-60'
-                        : 'border-[#DCDCD5] bg-[#FAFAFA]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="mono text-[10px] font-extrabold text-[#111111]">0{idx + 1}</span>
-                      {isDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-[#111111]" />
-                      ) : isFailed ? (
-                        <ShieldAlert className="w-4 h-4 text-[#DC2626]" />
-                      ) : isRun ? (
-                        <span className="pulse-dot" />
-                      ) : isUnavailable ? (
-                        <MinusCircle className="w-4 h-4 text-[#999999]" />
-                      ) : (
-                        <Circle className="w-3.5 h-3.5 text-[#4A4A4A]" />
-                      )}
-                    </div>
-
-                    <div>
-                      <div className={`mono text-[10px] sm:text-[10.5px] font-extrabold leading-tight ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : isUnavailable ? 'text-[#999999]' : 'text-[#333333]'}`}>
-                        {stageLabel}
-                      </div>
-                      <div className={`mono text-[9px] sm:text-[9.5px] font-extrabold mt-1 ${isDone || isRun ? 'text-[#111111]' : isFailed ? 'text-[#DC2626]' : isUnavailable ? 'text-[#999999]' : 'text-[#4A4A4A]'}`}>
-                        {isDone ? '✓ COMPLETE' : isFailed ? '✕ FAILED' : isRun ? '● RUNNING' : isUnavailable ? '— UNAVAILABLE' : '○ QUEUED'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── 3. FINDINGS SUMMARY BREAKDOWN ──────────────────────────── */}
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-[#111111]" />
-              <h3 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">FINDINGS SUMMARY</h3>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              <div className="p-3.5 sm:p-4 rounded-lg bg-[#FEE2E2] border border-[#111111] shadow-hard-sm space-y-1">
-                <div className="mono text-[10px] sm:text-[10.5px] font-extrabold text-[#DC2626] uppercase">CRITICAL</div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#DC2626]">{counts.critical}</div>
-                <div className="text-[10.5px] sm:text-[11.5px] text-[#DC2626] font-semibold">Immediate Action Required</div>
-              </div>
-              <div className="p-3.5 sm:p-4 rounded-lg bg-[#FFEDD5] border border-[#111111] shadow-hard-sm space-y-1">
-                <div className="mono text-[10px] sm:text-[10.5px] font-extrabold text-[#C2410C] uppercase">HIGH</div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#C2410C]">{counts.high}</div>
-                <div className="text-[10.5px] sm:text-[11.5px] text-[#C2410C] font-semibold">Engineering Remediation</div>
-              </div>
-              <div className="p-3.5 sm:p-4 rounded-lg bg-[#FEF3C7] border border-[#111111] shadow-hard-sm space-y-1">
-                <div className="mono text-[10px] sm:text-[10.5px] font-extrabold text-[#B45309] uppercase">MEDIUM</div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#B45309]">{counts.medium}</div>
-                <div className="text-[10.5px] sm:text-[11.5px] text-[#B45309] font-semibold">Security Audit Queue</div>
-              </div>
-              <div className="p-3.5 sm:p-4 rounded-lg bg-[#DBEAFE] border border-[#111111] shadow-hard-sm space-y-1">
-                <div className="mono text-[10px] sm:text-[10.5px] font-extrabold text-[#1D4ED8] uppercase">LOW</div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#1D4ED8]">{counts.low}</div>
-                <div className="text-[10.5px] sm:text-[11.5px] text-[#1D4ED8] font-semibold">Best Practice Recommendations</div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 4. TOP FINDINGS LIST ─────────────────────────────────────── */}
-          {topFindings.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-extrabold text-[#111111] tracking-tight">TOP FINDINGS</h3>
-                <button
-                  onClick={() => navigate('/findings')}
-                  className="text-[12.5px] sm:text-[13px] font-extrabold text-[#111111] hover:underline"
-                >
-                  View All {runFindings.length} Findings →
-                </button>
-              </div>
-
-              <div className="bg-white rounded-xl border border-[#111111] divide-y divide-[#111111] shadow-hard">
-                {topFindings.map((f) => (
-                  <div
-                    key={f.id}
-                    onClick={() => navigate(`/findings/${f.id}`)}
-                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:bg-[#FAFAFA] transition-colors cursor-pointer group"
-                  >
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                        <SevBadge sev={f.severity} />
-                        <h4 className="text-base font-extrabold text-[#111111] group-hover:text-blue-700 transition-colors">
-                          {f.title}
-                        </h4>
-                        <span className="chip mono font-bold text-[9.5px] sm:text-[10.5px]">{f.cwe_id}</span>
-                        <span className="mono text-[10.5px] sm:text-[11px] text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111] font-bold">
-                          {f.confidence_pct}% confidence
-                        </span>
-                      </div>
-                      <div className="mono text-[10.5px] sm:text-[11.5px] text-[#555555] font-medium pt-0.5 flex-wrap break-all">
-                        <span className="font-bold text-[#111111]">{f.file_path}:{f.line_number}</span>
-                        {f.endpoint && (
-                          <>
-                            <span> • </span>
-                            <span className="break-all">{f.endpoint}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                      <ValidationBadge v={f.validation} />
-                      <ArrowRight className="w-4 h-4 text-[#111111] group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
-      )}
-
-      {/* ── 5. HISTORICAL PIPELINE RUNS LIST/TABLE ───────────────────── */}
-      {!run && (
+      {/* ── 1. PRIMARY ASSESSMENT OPERATION CONSOLE HERO ─────────────────── */}
+      {run ? (
+        <AssessmentOperationConsole
+          run={run}
+          onRetry={startAssessment}
+        />
+      ) : (
         <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
           {currentRepo
-            ? 'No assessments for this repository yet — run your first assessment to populate the pipeline.'
+            ? 'No assessments for this repository yet — run your first assessment to launch the Security Validation Console.'
             : 'No repository loaded — select a repository to run an assessment.'}
         </div>
       )}
 
+      {/* ── 2. HISTORICAL PIPELINE RUNS TABLE ──────────────────────────── */}
       <Panel title={`HISTORICAL PIPELINE RUNS (${assessments.length})`} flush>
         <div className="overflow-x-auto scroll-thin">
           <table className="data-table min-w-[700px]">

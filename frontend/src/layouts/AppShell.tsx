@@ -52,23 +52,27 @@ function AppShellInner() {
         <Outlet />
       </main>
 
-      {/* Live Pipeline Strip — Active Execution Indicator */}
+      {/* Live Security Operation Strip — Active Execution Indicator */}
       {currentAssessment?.status === 'RUNNING' && (
         <div
-          className="sticky bottom-0 z-30 border-t border-[rgba(22,199,132,0.3)] px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 bg-[#FFFFFF] shadow-lg"
+          className="sticky bottom-0 z-30 border-t-2 border-[#111111] px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 bg-[#111111] text-white shadow-hard-lg"
         >
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="pulse-dot" style={{ color: 'var(--color-accent)', background: 'var(--color-accent)' }} />
-            <span className="mono text-[12px] font-semibold text-[var(--color-ink)]">
+            <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-white animate-pulse">
+              ● LIVE OPERATION
+            </span>
+            <span className="mono text-[12px] font-extrabold text-white">
               {currentAssessment.id}
             </span>
-            <span className="mono text-[12px] text-[var(--color-ink-3)]">•</span>
-            <span className="mono text-[12px] font-medium text-[#0F8A5A]">
-              {runningStep?.label ?? 'PIPELINE RUNNING'}
+            <span className="mono text-[12px] text-zinc-400">•</span>
+            <span className="mono text-[12px] font-extrabold text-[#C5F82A]">
+              {runningStep?.label?.toUpperCase() ?? 'SECURITY SCAN RUNNING'}
             </span>
           </div>
-          <div className="mono text-[11px] text-[var(--color-ink-3)]">
-            {currentAssessment.logs.length} events • {currentRepo?.name}
+          <div className="mono text-[11px] text-zinc-300 font-extrabold flex items-center gap-3">
+            <span>{currentAssessment.logs.length} EVENTS LOGGED</span>
+            <span>•</span>
+            <span className="text-[#C5F82A]">{currentRepo?.name}</span>
           </div>
         </div>
       )}
