@@ -18,11 +18,11 @@ COPY . .
 # Create data directory
 RUN mkdir -p /data
 
-# Cloudflare Containers run images WITHOUT root privileges, so the app must
-# run as an unprivileged user. Scratch space (Semgrep scan temp dirs, git
-# config) stays under the world-writable /tmp directory; /data is owned by
-# the app user but is only written in SQLite dev mode (production uses
-# PostgreSQL via DATABASE_URL).
+# PaaS platforms (Render/Koyeb) run images without root privileges, so the
+# app must run as an unprivileged user. Scratch space (Semgrep scan temp
+# dirs, git config) stays under the world-writable /tmp directory; /data is
+# owned by the app user but is only written in SQLite dev mode (production
+# uses PostgreSQL via DATABASE_URL).
 RUN useradd --create-home --uid 1000 zorqen \
     && chown -R zorqen:zorqen /data
 

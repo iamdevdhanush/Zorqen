@@ -2,12 +2,15 @@ import axios from 'axios';
 
 /** Effective ZORQEN API base URL, always ending in `/api`.
  *
- * `VITE_API_URL` is a build-time deployment setting. In the Cloudflare
- * deployment the frontend and backend share one origin, so the value is left
- * unset and the same-origin relative path `/api` is used. When set, the
- * value may be a bare backend origin (without the `/api` suffix) — all
- * backend routes live under `/api`, so the raw value is normalized to always
- * target the canonical `/api` namespace.
+ * `VITE_API_URL` is a build-time deployment setting. In production the
+ * frontend (Cloudflare) and backend (Render) are different origins, so
+ * `VITE_API_URL` must point at the Render backend (e.g.
+ * `https://zorqen-api.onrender.com`). In local development the Vite dev
+ * server proxies `/api` to the local backend, so the value is left unset
+ * and the same-origin relative path `/api` is used. When set, the value may
+ * be a bare backend origin (without the `/api` suffix) — all backend routes
+ * live under `/api`, so the raw value is normalized to always target the
+ * canonical `/api` namespace.
  */
 export function getApiBase(): string {
   const raw = (import.meta.env.VITE_API_URL || '/api').trim();

@@ -2,10 +2,11 @@
 
 Production deployment for the ZORQEN security validation platform:
 
-> **Current production target: Cloudflare** — see [CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md).
-> - **Frontend** → Workers Static Assets (React / Vite SPA)
-> - **Backend** → Cloudflare Containers (existing `backend/Dockerfile`, FastAPI / Uvicorn)
+> **Current production architecture** — see [DEPLOYMENT.md](DEPLOYMENT.md).
+> - **Frontend** → Cloudflare (Workers Static Assets + Worker)
+> - **Backend** → Render (existing `backend/Dockerfile`, FastAPI / Uvicorn)
 > - **Database** → PostgreSQL via Supabase (`DATABASE_URL`, unchanged)
+> - **Assessment engine** → FastAPI + Semgrep + AI on Render
 >
 > The sections below document the **legacy** Render + Vercel / Koyeb deployment and are
 > kept for history and rollback. Do not use them for new production deploys.
@@ -118,7 +119,7 @@ Never put real secrets in `.env.example` or this document.
 
 ---
 
-## 5. Backend Deployment — Koyeb *(legacy — superseded by Cloudflare, see CLOUDFLARE_DEPLOYMENT.md)*
+## 5. Backend Deployment — Koyeb *(legacy — superseded, see DEPLOYMENT.md)*
 
 The backend ships a production Dockerfile (`backend/Dockerfile`) that installs
 all dependencies and runs Uvicorn on the environment-provided `PORT`
@@ -147,7 +148,7 @@ Notes:
 
 ---
 
-## 6. Frontend Deployment — Vercel *(legacy — superseded by Cloudflare, see CLOUDFLARE_DEPLOYMENT.md)*
+## 6. Frontend Deployment — Vercel *(legacy — superseded, see DEPLOYMENT.md)*
 
 1. Push the repository to GitHub.
 2. Open [vercel.com](https://vercel.com) → **Add New Project** → import the repo.
@@ -414,7 +415,7 @@ rebuild the image.
 
 ---
 
-## 14. Production URLs *(legacy — current production is Cloudflare, see CLOUDFLARE_DEPLOYMENT.md)*
+## 14. Production URLs *(legacy — current production is Cloudflare frontend + Render backend, see DEPLOYMENT.md)*
 
 Frontend:
 https://YOUR-VERCEL-DOMAIN

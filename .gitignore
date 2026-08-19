@@ -12,6 +12,9 @@ node_modules
 dist
 dist-ssr
 
+# ── Cloudflare (local Wrangler dev state) ───────────────────────────────────
+cloudflare/.wrangler/
+
 # ── Python / Backend ────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]

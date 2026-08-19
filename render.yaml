@@ -1,7 +1,9 @@
-# ZORQEN backend — Render Blueprint (optional, legacy — production now uses Cloudflare).
-# You can also create this service manually: New Web Service -> connect repo ->
-# Root Directory `backend` -> Runtime `Docker`. The Dockerfile is authoritative;
-# this file only documents the recommended production settings.
+# ZORQEN backend — Render Blueprint (production backend).
+# Create the service via Render Dashboard -> New Web Service -> connect repo ->
+# Root Directory `backend` -> Runtime `Docker`, or deploy this Blueprint.
+# The Dockerfile is authoritative; this file documents the recommended
+# production settings for the new architecture:
+#   Cloudflare = frontend (static assets)  ·  Render = FastAPI backend  ·  Supabase = PostgreSQL
 services:
   - type: web
     name: zorqen-api
@@ -24,9 +26,10 @@ services:
       # stored GitHub tokens undecryptable until users re-authenticate.
       - key: ENCRYPTION_KEY
         sync: false
-      # REQUIRED: Set DATABASE_URL to your Render PostgreSQL Internal URL.
+      # REQUIRED: Set DATABASE_URL to your Supabase PostgreSQL connection
+      # string (Supabase -> Project Settings -> Database -> Connection string).
       # Format: postgresql+asyncpg://USERNAME:PASSWORD@HOST:5432/DATABASE
-      # (Render's postgres:// URLs are normalized automatically)
+      # (postgres:// and postgresql:// URLs are normalized automatically)
       - key: DATABASE_URL
         sync: false
       # REQUIRED: GitHub OAuth App credentials (from github.com/settings/applications/new)
@@ -38,13 +41,15 @@ services:
       # e.g. https://zorqen-api.onrender.com/api/auth/github/callback
       - key: GITHUB_REDIRECT_URI
         sync: false
-      # REQUIRED: Set to your Vercel frontend URL to allow CORS
-      # e.g. ["https://zorqen-ai-pink.vercel.app"]
+      # REQUIRED: Set to your Cloudflare frontend URL to allow CORS
       - key: CORS_ORIGINS
-        sync: false
-      # REQUIRED: Set to your Vercel frontend URL
-      # e.g. https://zorqen-ai-pink.vercel.app
+        value: '["https://app.zorqen.ai"]'
+      # REQUIRED: Set to your Cloudflare frontend URL (OAuth redirect + trusted hosts)
       - key: FRONTEND_URL
+        value: https://app.zorqen.ai
+      # REQUIRED: Set to your Render backend URL (trusted hosts). Render
+      # assigns the URL after the first deploy (e.g. https://zorqen-api.onrender.com).
+      - key: BACKEND_URL
         sync: false
       # OPTIONAL: Groq API key for LLM-powered security reasoning and ASK ZORQEN
       - key: GROQ_API_KEY

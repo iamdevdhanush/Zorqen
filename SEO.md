@@ -43,7 +43,7 @@ labels, mono type) is reused verbatim by the public pages so marketing feels lik
 | `/remediation/:id`, `/verification/:id` | **noindex** + robots Disallow | Private workspace. |
 | `/settings` | **noindex** + robots Disallow | Private workspace. |
 | `/auth/*` | **noindex** + robots Disallow | OAuth flow. |
-| anything unknown | Hard 404 via `404.html` (Vercel) / client-side branded 404 | Invalid URLs must not look like valid pages. |
+| anything unknown | Hard 404 via `404.html` (legacy Vercel) / client-side branded 404 | Invalid URLs must not look like valid pages. |
 
 Implementation: `frontend/public/robots.txt` blocks the private paths; every public page renders a
 `<Seo>` component; the console shell (`AppShell`) renders `<Seo noIndex>` so all private routes are
@@ -62,9 +62,12 @@ robot-noindex regardless of `robots.txt` (robots.txt is not a security boundary)
   (upserts existing tags, manages `script[data-jsonld]` nodes).
 - **Sitemap**: `frontend/public/sitemap.xml` — only the 6 public URLs.
 - **robots.txt**: `frontend/public/robots.txt` — allows `/`, disallows private paths, declares the sitemap.
-- **Hard 404s**: `frontend/vercel.json` rewrites only the known SPA routes to `index.html`. Unknown
-  URLs resolve to `frontend/public/404.html` with a 404 status (noindex, links home). In-app unknown
-  routes hit `frontend/src/pages/NotFoundPage.tsx` (soft 404, noindex, branded).
+- **Hard 404s**: Cloudflare Workers Static Assets serve `frontend/dist` with
+  `not_found_handling: "single-page-application"` (`cloudflare/wrangler.jsonc`), so
+  unmatched paths resolve to `index.html` and the in-app unknown-route handler
+  (`frontend/src/pages/NotFoundPage.tsx`, soft 404, noindex, branded) takes over.
+  The legacy Vercel deployment (rewrites in `frontend/vercel.json` + `404.html`)
+  delivered a hard 404; the Cloudflare deployment relies on the client-side soft 404.
 
 ### Known limitation (documented, not engineered around)
 Public pages are client-rendered. Google renders JS, so pages are indexable, but the initial HTML
@@ -103,7 +106,7 @@ until that exists.
 ## 7. Maintenance checklist
 
 - [ ] New public route? Add lazy route in `src/App.tsx`, `<Seo>` on the page, sitemap entry,
-      `vercel.json` rewrite, and a `robots.txt` allow (default allows).
+      and a `robots.txt` allow (default allows).
 - [ ] New console route? It inherits `AppShell`'s `noIndex`; add a `robots.txt` Disallow.
 - [ ] Production domain changed? Update `index.html`, sitemap, JSON-LD, and `Seo.tsx` base.
 - [ ] After any public page content change: `npm run build`, `npm run lint`, re-submit URL in GSC.

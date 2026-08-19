@@ -1,26 +1,28 @@
 # ZORQEN GitHub OAuth Deployment
 
-Production backend + frontend: `https://app.zorqen.ai` (single Cloudflare origin —
-Workers Static Assets + Cloudflare Containers). See [CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md)
-for the full runbook.
+Production architecture: **Cloudflare** serves the frontend
+(`https://app.zorqen.ai`), **Render** runs the FastAPI backend. The OAuth flow runs
+entirely on the Render backend; Cloudflare only serves the SPA that redirects the
+user to it. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full runbook.
 
-> Previous production (Render + Vercel, `raksha-ai-b8wf.onrender.com` /
-> `raksha-ai-pink.vercel.app`) carried the previous RAKSHA brand and was
-> decommissioned with the Cloudflare migration; those URLs no longer resolve.
-> They are preserved here for history only and were not renamed.
+> Previous production (Cloudflare Containers, single `app.zorqen.ai` origin) ran the
+> callback on the frontend origin; the older Render + Vercel deployment
+> (`raksha-ai-b8wf.onrender.com` / `raksha-ai-pink.vercel.app`) carried the previous
+> RAKSHA brand and was decommissioned with the Cloudflare migration; those URLs no
+> longer resolve. They are preserved here for history only.
 
 ## Backend OAuth Login URL
 
 Canonical (used by the frontend and by `GITHUB_REDIRECT_URI`):
 
 ```
-https://app.zorqen.ai/api/auth/github
+https://<RENDER_BACKEND_URL>/api/auth/github
 ```
 
 Alias (also registered, returns the same 307 to GitHub — fixed 2026-08-15):
 
 ```
-https://app.zorqen.ai/auth/github
+https://<RENDER_BACKEND_URL>/auth/github
 ```
 
 The auth router is registered twice in `backend/main.py`: once under the `/api` prefix (`app.include_router(auth_router, prefix="/api")`) and once without a prefix (`app.include_router(auth_router)`), with router prefix `/auth` (`backend/routers/auth.py`). The resulting routes are:
@@ -32,46 +34,40 @@ The auth router is registered twice in `backend/main.py`: once under the `/api` 
 
 Both aliases run the REAL OAuth flow; they add no security risk because the callback always uses the fixed `GITHUB_REDIRECT_URI`, never a user-supplied `redirect_uri`.
 
-Note: the alias paths (`/auth/github`, `/auth/github/callback`) are NOT routed to the
-container by the Cloudflare Worker config — only `/api/*` and `/health*` are. The
-canonical `/api/auth/*` paths are the only ones reachable in production; the aliases
-remain available on a direct container deployment.
-
 ## Backend OAuth Callback URL
 
 The callback URL registered in the GitHub OAuth App — must match `GITHUB_REDIRECT_URI` exactly:
 
 ```
-https://app.zorqen.ai/api/auth/github/callback
+https://<RENDER_BACKEND_URL>/api/auth/github/callback
 ```
 
 ## Frontend Login Configuration
 
-The frontend builds the login URL as `/api/auth/github` (same origin — `VITE_API_URL`
-may be left unset; `frontend/src/services/api.ts` falls back to the relative `/api` path).
+The frontend builds the login URL from its API base: `VITE_API_URL` (set to the
+Render backend at build time) + `/auth/github`. See `frontend/src/store/WorkspaceContext.tsx`
+(`proceedGithubAuth`) and `frontend/src/services/api.ts` (`getApiBase`).
 
-- Frontend code: `frontend/src/store/WorkspaceContext.tsx` (`proceedGithubAuth`) and `frontend/src/services/api.ts`
+## Render Environment Variables
 
-## Cloudflare Environment Variables
+Names only — never commit or print secrets. Set them in the Render dashboard (or via
+`render.yaml` with `sync: false`). **None of these belong in the Cloudflare
+configuration or the frontend build.**
 
-Names only — never commit or print secrets. Non-secret values go in `vars` in
-`cloudflare/wrangler.jsonc`; secrets are set with `wrangler secret put` (or the
-dashboard).
-
-| Variable | Location | Purpose |
-|---|---|---|
-| `APP_ENV` | vars | `production` |
-| `FRONTEND_URL` | vars | `https://app.zorqen.ai` (OAuth redirect + trusted hosts) |
-| `BACKEND_URL` | vars | `https://app.zorqen.ai` (trusted hosts) |
-| `CORS_ORIGINS` | vars | `["https://app.zorqen.ai"]` |
-| `TRUSTED_HOSTS` | vars | `["app.zorqen.ai", "*.workers.dev"]` (interim) |
-| `GITHUB_CLIENT_ID` | vars | GitHub OAuth App client ID |
-| `GITHUB_REDIRECT_URI` | vars | `https://app.zorqen.ai/api/auth/github/callback` |
-| `SECRET_KEY` | secret | Long random JWT signing key |
-| `DATABASE_URL` | secret | PostgreSQL (Supabase) connection string |
-| `ENCRYPTION_KEY` | secret | AES-256-GCM key for GitHub tokens at rest |
-| `GITHUB_CLIENT_SECRET` | secret | GitHub OAuth App client secret |
-| `GROQ_API_KEY` | secret | LLM provider key |
+| Variable | Purpose |
+|---|---|
+| `APP_ENV` | `production` |
+| `FRONTEND_URL` | `https://app.zorqen.ai` (OAuth redirect + trusted hosts) |
+| `BACKEND_URL` | `https://<RENDER_BACKEND_URL>` (trusted hosts) |
+| `CORS_ORIGINS` | `["https://app.zorqen.ai"]` |
+| `TRUSTED_HOSTS` | Optional; derived from `FRONTEND_URL` + `BACKEND_URL` (e.g. `["*.onrender.com"]` while the Render subdomain is provisional) |
+| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID |
+| `GITHUB_REDIRECT_URI` | `https://<RENDER_BACKEND_URL>/api/auth/github/callback` |
+| `SECRET_KEY` | Long random JWT signing key |
+| `DATABASE_URL` | PostgreSQL (Supabase) connection string |
+| `ENCRYPTION_KEY` | AES-256-GCM key for GitHub tokens at rest |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret |
+| `GROQ_API_KEY` | LLM provider key |
 
 ## GitHub OAuth App Configuration
 
@@ -82,7 +78,7 @@ GitHub OAuth apps accept exactly ONE callback URL. For production:
 - **Application name**: `ZORQEN` (rename the existing GitHub OAuth App in the
   GitHub dashboard; see "External Actions Required" in the rebrand report)
 - **Homepage URL**: `https://app.zorqen.ai`
-- **Authorization callback URL**: `https://app.zorqen.ai/api/auth/github/callback`
+- **Authorization callback URL**: `https://<RENDER_BACKEND_URL>/api/auth/github/callback`
 
 The `GITHUB_REDIRECT_URI` env var must match this callback URL **exactly** (same scheme, host, port, path). If you also use localhost dev, create a separate OAuth App for local development (`http://localhost:8000/api/auth/github/callback`).
 
@@ -92,40 +88,42 @@ Requested scopes: `repo read:user user:email` (backend `github/oauth.py`).
 
 ```
 Frontend (CONNECT GITHUB)
-        │ window.location = /api/auth/github   (same origin, https://app.zorqen.ai)
+        │ window.location = VITE_API_URL + /auth/github  (Render origin)
         ▼
-GET https://app.zorqen.ai/api/auth/github
-        │ Worker → container; 307 redirect, state token generated (CSRF)
+GET https://<RENDER_BACKEND_URL>/api/auth/github
+        │ 307 redirect, state token generated (CSRF)
         ▼
-https://github.com/login/oauth/authorize?client_id=...&redirect_uri=https://app.zorqen.ai/api/auth/github/callback&state=...
+https://github.com/login/oauth/authorize?client_id=...&redirect_uri=https://<RENDER_BACKEND_URL>/api/auth/github/callback&state=...
         │ user authorizes
         ▼
-GitHub redirects → GET /api/auth/github/callback?code=...&state=...
+GitHub redirects → GET /api/auth/github/callback?code=...&state=...  (Render)
         │ backend validates state, exchanges code for token,
-        │ fetches /user, creates/updates DB user, mints JWT
+        │ fetches /user, creates/updates DB user, mints JWT,
+        │ sets Secure SameSite=None HttpOnly cookie on the Render origin
         ▼
-307 → https://app.zorqen.ai/auth/callback?token=<JWT>
-        │ frontend stores token in localStorage, loads profile
+307 → https://app.zorqen.ai/auth/callback
+        │ frontend calls GET /api/auth/token on Render (cross-site cookie,
+        │ same-origin-free CORS), stores token in localStorage
         ▼
 Signed in
 ```
 
-Security properties: OAuth `state` is generated per-request and validated on callback (`_oauth_states` in `backend/routers/auth.py`); invalid/missing state is rejected; the callback only accepts GitHub's redirects, never user-supplied `redirect_uri`. Client secrets live only in Cloudflare Worker Secrets — never in frontend code.
+Security properties: OAuth `state` is generated per-request and validated on callback (`_oauth_states` in `backend/routers/auth.py`); invalid/missing state is rejected; the callback only accepts GitHub's redirects, never user-supplied `redirect_uri`. Client secrets live only in Render env vars — never in frontend code. The cross-site HttpOnly cookie (`Secure`, `SameSite=None`) is the existing authentication hardening and is preserved unchanged; `CORS_ORIGINS=["https://app.zorqen.ai"]` plus `allow_credentials=True` makes the cookie-based token exchange work across the Cloudflare/Render origins.
 
 ## Verification
 
 ```bash
 # Health + GitHub config status (expect github_configured: true)
-curl -s https://app.zorqen.ai/api/health
+curl -s https://<RENDER_BACKEND_URL>/api/health
 
 # OpenAPI — expect the auth paths to appear
-curl -s https://app.zorqen.ai/api/openapi.json | python -m json.tool
+curl -s https://<RENDER_BACKEND_URL>/api/openapi.json | python -m json.tool
 
 # Login endpoint — expect 307 to github.com/login/oauth/authorize (canonical)
-curl -s -o /dev/null -D - https://app.zorqen.ai/api/auth/github
+curl -s -o /dev/null -D - https://<RENDER_BACKEND_URL>/api/auth/github
 
 # Callback with no params — expect 307 to the frontend with error=missing_params
-curl -s -o /dev/null -D - "https://app.zorqen.ai/api/auth/github/callback"
+curl -s -o /dev/null -D - "https://<RENDER_BACKEND_URL>/api/auth/github/callback"
 
 # Browser test
 # 1. Open https://app.zorqen.ai
@@ -136,7 +134,7 @@ curl -s -o /dev/null -D - "https://app.zorqen.ai/api/auth/github/callback"
 Verified: `2026-08-15` — the previous Render deployment returned 200 on `/api/health`
 with `github_configured: true`, the auth paths present in `/api/openapi.json`,
 `/api/auth/github` returned 307 to GitHub, the callback rejected missing params, and
-CORS allowed only the Vercel origin. The `/auth/github` alias was added to
+CORS allowed only the frontend origin. The `/auth/github` alias was added to
 `backend/main.py` (dual router registration) and verified locally via the registered-route
-list and TestClient (307 to GitHub). The Cloudflare deployment must be re-verified with
-the checklist above after the first `wrangler deploy`.
+list and TestClient (307 to GitHub). The Render deployment must be re-verified with
+the checklist above after the first deploy.

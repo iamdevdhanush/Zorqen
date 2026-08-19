@@ -2,72 +2,16 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "zorqen",
   "main": "src/worker.ts",
-  "compatibility_date": "2026-08-19",
+  "compatibility_date": "2026-05-03",
   "workers_dev": true,
-
-  "vars": {
-    "APP_ENV": "production",
-    "FRONTEND_URL": "https://app.zorqen.ai",
-    "BACKEND_URL": "https://app.zorqen.ai",
-    "CORS_ORIGINS": "[\"https://app.zorqen.ai\"]",
-    "TRUSTED_HOSTS": "[\"app.zorqen.ai\", \"*.workers.dev\"]",
-    "GITHUB_CLIENT_ID": "",
-    "GITHUB_REDIRECT_URI": "https://app.zorqen.ai/api/auth/github/callback",
-    "GROQ_MODEL": "openai/gpt-oss-20b",
-    "GROK_MODEL": "grok-4-latest",
-    "SANDBOX_ENABLED": "false"
-  },
-
-  "secrets": {
-    "required": [
-      "SECRET_KEY",
-      "ENCRYPTION_KEY",
-      "DATABASE_URL",
-      "GITHUB_CLIENT_SECRET",
-      "GROQ_API_KEY",
-      "GROK_API_KEY"
-    ]
-  },
 
   "assets": {
     "directory": "../frontend/dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/health*"]
+    "not_found_handling": "single-page-application"
   },
-
-  "containers": [
-    {
-      "class_name": "ZorqenContainer",
-      "image": "../backend/Dockerfile",
-      "instance_type": "standard-1",
-      "max_instances": 1,
-      "rollout_active_grace_period": 300
-    }
-  ],
-
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "ZORQEN_CONTAINER",
-        "class_name": "ZorqenContainer"
-      }
-    ]
-  },
-
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["ZorqenContainer"]
-    }
-  ],
 
   "observability": {
     "enabled": true
-  },
-
-  "limits": {
-    "cpu_ms": 5000,
-    "subrequests": 200
   }
 }
