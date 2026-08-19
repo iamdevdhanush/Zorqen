@@ -259,7 +259,7 @@ class Settings(BaseSettings):
     # GitHub OAuth
     github_client_id: str = ""
     github_client_secret: str = ""
-    github_redirect_uri: str = "http://localhost:8000/api/auth/github/callback"
+    github_redirect_uri: str = ""
     github_api_base: str = "https://api.github.com"
     github_oauth_base: str = "https://github.com"
 

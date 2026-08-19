@@ -13,13 +13,8 @@ from sqlalchemy import select
 from core.config import settings
 from core.database import get_db
 from core.security import create_access_token, decode_access_token
-from github.oauth import (
-    get_oauth_redirect_url,
-    exchange_code_for_token,
-    get_github_user,
-    get_token_scopes,
-    missing_required_scopes,
-)
+import github.oauth as github_oauth
+
 from models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -30,9 +25,9 @@ _oauth_states: dict[str, str] = {}
 
 def _set_auth_cookie(response: Response, token: str) -> None:
     """Set JWT in secure HttpOnly cookie."""
-    # Cookie settings for production security
+    # Cookie settings - Secure in production, SameSite=None for cross-site auth flow
     secure = not settings.is_development
-    samesite = "lax" if settings.is_development else "none"
+    samesite = "none"
     response.set_cookie(
         key="raksha_token",
         value=token,
@@ -62,7 +57,7 @@ async def github_login(request: Request):
         )
     state = secrets.token_urlsafe(32)
     _oauth_states[state] = "pending"
-    redirect_url = get_oauth_redirect_url(state)
+    redirect_url = github_oauth.get_oauth_redirect_url(state)
     return RedirectResponse(url=redirect_url)
 
 
@@ -71,7 +66,6 @@ async def github_callback(
     code: Optional[str] = None,
     state: Optional[str] = None,
     error: Optional[str] = None,
-    response: Response = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Handle GitHub OAuth callback, create/update user, issue JWT in secure cookie."""
@@ -86,18 +80,18 @@ async def github_callback(
     del _oauth_states[state]
 
     try:
-        access_token = await exchange_code_for_token(code)
+        access_token = await github_oauth.exchange_code_for_token(code)
         if not access_token:
             return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?error=token_exchange_failed")
 
-        github_user = await get_github_user(access_token)
+        github_user = await github_oauth.get_github_user(access_token)
 
         # Fail fast when the token was granted with fewer scopes than the
         # application requires — otherwise private-repo scanning fails later
         # with cryptic GitHub 403s mid-assessment.
-        granted_scopes = await get_token_scopes(access_token)
+        granted_scopes = await github_oauth.get_token_scopes(access_token)
         if granted_scopes:  # only enforceable when GitHub reports scopes
-            missing = missing_required_scopes(granted_scopes)
+            missing = github_oauth.missing_required_scopes(granted_scopes)
             if missing:
                 return RedirectResponse(
                     url=(
