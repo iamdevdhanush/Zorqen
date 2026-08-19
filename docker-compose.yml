@@ -16,7 +16,7 @@ services:
       # deploys (Cloudflare) use APP_ENV=production with a real PostgreSQL
       # DATABASE_URL — the app refuses SQLite when APP_ENV=production.
       - APP_ENV=development
-      - DATABASE_URL=sqlite+aiosqlite:////data/raksha.db
+      - DATABASE_URL=sqlite+aiosqlite:////data/zorqen.db
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
@@ -25,7 +25,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
     volumes:
-      - raksha_data:/data
+      - zorqen_data:/data
       - /var/run/docker.sock:/var/run/docker.sock  # for sandbox
     restart: unless-stopped
     healthcheck:
@@ -45,4 +45,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  raksha_data:
+  zorqen_data:

@@ -12,7 +12,7 @@ export default function SettingsPage() {
       
       {/* Editorial Header */}
       <div className="pb-4 border-b border-[var(--color-line)] space-y-1">
-        <div className="protocol-tag">raksha://workspace/settings</div>
+        <div className="protocol-tag">zorqen://workspace/settings</div>
         <h1 className="text-3xl font-extrabold text-[var(--color-ink)] tracking-tight">
           SETTINGS
         </h1>
@@ -75,10 +75,10 @@ export default function SettingsPage() {
             <ShieldCheck className="w-6 h-6 text-[var(--color-accent)]" />
           </div>
           <div>
-            <div className="mono text-[13px] font-bold text-[var(--color-ink)]">RAKSHA • Security Validation Platform</div>
+            <div className="mono text-[13px] font-bold text-[var(--color-ink)]">ZORQEN • Security Validation Platform</div>
             <div className="text-[12px] text-[var(--color-ink-3)] mt-[2px] leading-relaxed">
               v1.3.0 — detection, evidence, remediation and verification for software you control.
-              RAKSHA never scans or modifies targets without your explicit action.
+              ZORQEN never scans or modifies targets without your explicit action.
             </div>
           </div>
         </div>

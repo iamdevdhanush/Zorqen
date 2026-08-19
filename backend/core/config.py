@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Core Configuration
+ZORQEN Backend — Core Configuration
 """
 from __future__ import annotations
 
@@ -128,7 +128,7 @@ class Settings(BaseSettings):
         )
 
     # Application
-    app_name: str = "RAKSHA"
+    app_name: str = "ZORQEN"
     app_env: str = "development"
     secret_key: str = "dev-secret-key-change-in-production"
     frontend_url: str = "http://localhost:5173"
@@ -140,7 +140,7 @@ class Settings(BaseSettings):
     encryption_key: str = ""
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./raksha.db"
+    database_url: str = "sqlite+aiosqlite:///./zorqen.db"
 
     # Postgres connection pool (used when database_url is postgresql+asyncpg://)
     db_pool_size: int = 5
@@ -231,7 +231,7 @@ class Settings(BaseSettings):
                 "CORS_ORIGINS is not configured. Set CORS_ORIGINS in the "
                 "deployment environment to the frontend origin(s) as JSON or "
                 "a comma-separated list, e.g. "
-                '["https://raksha.app"] or https://raksha.app.'
+                '["https://zorqen.app"] or https://zorqen.app.'
             )
         if "*" in origins:
             raise ValueError(
@@ -249,7 +249,7 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "CORS_ORIGINS contains a localhost origin "
                     f"({origin!r}). Production must list the real public "
-                    "frontend origin(s), e.g. https://raksha.app."
+                    "frontend origin(s), e.g. https://zorqen.app."
                 )
         return self
 
@@ -270,7 +270,7 @@ class Settings(BaseSettings):
     # served by the Groq API (model_not_found).
     groq_model: str = "openai/gpt-oss-20b"
 
-    # Grok (xAI) — ASK RAKSHA investigation copilot (backend only, never exposed)
+    # Grok (xAI) — ASK ZORQEN investigation copilot (backend only, never exposed)
     grok_api_key: str = ""
     grok_model: str = "grok-4-latest"
     grok_api_base: str = "https://api.x.ai/v1"

@@ -40,7 +40,7 @@ export default function ConnectGithubModal() {
 
         <div className="p-6 space-y-5">
           <p className="text-[13px] leading-relaxed text-[#333333] font-medium">
-            &ldquo;Authorize RAKSHA to inspect repositories you choose.&rdquo;
+            &ldquo;Authorize ZORQEN to inspect repositories you choose.&rdquo;
           </p>
 
           <button
@@ -58,7 +58,7 @@ export default function ConnectGithubModal() {
               <span className="mono text-[11px] font-bold tracking-[0.08em] text-[#111111]">READ-ONLY ACCESS</span>
             </div>
             <p className="text-[11.5px] text-[#555555] leading-relaxed">
-              &ldquo;RAKSHA does not modify your repositories without explicit approval.&rdquo;
+              &ldquo;ZORQEN does not modify your repositories without explicit approval.&rdquo;
             </p>
           </div>
         </div>

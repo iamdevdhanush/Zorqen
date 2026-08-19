@@ -36,7 +36,7 @@ def test_github_callback_sets_cookie_and_redirects():
         # Ensure Set-Cookie header (if present) and client cookie
         set_cookie = response.headers.get('set-cookie')
         # Verify cookie is set either via client storage or header
-        if client.cookies.get('raksha_token'):
+        if client.cookies.get('zorqen_token'):
             # Cookie stored in client.cookies, no further checks needed
             pass
         else:
@@ -56,7 +56,7 @@ def test_auth_token_endpoint_requires_cookie():
     assert response.status_code == 401
     # With a valid cookie should return token
     token = create_access_token({"sub": "user-id", "login": "test"}, expires_delta=timedelta(hours=settings.jwt_expire_hours))
-    client.cookies.set('raksha_token', token)
+    client.cookies.set('zorqen_token', token)
     response = client.get('/auth/token')
     assert response.status_code == 200
     assert response.json()['token'] == token

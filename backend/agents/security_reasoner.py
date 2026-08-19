@@ -1,4 +1,4 @@
-"""RAKSHA — Security Reasoner Agent
+"""ZORQEN — Security Reasoner Agent
 Takes structured findings from tools and applies AI reasoning to:
 - Determine root cause
 - Assess exploitability
@@ -22,12 +22,12 @@ import structlog
 
 log = structlog.get_logger()
 
-SYSTEM_PROMPT = """You are RAKSHA's Security Reasoner — a senior application security engineer.
+SYSTEM_PROMPT = """You are ZORQEN's Security Reasoner — a senior application security engineer.
 
 You receive structured evidence about potential vulnerabilities and must reason about them carefully.
 
 You MUST return valid JSON with this exact shape:
-{"findings": [{"index": 1, "confidence": "confirmed|likely|possible|false_positive", "confidence_pct": <integer 0-100>, "is_exploitable": <true|false>, "root_cause": "<1-2 sentence technical root cause>", "attack_path": ["step 1", "step 2", ...], "impact": "<1-2 sentence impact description>", "evidence": "<specific evidence from the code that supports this finding>", "ai_reasoning": "<2-3 sentences explaining why RAKSHA believes this is or is not a genuine vulnerability>", "false_positive_reason": "<null or reason if false positive>"}]}
+{"findings": [{"index": 1, "confidence": "confirmed|likely|possible|false_positive", "confidence_pct": <integer 0-100>, "is_exploitable": <true|false>, "root_cause": "<1-2 sentence technical root cause>", "attack_path": ["step 1", "step 2", ...], "impact": "<1-2 sentence impact description>", "evidence": "<specific evidence from the code that supports this finding>", "ai_reasoning": "<2-3 sentences explaining why ZORQEN believes this is or is not a genuine vulnerability>", "false_positive_reason": "<null or reason if false positive>"}]}
 
 Rules:
 - Answer for EVERY finding index you were given. Never invent findings that were not listed.

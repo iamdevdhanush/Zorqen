@@ -1,4 +1,4 @@
-"""RAKSHA — AIAnalysis model
+"""ZORQEN — AIAnalysis model
 Tracks AI/LLM usage per assessment & finding for billing transparency and cost control.
 """
 from __future__ import annotations

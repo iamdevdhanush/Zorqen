@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-/** Effective RAKSHA API base URL, always ending in `/api`.
+/** Effective ZORQEN API base URL, always ending in `/api`.
  *
  * `VITE_API_URL` is a build-time deployment setting. In the Cloudflare
  * deployment the frontend and backend share one origin, so the value is left
@@ -24,7 +24,7 @@ const api = axios.create({
 
 // Attach JWT token to every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('raksha_token');
+  const token = localStorage.getItem('zorqen_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -38,10 +38,10 @@ api.interceptors.response.use(
   (r) => r,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('raksha_token');
-      localStorage.removeItem('raksha_user');
+      localStorage.removeItem('zorqen_token');
+      localStorage.removeItem('zorqen_user');
       // Signal React to handle the logout; avoids a full page reload
-      window.dispatchEvent(new CustomEvent('raksha:401'));
+      window.dispatchEvent(new CustomEvent('zorqen:401'));
     }
     return Promise.reject(err);
   }
@@ -72,7 +72,7 @@ export const getFinding = (id: string) => api.get(`/findings/${id}`);
 export const dismissFinding = (id: string) => api.post(`/findings/${id}/dismiss`);
 export const generateFix = (findingId: string) => api.post(`/findings/${findingId}/generate-fix`);
 
-// ── Copilot (ASK RAKSHA) ────────────────────────────────────────────────────
+// ── Copilot (ASK ZORQEN) ────────────────────────────────────────────────────
 export interface CopilotSource {
   type: 'repository' | 'assessment' | 'finding' | 'source';
   id?: string;

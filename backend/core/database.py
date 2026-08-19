@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Database Setup (SQLAlchemy async; SQLite or PostgreSQL)
+ZORQEN Backend — Database Setup (SQLAlchemy async; SQLite or PostgreSQL)
 """
 from __future__ import annotations
 

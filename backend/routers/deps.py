@@ -1,4 +1,4 @@
-"""RAKSHA — Shared router dependency: current user extraction from JWT"""
+"""ZORQEN — Shared router dependency: current user extraction from JWT"""
 from __future__ import annotations
 
 from fastapi import Depends, HTTPException, Request

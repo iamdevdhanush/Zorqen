@@ -1,4 +1,4 @@
-"""RAKSHA — Custom Deterministic Security Checks
+"""ZORQEN — Custom Deterministic Security Checks
 Stateless, regex/AST-free checks on raw source content.
 Covers vulnerability classes that Semgrep may miss or where custom logic adds value.
 """

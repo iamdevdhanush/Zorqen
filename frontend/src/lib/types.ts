@@ -133,7 +133,7 @@ export interface ActivityItem {
 
 export interface RepoMeta {
   id: string;
-  rakshaId?: string;
+  zorqenId?: string;
   name: string;
   owner: string;
   private: boolean;

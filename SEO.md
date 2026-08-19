@@ -1,14 +1,14 @@
-# RAKSHA — SEO Guide
+# ZORQEN — SEO Guide
 
-Production site: **https://app.raksha.ai**
+Production site: **https://app.zorqen.ai**
 
-RAKSHA is an SPA (React + Vite). Public SEO pages are statically built and client-rendered, so
+ZORQEN is an SPA (React + Vite). Public SEO pages are statically built and client-rendered, so
 technical SEO is handled through route-level metadata, static robots/sitemap, and a hard-404
 strategy. This document is the source of truth for the marketing pages and their upkeep.
 
 ## 1. Objective
 
-Rank RAKSHA for the primary and secondary intents below **without redesigning the approved UI**.
+Rank ZORQEN for the primary and secondary intents below **without redesigning the approved UI**.
 The console's visual language (layout, colors, typography, hard shadows, lime accent, protocol-tag
 labels, mono type) is reused verbatim by the public pages so marketing feels like the product.
 
@@ -20,7 +20,7 @@ labels, mono type) is reused verbatim by the public pages so marketing feels lik
 | "AI generated code security / is AI-generated code secure?" | `/ai-generated-code-security` |
 | "AI application security" | `/ai-application-security` |
 | "vibe-coded app security" | `/vibe-coded-app-security` |
-| RAKSHA product / how it works | `/docs` |
+| ZORQEN product / how it works | `/docs` |
 
 ### Secondary / informational
 - AI code review security, AI security scanner for GitHub repos, vulnerabilities in AI-written
@@ -85,16 +85,16 @@ until that exists.
 
 ## 5. Search Console & Bing steps (post-deploy)
 
-1. Verify `https://app.raksha.ai` in Google Search Console (DNS or HTML-tag method) and
+1. Verify `https://app.zorqen.ai` in Google Search Console (DNS or HTML-tag method) and
    Bing Webmaster Tools.
-2. Submit `https://app.raksha.ai/sitemap.xml`.
+2. Submit `https://app.zorqen.ai/sitemap.xml`.
 3. Submit the URL prefix in each GSC property for the 6 public pages individually.
 4. After 1–2 weeks, run the URL Inspection Tool on `/ai-code-security` and request indexing.
 5. Monitor "Pages → not indexed → noindexed" to confirm only private routes are excluded.
 
 ## 6. Growth plan (future content)
 
-- `/how-raksha-detects-secrets` — the secret detection ruleset and history scan.
+- `/how-zorqen-detects-secrets` — the secret detection ruleset and history scan.
 - `/owasp-top-ten-ai-code-checker` — OWASP mapping content.
 - `/saas-ai-code-security` — SaaS/AI products angle.
 - `/security-review-checklist-ai-code` — downloadable checklist (link magnet).

@@ -1,4 +1,4 @@
-"""RAKSHA — GitHub OAuth utilities"""
+"""ZORQEN — GitHub OAuth utilities"""
 from __future__ import annotations
 
 import httpx

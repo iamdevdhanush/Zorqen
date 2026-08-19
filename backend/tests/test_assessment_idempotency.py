@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Assessment Lifecycle Idempotency & Worker Dedup Tests
+ZORQEN Backend — Assessment Lifecycle Idempotency & Worker Dedup Tests
 
 Regression coverage:
  1. One POST creates one assessment row.
@@ -89,7 +89,7 @@ async def concurrency_db():
     import models.validation_result  # noqa: F401
     import models.audit_log  # noqa: F401
 
-    fd, path = tempfile.mkstemp(suffix="_raksha_idem.db")
+    fd, path = tempfile.mkstemp(suffix="_zorqen_idem.db")
     os.close(fd)
     engine = create_async_engine(
         f"sqlite+aiosqlite:///{path}",

@@ -1,4 +1,4 @@
-# RAKSHA Production Deployment Fix
+# ZORQEN Production Deployment Fix
 
 ## Root Cause
 
@@ -57,7 +57,7 @@ The app now **fails fast** with a clear message instead of a silent crash:
 ## Render Configuration
 
 1. **Create the web service**: Render Dashboard → **New → Web Service** → connect
-   the `iamdevdhanush/Raksha-ai` repo.
+   the `iamdevdhanush/Zorqen` repo.
 2. Root Directory: **`backend`**
 3. Runtime: **Docker** (uses `backend/Dockerfile`). Builds automatically.
 4. **Environment variables** (see table above). Render generates `PORT`.
@@ -69,7 +69,7 @@ The app now **fails fast** with a clear message instead of a silent crash:
 1. Render Dashboard → **New → PostgreSQL** (free tier works).
 2. Wait for it to be ready, then open its details.
 3. Copy the **Internal Database URL** (e.g.
-   `postgres://raksha_user:xxxx@dpg-abc123.region.postgres.render.com:5432/raksha`).
+   `postgres://zorqen_user:xxxx@dpg-abc123.region.postgres.render.com:5432/zorqen`).
 4. Set that value as the web service's `DATABASE_URL`. The app normalizes
    `postgres://` → `postgresql+asyncpg://` automatically — paste it as-is.
 5. (External URLs also work if your service runs outside Render's private network.)
@@ -100,7 +100,7 @@ uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --proxy-headers
 - **`GET /health`** (also `/api/health`) — no authentication, returns HTTP 200
   when the process is healthy:
   ```json
-  {"status":"healthy","app":"RAKSHA","version":"1.1.0","database":"postgres"}
+  {"status":"healthy","app":"ZORQEN","version":"1.1.0","database":"postgres"}
   ```
 - No expensive DB work is performed by the health endpoint.
 

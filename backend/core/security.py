@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Security Utilities (JWT, hashing)
+ZORQEN Backend — Security Utilities (JWT, hashing)
 """
 from __future__ import annotations
 

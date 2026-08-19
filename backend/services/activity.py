@@ -1,4 +1,4 @@
-"""RAKSHA — Activity feed service: audit log → console activity contract"""
+"""ZORQEN — Activity feed service: audit log → console activity contract"""
 from __future__ import annotations
 
 from sqlalchemy import select, desc

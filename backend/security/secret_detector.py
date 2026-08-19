@@ -1,4 +1,4 @@
-"""RAKSHA — Secret Detector
+"""ZORQEN — Secret Detector
 Scans source files for hardcoded secrets, credentials, and tokens.
 Detects and redacts found values before storing them.
 """

@@ -33,12 +33,12 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
           <NavLink to="/" onClick={closeMobileMenu} className="flex items-center gap-3 sm:gap-3.5 group shrink-0 py-0.5">
             <img
               src="/logo.png"
-              alt="RAKSHA"
+              alt="ZORQEN"
               className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0 transition-transform group-hover:-translate-y-0.5"
             />
             <div className="leading-tight flex flex-col justify-center">
               <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] leading-none flex items-center gap-1.5">
-                RAKSHA
+                ZORQEN
               </div>
               <div className="mono text-[8px] sm:text-[8.5px] font-extrabold tracking-[0.18em] text-[#4A4A4A] uppercase mt-1">
                 SECURITY VALIDATION
@@ -91,7 +91,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             <kbd className="ml-1.5 leading-none">{IS_MAC ? '⌘K' : 'Ctrl K'}</kbd>
           </button>
 
-          {/* Ask RAKSHA Copilot Button */}
+          {/* Ask ZORQEN Copilot Button */}
           <button
             onClick={() => { closeMobileMenu(); setCopilotOpen(!copilotOpen); }}
             className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-md text-[12px] font-bold border border-[#111111] transition-all ${
@@ -101,7 +101,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             }`}
           >
             <Bot className={`w-4 h-4 shrink-0 ${copilotOpen ? 'text-[#C5F82A]' : 'text-[#111111]'}`} />
-            <span className="hidden sm:inline">Ask RAKSHA</span>
+            <span className="hidden sm:inline">Ask ZORQEN</span>
             <span className="sm:hidden">Ask</span>
           </button>
 

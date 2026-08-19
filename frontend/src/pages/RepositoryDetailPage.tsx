@@ -10,7 +10,7 @@ import type { RepoDetail, RepoMeta } from '../lib/types';
 
 /** Read and validate the JWT from localStorage without importing the context. */
 function localTokenValid(): boolean {
-  const token = localStorage.getItem('raksha_token');
+  const token = localStorage.getItem('zorqen_token');
   if (!token) return false;
   try {
     const payloadB64 = token.split('.')[1];
@@ -48,12 +48,12 @@ export default function RepositoryDetailPage() {
     if (!authReady) return;   // wait until session restore has completed
     if (!localTokenValid()) return; // do not hit auth-gated endpoints without a JWT
 
-    // Check if currentRepo matches either by GitHub integer ID or RAKSHA UUID
+    // Check if currentRepo matches either by GitHub integer ID or ZORQEN UUID
     const matchesCurrent = Boolean(
       currentRepo && (
         currentRepo.id === repoId ||
         String(currentRepo.id) === String(repoId) ||
-        (currentRepo.rakshaId && currentRepo.rakshaId === repoId)
+        (currentRepo.zorqenId && currentRepo.zorqenId === repoId)
       )
     );
     if (matchesCurrent) return;
@@ -68,7 +68,7 @@ export default function RepositoryDetailPage() {
         }
       })
       .catch(() => {
-        // Fall back: try direct RAKSHA UUID lookup
+        // Fall back: try direct ZORQEN UUID lookup
         api.get(`/repositories/${repoId}`)
           .then(({ data }) => {
             if (!cancelled) loadRepo(data as RepoMeta);
@@ -81,7 +81,7 @@ export default function RepositoryDetailPage() {
         if (!cancelled) setRepoLoading(false);
       });
     return () => { cancelled = true; };
-  }, [repoId, currentRepo?.id, currentRepo?.rakshaId, loadRepo, authReady]);
+  }, [repoId, currentRepo?.id, currentRepo?.zorqenId, loadRepo, authReady]);
 
   // Fetch detail once we have a valid currentRepo that matches our URL.
   // Gated on authReady and token validity to prevent auth-race requests.
@@ -92,7 +92,7 @@ export default function RepositoryDetailPage() {
     }
     if (!authReady || !localTokenValid()) return;
     let cancelled = false;
-    const targetId = currentRepo.rakshaId || currentRepo.id;
+    const targetId = currentRepo.zorqenId || currentRepo.id;
     setDetailLoading(true);
     setDetailError(null);
     getRepoDetail(targetId)
@@ -108,13 +108,13 @@ export default function RepositoryDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentRepo?.id, currentRepo?.rakshaId, authReady]);
+  }, [currentRepo?.id, currentRepo?.zorqenId, authReady]);
 
   if (!currentRepo) {
     return (
       <div className="max-w-[1080px] mx-auto space-y-3 fade-in">
         <BackLink to="/repos" label="Repositories" />
-        <PageHeader kicker="raksha://workspace/repositories" title="REPOSITORY DETAIL" />
+        <PageHeader kicker="zorqen://workspace/repositories" title="REPOSITORY DETAIL" />
         <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
           {repoLoading
             ? 'Connecting repository from GitHub…'

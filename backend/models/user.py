@@ -1,4 +1,4 @@
-"""RAKSHA — User model"""
+"""ZORQEN — User model"""
 from __future__ import annotations
 import uuid
 from datetime import datetime, timezone

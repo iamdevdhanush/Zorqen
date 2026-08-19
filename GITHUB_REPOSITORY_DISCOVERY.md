@@ -1,8 +1,8 @@
 # GitHub Repository Discovery
 
-Debug documentation for the RAKSHA GitHub repository discovery pipeline.
+Debug documentation for the ZORQEN GitHub repository discovery pipeline.
 
-Production (single Cloudflare origin): `https://app.raksha.ai`
+Production (single Cloudflare origin): `https://app.zorqen.ai`
 
 ## Root Cause
 
@@ -81,13 +81,13 @@ assessment:
 - `read:user` — reads the authenticated user's profile.
 - `user:email` — reads the user's primary email.
 
-No admin, write, or `delete_repo` scopes are requested. RAKSHA never modifies
+No admin, write, or `delete_repo` scopes are requested. ZORQEN never modifies
 repositories without explicit review (branch creation only during approved
 remediation).
 
 If an authorized repository is missing, verify the GitHub OAuth App still has
 the `repo` scope and that the user's access is visible at the GitHub App
-settings → "Developer settings" → the RAKSHA OAuth App.
+settings → "Developer settings" → the ZORQEN OAuth App.
 
 ## Backend Endpoint
 
@@ -183,7 +183,7 @@ app itself):
 3. **Backend receives multiple repositories**:
    ```bash
    curl -s -H "Authorization: Bearer <JWT>" \
-     https://app.raksha.ai/api/repositories/github
+     https://app.zorqen.ai/api/repositories/github
    ```
    `total` and `repositories.length` should match the account's accessible repos.
 4. **Pagination** — accounts with >100 repos return all of them; backend logs
@@ -203,6 +203,6 @@ app itself):
 11. **No stale cache** — re-opening the Repositories page while connected
     refreshes from GitHub automatically.
 
-Expected end state: the repository count shown in RAKSHA equals the number of
+Expected end state: the repository count shown in ZORQEN equals the number of
 repositories the authenticated GitHub account can actually access (GitHub's
 `GET /user/repos` response is the source of truth).

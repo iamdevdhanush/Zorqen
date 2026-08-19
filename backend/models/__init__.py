@@ -1,4 +1,4 @@
-# RAKSHA models package — imports ensure all tables register on Base.metadata
+# ZORQEN models package — imports ensure all tables register on Base.metadata
 
 from models.user import User
 from models.repository import Repository

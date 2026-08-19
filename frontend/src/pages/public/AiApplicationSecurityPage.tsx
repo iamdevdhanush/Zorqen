@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import Seo from '../../components/Seo';
 
-const TITLE = 'AI Application Security — RAKSHA';
+const TITLE = 'AI Application Security — ZORQEN';
 const DESCRIPTION =
   'How application security testing applies to software built with AI assistance: static analysis, secret detection, dependency review, and AI-reasoned validation.';
 
@@ -12,10 +12,10 @@ const JSONLD = [
     '@type': 'Article',
     headline: 'AI Application Security',
     description: DESCRIPTION,
-    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
-    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
-    url: 'https://app.raksha.ai/ai-application-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    author: { '@type': 'Organization', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
+    publisher: { '@type': 'Organization', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
+    url: 'https://app.zorqen.ai/ai-application-security',
+    isPartOf: { '@type': 'WebSite', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
   },
 ];
 
@@ -39,7 +39,7 @@ export default function AiApplicationSecurityPage() {
 
       <div className="max-w-[940px] mx-auto space-y-10 sm:space-y-14">
         <section className="space-y-5">
-          <div className="protocol-tag">raksha://guides/ai-application-security</div>
+          <div className="protocol-tag">zorqen://guides/ai-application-security</div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none">
             AI APPLICATION <br />
             <span className="text-[#666666] font-normal">SECURITY.</span>
@@ -64,7 +64,7 @@ export default function AiApplicationSecurityPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#111111]" />
-            <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">THE FIVE PILLARS RAKSHA APPLIES</h2>
+            <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">THE FIVE PILLARS ZORQEN APPLIES</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {PILLARS.map(([title, desc], idx) => (
@@ -82,7 +82,7 @@ export default function AiApplicationSecurityPage() {
         <section className="p-5 sm:p-8 rounded-xl bg-white border border-[#111111] shadow-hard space-y-5">
           <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">FROM CHECKLIST TO PROOF</h2>
           <p className="text-[13px] sm:text-[14px] text-[#333333] leading-relaxed font-medium max-w-[760px]">
-            Traditional AppSec hands developers a list of issues and a ticket. RAKSHA instead
+            Traditional AppSec hands developers a list of issues and a ticket. ZORQEN instead
             closes the loop: every finding has a confidence score, a validation state, the
             attack path that connects it to an entry point, and a patch diff to review.
             That is what turns a security report into something a developer can act on in one pass.

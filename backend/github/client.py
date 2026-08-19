@@ -1,4 +1,4 @@
-"""RAKSHA — Async GitHub API Client"""
+"""ZORQEN — Async GitHub API Client"""
 from __future__ import annotations
 
 import base64
@@ -86,7 +86,7 @@ class GitHubClient:
         return repos
 
     @staticmethod
-    def normalize_repo(raw: dict, raksha_id: str | None = None) -> dict:
+    def normalize_repo(raw: dict, zorqen_id: str | None = None) -> dict:
         """Map a GitHub /user/repos item to the frontend RepoMeta contract.
 
         Preserves the fields the UI reads (id, name, owner, private, language,
@@ -95,8 +95,8 @@ class GitHubClient:
         not include the HEAD commit sha, so `commit` is null and the UI renders
         a dash rather than crashing. No token data is ever included.
 
-        When raksha_id is provided, it is included as `rakshaId` so the frontend
-        can use the RAKSHA internal UUID for database operations (assessments,
+        When zorqen_id is provided, it is included as `zorqenId` so the frontend
+        can use the ZORQEN internal UUID for database operations (assessments,
         findings) while keeping the GitHub integer ID for navigation.
         """
         owner = (raw.get("owner") or {}).get("login", "")
@@ -115,8 +115,8 @@ class GitHubClient:
             "permissions": raw.get("permissions"),
             "description": raw.get("description"),
         }
-        if raksha_id:
-            result["rakshaId"] = raksha_id
+        if zorqen_id:
+            result["zorqenId"] = zorqen_id
         return result
 
     async def get_repo(self, owner: str, repo: str) -> dict:

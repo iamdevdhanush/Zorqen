@@ -1,4 +1,4 @@
-"""RAKSHA — Assessment Orchestrator
+"""ZORQEN — Assessment Orchestrator
 Controls the full DETECT → REASON → VALIDATE → REMEDIATE → VERIFY pipeline.
 """
 from __future__ import annotations
@@ -299,7 +299,7 @@ async def run_assessment(
 
         # 3c. Semgrep (if tmp_dir available — write files to temp, then scan)
         if tmp_dir is None and file_contents:
-            tmp_dir = tempfile.mkdtemp(prefix="raksha_scan_")
+            tmp_dir = tempfile.mkdtemp(prefix="zorqen_scan_")
             _write_files_to_dir(file_contents, tmp_dir)
 
         if tmp_dir:

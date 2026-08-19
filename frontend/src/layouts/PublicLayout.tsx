@@ -31,12 +31,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link to="/ai-code-security" className="flex items-center gap-3 group shrink-0 py-0.5">
               <img
                 src="/logo.png"
-                alt="RAKSHA"
+                alt="ZORQEN"
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0 transition-transform group-hover:-translate-y-0.5"
               />
               <div className="leading-tight flex flex-col justify-center">
                 <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] leading-none flex items-center gap-1.5">
-                  RAKSHA
+                  ZORQEN
                 </div>
                 <div className="mono text-[8px] sm:text-[8.5px] font-bold tracking-[0.18em] text-[#666666] uppercase mt-1">
                   SECURITY VALIDATION
@@ -44,7 +44,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </div>
             </Link>
 
-            <nav className="hidden lg:flex items-center gap-0.5 ml-2" aria-label="RAKSHA product pages">
+            <nav className="hidden lg:flex items-center gap-0.5 ml-2" aria-label="ZORQEN product pages">
               {PUBLIC_NAV.map((item) => (
                 <NavLink
                   key={item.to}
@@ -113,7 +113,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <footer className="border-t border-[var(--color-line)] bg-white px-4 sm:px-6 py-4 sm:py-6 mt-auto">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11.5px] text-[var(--color-ink-3)]">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-[var(--color-ink)]">RAKSHA</span>
+            <span className="font-semibold text-[var(--color-ink)]">ZORQEN</span>
             <span>— security validation for AI-built software</span>
           </div>
           <nav className="flex items-center gap-3 flex-wrap" aria-label="Footer">

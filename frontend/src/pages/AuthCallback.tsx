@@ -21,16 +21,16 @@ export default function AuthCallback() {
     api.get('/auth/token')
       .then(({ data }) => {
         const token = data.token;
-        localStorage.setItem('raksha_token', token);
+        localStorage.setItem('zorqen_token', token);
 
         getMe()
           .then(({ data: userData }) => {
-            localStorage.setItem('raksha_user', JSON.stringify(userData));
+            localStorage.setItem('zorqen_user', JSON.stringify(userData));
             signInGithub(userData);
             navigate('/', { replace: true });
           })
           .catch(() => {
-            localStorage.removeItem('raksha_token');
+            localStorage.removeItem('zorqen_token');
             navigate('/?auth=failed', { replace: true });
           });
       })

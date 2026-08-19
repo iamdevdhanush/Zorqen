@@ -1,25 +1,26 @@
-# RAKSHA GitHub OAuth Deployment
+# ZORQEN GitHub OAuth Deployment
 
-Production backend + frontend: `https://app.raksha.ai` (single Cloudflare origin —
+Production backend + frontend: `https://app.zorqen.ai` (single Cloudflare origin —
 Workers Static Assets + Cloudflare Containers). See [CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md)
 for the full runbook.
 
 > Previous production (Render + Vercel, `raksha-ai-b8wf.onrender.com` /
-> `raksha-ai-pink.vercel.app`) was decommissioned with the Cloudflare migration;
-> those URLs no longer resolve.
+> `raksha-ai-pink.vercel.app`) carried the previous RAKSHA brand and was
+> decommissioned with the Cloudflare migration; those URLs no longer resolve.
+> They are preserved here for history only and were not renamed.
 
 ## Backend OAuth Login URL
 
 Canonical (used by the frontend and by `GITHUB_REDIRECT_URI`):
 
 ```
-https://app.raksha.ai/api/auth/github
+https://app.zorqen.ai/api/auth/github
 ```
 
 Alias (also registered, returns the same 307 to GitHub — fixed 2026-08-15):
 
 ```
-https://app.raksha.ai/auth/github
+https://app.zorqen.ai/auth/github
 ```
 
 The auth router is registered twice in `backend/main.py`: once under the `/api` prefix (`app.include_router(auth_router, prefix="/api")`) and once without a prefix (`app.include_router(auth_router)`), with router prefix `/auth` (`backend/routers/auth.py`). The resulting routes are:
@@ -41,7 +42,7 @@ remain available on a direct container deployment.
 The callback URL registered in the GitHub OAuth App — must match `GITHUB_REDIRECT_URI` exactly:
 
 ```
-https://app.raksha.ai/api/auth/github/callback
+https://app.zorqen.ai/api/auth/github/callback
 ```
 
 ## Frontend Login Configuration
@@ -60,12 +61,12 @@ dashboard).
 | Variable | Location | Purpose |
 |---|---|---|
 | `APP_ENV` | vars | `production` |
-| `FRONTEND_URL` | vars | `https://app.raksha.ai` (OAuth redirect + trusted hosts) |
-| `BACKEND_URL` | vars | `https://app.raksha.ai` (trusted hosts) |
-| `CORS_ORIGINS` | vars | `["https://app.raksha.ai"]` |
-| `TRUSTED_HOSTS` | vars | `["app.raksha.ai", "*.workers.dev"]` (interim) |
+| `FRONTEND_URL` | vars | `https://app.zorqen.ai` (OAuth redirect + trusted hosts) |
+| `BACKEND_URL` | vars | `https://app.zorqen.ai` (trusted hosts) |
+| `CORS_ORIGINS` | vars | `["https://app.zorqen.ai"]` |
+| `TRUSTED_HOSTS` | vars | `["app.zorqen.ai", "*.workers.dev"]` (interim) |
 | `GITHUB_CLIENT_ID` | vars | GitHub OAuth App client ID |
-| `GITHUB_REDIRECT_URI` | vars | `https://app.raksha.ai/api/auth/github/callback` |
+| `GITHUB_REDIRECT_URI` | vars | `https://app.zorqen.ai/api/auth/github/callback` |
 | `SECRET_KEY` | secret | Long random JWT signing key |
 | `DATABASE_URL` | secret | PostgreSQL (Supabase) connection string |
 | `ENCRYPTION_KEY` | secret | AES-256-GCM key for GitHub tokens at rest |
@@ -78,9 +79,10 @@ Create/edit at https://github.com/settings/developers → OAuth Apps.
 
 GitHub OAuth apps accept exactly ONE callback URL. For production:
 
-- **Application name**: `RAKSHA`
-- **Homepage URL**: `https://app.raksha.ai`
-- **Authorization callback URL**: `https://app.raksha.ai/api/auth/github/callback`
+- **Application name**: `ZORQEN` (rename the existing GitHub OAuth App in the
+  GitHub dashboard; see "External Actions Required" in the rebrand report)
+- **Homepage URL**: `https://app.zorqen.ai`
+- **Authorization callback URL**: `https://app.zorqen.ai/api/auth/github/callback`
 
 The `GITHUB_REDIRECT_URI` env var must match this callback URL **exactly** (same scheme, host, port, path). If you also use localhost dev, create a separate OAuth App for local development (`http://localhost:8000/api/auth/github/callback`).
 
@@ -90,19 +92,19 @@ Requested scopes: `repo read:user user:email` (backend `github/oauth.py`).
 
 ```
 Frontend (CONNECT GITHUB)
-        │ window.location = /api/auth/github   (same origin, https://app.raksha.ai)
+        │ window.location = /api/auth/github   (same origin, https://app.zorqen.ai)
         ▼
-GET https://app.raksha.ai/api/auth/github
+GET https://app.zorqen.ai/api/auth/github
         │ Worker → container; 307 redirect, state token generated (CSRF)
         ▼
-https://github.com/login/oauth/authorize?client_id=...&redirect_uri=https://app.raksha.ai/api/auth/github/callback&state=...
+https://github.com/login/oauth/authorize?client_id=...&redirect_uri=https://app.zorqen.ai/api/auth/github/callback&state=...
         │ user authorizes
         ▼
 GitHub redirects → GET /api/auth/github/callback?code=...&state=...
         │ backend validates state, exchanges code for token,
         │ fetches /user, creates/updates DB user, mints JWT
         ▼
-307 → https://app.raksha.ai/auth/callback?token=<JWT>
+307 → https://app.zorqen.ai/auth/callback?token=<JWT>
         │ frontend stores token in localStorage, loads profile
         ▼
 Signed in
@@ -114,19 +116,19 @@ Security properties: OAuth `state` is generated per-request and validated on cal
 
 ```bash
 # Health + GitHub config status (expect github_configured: true)
-curl -s https://app.raksha.ai/api/health
+curl -s https://app.zorqen.ai/api/health
 
 # OpenAPI — expect the auth paths to appear
-curl -s https://app.raksha.ai/api/openapi.json | python -m json.tool
+curl -s https://app.zorqen.ai/api/openapi.json | python -m json.tool
 
 # Login endpoint — expect 307 to github.com/login/oauth/authorize (canonical)
-curl -s -o /dev/null -D - https://app.raksha.ai/api/auth/github
+curl -s -o /dev/null -D - https://app.zorqen.ai/api/auth/github
 
 # Callback with no params — expect 307 to the frontend with error=missing_params
-curl -s -o /dev/null -D - "https://app.raksha.ai/api/auth/github/callback"
+curl -s -o /dev/null -D - "https://app.zorqen.ai/api/auth/github/callback"
 
 # Browser test
-# 1. Open https://app.raksha.ai
+# 1. Open https://app.zorqen.ai
 # 2. Sidebar → CONNECT GITHUB
 # 3. Authorize on GitHub → redirected back signed-in
 ```

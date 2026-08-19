@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Zap } from 'lucide-react';
 import Seo from '../../components/Seo';
 
-const TITLE = 'Vibe-Coded App Security — RAKSHA';
+const TITLE = 'Vibe-Coded App Security — ZORQEN';
 const DESCRIPTION =
   'Vibe coding is fast, but speed hides risk. Learn what to watch for in vibe-coded applications and how to keep velocity without shipping vulnerabilities.';
 
@@ -12,10 +12,10 @@ const JSONLD = [
     '@type': 'Article',
     headline: 'Vibe-Coded App Security',
     description: DESCRIPTION,
-    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
-    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
-    url: 'https://app.raksha.ai/vibe-coded-app-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    author: { '@type': 'Organization', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
+    publisher: { '@type': 'Organization', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
+    url: 'https://app.zorqen.ai/vibe-coded-app-security',
+    isPartOf: { '@type': 'WebSite', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
   },
 ];
 
@@ -40,7 +40,7 @@ export default function VibeCodedAppSecurityPage() {
 
       <div className="max-w-[940px] mx-auto space-y-10 sm:space-y-14">
         <section className="space-y-5">
-          <div className="protocol-tag">raksha://guides/vibe-coded-apps</div>
+          <div className="protocol-tag">zorqen://guides/vibe-coded-apps</div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none">
             VIBE-CODED APP <br />
             <span className="text-[#666666] font-normal">SECURITY.</span>

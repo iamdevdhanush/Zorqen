@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — GitHub Data Flow Tests
+ZORQEN Backend — GitHub Data Flow Tests
 Tests: GitHub OAuth, repo discovery, private repo access, metadata,
 branch/commit resolution, language retrieval, tree retrieval, API schema,
 and error cases (404, 403, 429, expired token).
@@ -32,26 +32,26 @@ def mock_github_client():
     })
     client.list_repos = AsyncMock(return_value=[{
         "id": 1331115680,
-        "name": "Raksha-ai",
-        "full_name": "iamdevdhanush/Raksha-ai",
+        "name": "Zorqen",
+        "full_name": "iamdevdhanush/Zorqen",
         "owner": {"login": "iamdevdhanush"},
         "private": True,
         "default_branch": "main",
         "language": "TypeScript",
-        "html_url": "https://github.com/iamdevdhanush/Raksha-ai",
-        "clone_url": "https://github.com/iamdevdhanush/Raksha-ai.git",
+        "html_url": "https://github.com/iamdevdhanush/Zorqen",
+        "clone_url": "https://github.com/iamdevdhanush/Zorqen.git",
         "stargazers_count": 42,
         "description": "AI-powered security platform",
     }])
     client.get_repo = AsyncMock(return_value={
         "id": 1331115680,
-        "name": "Raksha-ai",
-        "full_name": "iamdevdhanush/Raksha-ai",
+        "name": "Zorqen",
+        "full_name": "iamdevdhanush/Zorqen",
         "owner": {"login": "iamdevdhanush"},
         "private": True,
         "default_branch": "main",
         "language": "TypeScript",
-        "html_url": "https://github.com/iamdevdhanush/Raksha-ai",
+        "html_url": "https://github.com/iamdevdhanush/Zorqen",
         "description": "AI-powered security platform",
         "size": 1234,
         "updated_at": "2026-08-18T00:00:00Z",
@@ -105,8 +105,8 @@ class TestGitHubClientHeaders:
         from github.client import GitHubClient
         raw = {
             "id": 1331115680,
-            "name": "Raksha-ai",
-            "full_name": "iamdevdhanush/Raksha-ai",
+            "name": "Zorqen",
+            "full_name": "iamdevdhanush/Zorqen",
             "owner": {"login": "iamdevdhanush"},
             "private": True,
             "default_branch": "main",
@@ -120,7 +120,7 @@ class TestGitHubClientHeaders:
     def test_normalize_repo_github_id_as_string(self):
         """GitHub integer IDs must be returned as strings for the frontend."""
         from github.client import GitHubClient
-        raw = {"id": 1331115680, "name": "Raksha-ai", "full_name": "iamdevdhanush/Raksha-ai",
+        raw = {"id": 1331115680, "name": "Zorqen", "full_name": "iamdevdhanush/Zorqen",
                "owner": {"login": "iamdevdhanush"}, "private": True}
         result = GitHubClient.normalize_repo(raw)
         assert result["id"] == "1331115680"
@@ -158,11 +158,11 @@ class TestGitHubClientHeaders:
 # ── Repository ID Mapping Tests ──────────────────────────────────────────────
 
 class TestRepositoryIdMapping:
-    """Verify RAKSHA resolves GitHub integer IDs to repository records."""
+    """Verify ZORQEN resolves GitHub integer IDs to repository records."""
 
     @pytest.mark.asyncio
     async def test_get_repo_by_uuid(self):
-        """_get_repo_or_404 finds a repo by RAKSHA UUID."""
+        """_get_repo_or_404 finds a repo by ZORQEN UUID."""
         import uuid
         from unittest.mock import AsyncMock, MagicMock, patch
         from routers.api import _get_repo_or_404
@@ -388,13 +388,13 @@ class TestNormalizeRepoContract:
         from github.client import GitHubClient
         raw = {
             "id": 1331115680,
-            "name": "Raksha-ai",
-            "full_name": "iamdevdhanush/Raksha-ai",
+            "name": "Zorqen",
+            "full_name": "iamdevdhanush/Zorqen",
             "owner": {"login": "iamdevdhanush"},
             "private": True,
             "default_branch": "main",
             "language": "TypeScript",
-            "html_url": "https://github.com/iamdevdhanush/Raksha-ai",
+            "html_url": "https://github.com/iamdevdhanush/Zorqen",
             "updated_at": "2026-08-18T00:00:00Z",
             "visibility": "private",
         }
@@ -967,7 +967,7 @@ class TestProductionCORS:
         import pytest
         from pydantic import ValidationError
         # DATABASE_URL must be valid production Postgres for the other validators.
-        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/zorqen"
         key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
         with pytest.raises(ValidationError):
             self._settings(
@@ -978,7 +978,7 @@ class TestProductionCORS:
     def test_production_rejects_localhost_origins(self):
         import pytest
         from pydantic import ValidationError
-        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/zorqen"
         key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
         with pytest.raises(ValidationError):
             self._settings(
@@ -989,7 +989,7 @@ class TestProductionCORS:
     def test_production_rejects_wildcard_origin(self):
         import pytest
         from pydantic import ValidationError
-        db = "postgresql+asyncpg://user:pass@db.example.com:5432/raksha"
+        db = "postgresql+asyncpg://user:pass@db.example.com:5432/zorqen"
         key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
         with pytest.raises(ValidationError):
             self._settings(
@@ -998,13 +998,13 @@ class TestProductionCORS:
             )
 
     def test_production_accepts_explicit_public_origin(self):
-        db = "postgresql+asyncpg://raksha_admin:realpass@db.example.com:5432/raksha"
+        db = "postgresql+asyncpg://zorqen_admin:realpass@db.example.com:5432/zorqen"
         key = "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw="
         s = self._settings(
             APP_ENV="production", DATABASE_URL=db, ENCRYPTION_KEY=key,
-            CORS_ORIGINS="https://raksha.app",
+            CORS_ORIGINS="https://zorqen.app",
         )
-        assert s.cors_origins == ["https://raksha.app"]
+        assert s.cors_origins == ["https://zorqen.app"]
 
     def test_development_defaults_unchanged(self):
         """Dev config must keep the localhost defaults."""

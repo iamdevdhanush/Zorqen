@@ -1,6 +1,6 @@
-# RAKSHA Deployment Guide
+# ZORQEN Deployment Guide
 
-Production deployment for the RAKSHA security validation platform:
+Production deployment for the ZORQEN security validation platform:
 
 > **Current production target: Cloudflare** — see [CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md).
 > - **Frontend** → Workers Static Assets (React / Vite SPA)
@@ -21,14 +21,14 @@ Production deployment for the RAKSHA security validation platform:
 ```
 ┌──────────────────────────────┐
 │           VERCEL             │
-│       RAKSHA FRONTEND        │
+│       ZORQEN FRONTEND        │
 │   React / Vite / TypeScript  │
 └──────────────┬───────────────┘
                │ HTTPS (VITE_API_URL)
                ▼
 ┌──────────────────────────────┐
 │           KOYEB              │
-│       RAKSHA BACKEND         │
+│       ZORQEN BACKEND         │
 │   FastAPI / Uvicorn (Docker) │
 └──────────────┬───────────────┘
                │
@@ -67,7 +67,7 @@ ready for production use.
 ## 3. Project Structure
 
 ```
-raksha/
+zorqen/
 ├── backend/                 # FastAPI backend (Koyeb)
 │   ├── main.py              # App entry point, /health, /api/health
 │   ├── Dockerfile           # Koyeb builds this image
@@ -128,7 +128,7 @@ all dependencies and runs Uvicorn on the environment-provided `PORT`
 2. Open [app.koyeb.com](https://app.koyeb.com) → **Create Service**.
 3. Select **GitHub** as deployment source and pick the repository.
 4. In the service builder:
-   - **Working directory**: set to `/backend` (monorepo root is `raksha/`).
+   - **Working directory**: set to `/backend` (monorepo root is `zorqen/`).
    - **Build**: Koyeb auto-detects the `Dockerfile` in `/backend`. Use the Docker build (no build command needed).
    - **Instance type**: any (2GB RAM recommended — semgrep + AI runs during assessments).
 5. **Environment variables**: add all variables from section 4 (Backend).
@@ -136,7 +136,7 @@ all dependencies and runs Uvicorn on the environment-provided `PORT`
    container default — Koyeb routes to the service port; the app listens on the
    injected `PORT`.
 7. Deploy. Koyeb builds the image and starts the service.
-8. Copy the public domain from the service page (e.g. `https://raksha-backend-foo.koyeb.app`).
+8. Copy the public domain from the service page (e.g. `https://zorqen-backend-foo.koyeb.app`).
 9. Test: `curl https://<your-koyeb-domain>/health` → `{"status":"healthy",...}`.
 10. Set `BACKEND_URL` and `GITHUB_REDIRECT_URI` to the Koyeb domain and redeploy.
 
@@ -217,7 +217,7 @@ Notes:
 
 - **Provider**: SQLite (default, local/dev) or **PostgreSQL** (production) via SQLAlchemy async.
 - **Connection variable**: `DATABASE_URL`.
-  - SQLite: `sqlite+aiosqlite:///./raksha.db` (default, local/dev only)
+  - SQLite: `sqlite+aiosqlite:///./zorqen.db` (default, local/dev only)
   - PostgreSQL format: `postgresql+asyncpg://USER:PASSWORD@HOST:5432/DATABASE` —
     **format only, never paste verbatim**. The app rejects placeholder URLs
     (host/DBNAME/USER/PASSWORD etc.) in production with a clear error.
@@ -372,7 +372,7 @@ rebuild the image.
 
 **Database connection failure (deploy exits with status 3, no traceback)**
 - SYMPTOM: Deploy builds, the log shows `Started server process`, `Waiting for
-  application startup`, `RAKSHA starting up`, then `Exited with status 3` — with
+  application startup`, `ZORQEN starting up`, then `Exited with status 3` — with
   **no Python error printed** (uvicorn exits with code 3 = startup failure and
   suppresses the underlying error).
 - CAUSE: The app cannot connect to the database during startup migrations.

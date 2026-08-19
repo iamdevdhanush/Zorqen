@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Consistent error handling & response envelope
+ZORQEN Backend — Consistent error handling & response envelope
 """
 from __future__ import annotations
 

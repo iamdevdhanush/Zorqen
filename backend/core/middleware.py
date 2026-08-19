@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Middleware: request ID, access logging, security headers
+ZORQEN Backend — Middleware: request ID, access logging, security headers
 """
 from __future__ import annotations
 

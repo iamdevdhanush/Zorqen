@@ -1,5 +1,5 @@
 """
-RAKSHA Backend — Structured logging setup (structlog → JSON in prod, console in dev)
+ZORQEN Backend — Structured logging setup (structlog → JSON in prod, console in dev)
 """
 from __future__ import annotations
 

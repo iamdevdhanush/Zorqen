@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
-import { defineRakshaTheme, MONACO_OPTIONS, useMonacoStatus } from '../lib/monaco';
+import { defineZorqenTheme, MONACO_OPTIONS, useMonacoStatus } from '../lib/monaco';
 
 /* ── Fallback side-by-side diff (GitHub-review style) ──────────────────── */
 
@@ -102,7 +102,7 @@ export default function DiffPane({
         original={before}
         modified={after}
         theme="vs-dark"
-        beforeMount={defineRakshaTheme}
+        beforeMount={defineZorqenTheme}
         options={baseOptions}
       />
     </div>

@@ -1,18 +1,18 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "raksha",
+  "name": "zorqen",
   "main": "src/worker.ts",
   "compatibility_date": "2026-08-19",
   "workers_dev": true,
 
   "vars": {
     "APP_ENV": "production",
-    "FRONTEND_URL": "https://app.raksha.ai",
-    "BACKEND_URL": "https://app.raksha.ai",
-    "CORS_ORIGINS": "[\"https://app.raksha.ai\"]",
-    "TRUSTED_HOSTS": "[\"app.raksha.ai\", \"*.workers.dev\"]",
+    "FRONTEND_URL": "https://app.zorqen.ai",
+    "BACKEND_URL": "https://app.zorqen.ai",
+    "CORS_ORIGINS": "[\"https://app.zorqen.ai\"]",
+    "TRUSTED_HOSTS": "[\"app.zorqen.ai\", \"*.workers.dev\"]",
     "GITHUB_CLIENT_ID": "",
-    "GITHUB_REDIRECT_URI": "https://app.raksha.ai/api/auth/github/callback",
+    "GITHUB_REDIRECT_URI": "https://app.zorqen.ai/api/auth/github/callback",
     "GROQ_MODEL": "openai/gpt-oss-20b",
     "GROK_MODEL": "grok-4-latest",
     "SANDBOX_ENABLED": "false"
@@ -38,7 +38,7 @@
 
   "containers": [
     {
-      "class_name": "RakshaContainer",
+      "class_name": "ZorqenContainer",
       "image": "../backend/Dockerfile",
       "instance_type": "standard-1",
       "max_instances": 1,
@@ -49,8 +49,8 @@
   "durable_objects": {
     "bindings": [
       {
-        "name": "RAKSHA_CONTAINER",
-        "class_name": "RakshaContainer"
+        "name": "ZORQEN_CONTAINER",
+        "class_name": "ZorqenContainer"
       }
     ]
   },
@@ -58,7 +58,7 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["RakshaContainer"]
+      "new_sqlite_classes": ["ZorqenContainer"]
     }
   ],
 

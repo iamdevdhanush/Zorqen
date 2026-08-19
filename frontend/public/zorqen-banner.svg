@@ -39,7 +39,7 @@
     <rect x="63" y="55" width="60" height="60" rx="6" class="shadow-box" />
     <rect x="60" y="52" width="60" height="60" rx="6" class="panel-fill" stroke="#111111" stroke-width="1.5" />
 
-    <!-- Vector RAKSHA Shield Icon Emblem -->
+    <!-- Vector ZORQEN Shield Icon Emblem -->
     <g>
       <path d="M 90 63 L 107 69 V 85 C 107 96 90 103 90 103 C 90 103 73 96 73 85 V 69 Z" fill="#111111" />
       <path d="M 90 68 L 102 72 V 84 C 102 92 90 97 90 97 C 90 97 78 92 78 84 V 72 Z" class="accent-fill" stroke="#111111" stroke-width="1.2" />
@@ -47,7 +47,7 @@
     </g>
 
     <!-- Wordmark & Subtitle -->
-    <text x="136" y="90" class="font-sans ink-text" font-size="40" font-weight="900" letter-spacing="-0.5">RAKSHA</text>
+    <text x="136" y="90" class="font-sans ink-text" font-size="40" font-weight="900" letter-spacing="-0.5">ZORQEN</text>
     <text x="137" y="106" class="font-mono ink-text" font-size="10.5" font-weight="800" letter-spacing="2">SECURITY VALIDATION</text>
 
     <!-- Short Headline -->
@@ -84,7 +84,7 @@
     <rect x="950" y="72" width="586" height="248" rx="8" class="panel-fill" stroke="#111111" stroke-width="1.5" />
 
     <!-- Card Title -->
-    <text x="986" y="124" class="font-sans ink-text" font-size="22" font-weight="900" letter-spacing="-0.2">SUPPORT RAKSHA</text>
+    <text x="986" y="124" class="font-sans ink-text" font-size="22" font-weight="900" letter-spacing="-0.2">SUPPORT ZORQEN</text>
 
     <!-- Card Body Text -->
     <text x="986" y="160" class="font-sans muted-text" font-size="14.5" font-weight="500">Help support the continued development of open security</text>
@@ -95,6 +95,6 @@
 
     <!-- Button Body -->
     <rect x="986" y="228" width="508" height="48" rx="6" class="accent-fill" stroke="#111111" stroke-width="1.5" />
-    <text x="1240" y="258" text-anchor="middle" class="font-mono ink-text" font-size="14" font-weight="800" letter-spacing="0.8">SUPPORT RAKSHA  →</text>
+    <text x="1240" y="258" text-anchor="middle" class="font-mono ink-text" font-size="14" font-weight="800" letter-spacing="0.8">SUPPORT ZORQEN  →</text>
   </g>
 </svg>

@@ -1,4 +1,4 @@
-"""RAKSHA — Semgrep Runner
+"""ZORQEN — Semgrep Runner
 Async wrapper around the Semgrep CLI.
 Parses SARIF output and maps to internal finding format.
 

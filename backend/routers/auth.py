@@ -1,4 +1,4 @@
-"""RAKSHA — Authentication Router (GitHub OAuth)"""
+"""ZORQEN — Authentication Router (GitHub OAuth)"""
 from __future__ import annotations
 
 import secrets
@@ -29,7 +29,7 @@ def _set_auth_cookie(response: Response, token: str) -> None:
     secure = not settings.is_development
     samesite = "none"
     response.set_cookie(
-        key="raksha_token",
+        key="zorqen_token",
         value=token,
         httponly=True,
         secure=secure,
@@ -41,7 +41,7 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 
 def _clear_auth_cookie(response: Response) -> None:
     """Clear the auth cookie."""
-    response.delete_cookie(key="raksha_token", path="/", secure=not settings.is_development, samesite="lax" if settings.is_development else "none")
+    response.delete_cookie(key="zorqen_token", path="/", secure=not settings.is_development, samesite="lax" if settings.is_development else "none")
 
 
 @router.get("/github")
@@ -151,7 +151,7 @@ async def get_token_from_cookie(request: Request, response: Response):
     
     Frontend calls this after OAuth redirect to retrieve the token.
     """
-    token = request.cookies.get("raksha_token")
+    token = request.cookies.get("zorqen_token")
     if not token:
         raise HTTPException(status_code=401, detail="No authentication cookie")
     # Validate token
@@ -168,7 +168,7 @@ async def get_current_user_info(request: Request, db: AsyncSession = Depends(get
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         # Try cookie as fallback
-        token = request.cookies.get("raksha_token")
+        token = request.cookies.get("zorqen_token")
         if not token:
             raise HTTPException(status_code=401, detail="Not authenticated")
     else:

@@ -2,7 +2,7 @@ import { Container, getContainer } from "@cloudflare/containers";
 import { env } from "cloudflare:workers";
 
 /**
- * Container-enabled Durable Object hosting the RAKSHA FastAPI backend.
+ * Container-enabled Durable Object hosting the ZORQEN FastAPI backend.
  *
  * The FastAPI app listens on port 8000 (uvicorn, `backend/Dockerfile`).
  * `sleepAfter` keeps the container awake for one hour after the last
@@ -12,7 +12,7 @@ import { env } from "cloudflare:workers";
  * `wrangler secret put` and land in `env` (the `cloudflare:workers` global),
  * which is the documented way to inject Worker Secrets into a Container.
  */
-export class RakshaContainer extends Container {
+export class ZorqenContainer extends Container {
   defaultPort = 8000;
   sleepAfter = "1h";
 
@@ -41,7 +41,7 @@ export default {
     // Wrangler assets config runs this Worker first only for /api/* and
     // /health*; every other path is served directly from static assets with
     // SPA fallback, so this handler only ever sees backend traffic.
-    const container = getContainer(env.RAKSHA_CONTAINER);
+    const container = getContainer(env.ZORQEN_CONTAINER);
     return container.fetch(request);
   },
 };

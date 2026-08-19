@@ -48,7 +48,7 @@
   <!-- Top System Header Metadata Bar -->
   <g>
     <text x="52" y="36" class="font-mono muted-text" font-size="11" font-weight="700" letter-spacing="1.2">
-      SYS_ID: RAKSHA-SEC-VAL-01 <tspan fill="#CCCCCC">•</tspan> MODE: CONTINUOUS_VALIDATION <tspan fill="#CCCCCC">•</tspan> ENGINE: ACTIVE <tspan fill="#CCCCCC">•</tspan> BUILD: 2026.08
+      SYS_ID: ZORQEN-SEC-VAL-01 <tspan fill="#CCCCCC">•</tspan> MODE: CONTINUOUS_VALIDATION <tspan fill="#CCCCCC">•</tspan> ENGINE: ACTIVE <tspan fill="#CCCCCC">•</tspan> BUILD: 2026.08
     </text>
 
     <!-- Top Right System Status Badge -->
@@ -58,13 +58,13 @@
     <text x="1430" y="35" class="font-mono ink-text" font-size="10" font-weight="800" letter-spacing="0.5">STATUS: VERIFIED</text>
   </g>
 
-  <!-- Left Side: RAKSHA Core Product Identity -->
+  <!-- Left Side: ZORQEN Core Product Identity -->
   <g>
-    <!-- RAKSHA Shield Logo Box (Neo-Brutalist Offset Shadow) -->
+    <!-- ZORQEN Shield Logo Box (Neo-Brutalist Offset Shadow) -->
     <rect x="55" y="71" width="72" height="72" rx="8" class="shadow-box" />
     <rect x="52" y="68" width="72" height="72" rx="8" class="panel-fill" stroke="#111111" stroke-width="2" />
 
-    <!-- Vector RAKSHA Shield Logo Emblem -->
+    <!-- Vector ZORQEN Shield Logo Emblem -->
     <g>
       <!-- Outer Shield Base -->
       <path d="M 88 81 L 109 88.5 V 108.5 C 109 122.5 88 131.5 88 131.5 C 88 131.5 67 122.5 67 108.5 V 88.5 Z" fill="#111111" />
@@ -75,7 +75,7 @@
     </g>
 
     <!-- Wordmark & Badges -->
-    <text x="140" y="116" class="font-sans ink-text" font-size="52" font-weight="900" letter-spacing="-1">RAKSHA</text>
+    <text x="140" y="116" class="font-sans ink-text" font-size="52" font-weight="900" letter-spacing="-1">ZORQEN</text>
 
     <!-- Version Chip -->
     <rect x="366" y="81" width="68" height="24" rx="4" class="shadow-box" />
@@ -123,7 +123,7 @@
     </g>
   </g>
 
-  <!-- Right Side: Buy Me a Coffee / RAKSHA Product UI Extension Panel -->
+  <!-- Right Side: Buy Me a Coffee / ZORQEN Product UI Extension Panel -->
   <g>
     <!-- Hard Offset Shadow -->
     <rect x="914" y="63" width="635" height="258" rx="8" class="shadow-box" />
@@ -133,7 +133,7 @@
 
     <!-- Panel Top Header Bar -->
     <path d="M 910 67 C 910 62.6 913.6 59 918 59 L 1537 59 C 1541.4 59 1545 62.6 1545 67 L 1545 99 L 910 99 Z" class="panel-head-fill" stroke="#111111" stroke-width="1.5" />
-    <text x="930" y="83" class="font-mono ink-text" font-size="11.5" font-weight="800" letter-spacing="1">ENGINEERING SPONSORSHIP // RAKSHA CORE</text>
+    <text x="930" y="83" class="font-mono ink-text" font-size="11.5" font-weight="800" letter-spacing="1">ENGINEERING SPONSORSHIP // ZORQEN CORE</text>
 
     <!-- Header Status Indicator Badge -->
     <rect x="1380" y="70" width="148" height="20" rx="4" class="shadow-box" />
@@ -167,14 +167,14 @@
     <g>
       <rect x="933" y="227" width="592" height="42" rx="6" class="shadow-box" />
       <rect x="930" y="224" width="592" height="42" rx="6" class="accent-fill" stroke="#111111" stroke-width="2" />
-      <text x="1226" y="250" text-anchor="middle" class="font-mono ink-text" font-size="13" font-weight="800" letter-spacing="0.8">SPONSOR RAKSHA DEVELOPMENT // BUY ME A COFFEE  →</text>
+      <text x="1226" y="250" text-anchor="middle" class="font-mono ink-text" font-size="13" font-weight="800" letter-spacing="0.8">SPONSOR ZORQEN DEVELOPMENT // BUY ME A COFFEE  →</text>
     </g>
   </g>
 
   <!-- Bottom Metadata Footer Bar -->
   <g>
     <text x="52" y="372" class="font-mono muted-text" font-size="10" font-weight="700" letter-spacing="1.2">
-      RAKSHA SECURITY ENGINE © 2026 <tspan fill="#CCCCCC">•</tspan> DETERMINISTIC VALIDATION <tspan fill="#CCCCCC">•</tspan> DEPLOYED SECURITY INFRASTRUCTURE
+      ZORQEN SECURITY ENGINE © 2026 <tspan fill="#CCCCCC">•</tspan> DETERMINISTIC VALIDATION <tspan fill="#CCCCCC">•</tspan> DEPLOYED SECURITY INFRASTRUCTURE
     </text>
 
     <!-- Corner Technical Inset Labels -->

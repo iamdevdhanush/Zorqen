@@ -7,13 +7,13 @@ export default function NotFoundPage() {
   return (
     <PublicLayout>
       <Seo
-        title="Page Not Found — RAKSHA"
-        description="This page does not exist. Head back to the RAKSHA security validation home page."
+        title="Page Not Found — ZORQEN"
+        description="This page does not exist. Head back to the ZORQEN security validation home page."
         canonicalPath="/ai-code-security"
         noIndex
       />
       <div className="max-w-[720px] mx-auto py-12 sm:py-20 space-y-6 text-center">
-        <div className="protocol-tag inline-flex">raksha://404</div>
+        <div className="protocol-tag inline-flex">zorqen://404</div>
         <h1 className="text-5xl sm:text-7xl font-extrabold text-[#111111] tracking-tighter leading-none">
           404<span className="text-[#C5F82A]">.</span>
         </h1>
@@ -24,7 +24,7 @@ export default function NotFoundPage() {
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link to="/ai-code-security" className="btn btn-accent px-5 py-2.5 text-[13px]">
             <Compass className="w-4 h-4" />
-            RAKSHA Home
+            ZORQEN Home
           </Link>
           <Link to="/" className="btn btn-primary px-5 py-2.5 text-[13px]">
             Open the Console <ArrowRight className="w-4 h-4" />

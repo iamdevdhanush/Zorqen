@@ -109,7 +109,7 @@ export default function RepositoriesPage() {
       {/* Editorial Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-4 sm:pb-6 border-b border-[#111111]">
         <div className="space-y-1">
-          <div className="protocol-tag">raksha://workspace/repositories</div>
+          <div className="protocol-tag">zorqen://workspace/repositories</div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111111] tracking-tighter">
             REPOSITORIES
           </h1>
@@ -190,7 +190,7 @@ export default function RepositoriesPage() {
 
       <div className="flex items-center gap-2 text-[12px] text-[#555555] pt-2 font-medium">
         <ShieldCheck className="w-4 h-4 text-[#111111] shrink-0" />
-        RAKSHA never modifies your repositories without explicit review and branch creation.
+        ZORQEN never modifies your repositories without explicit review and branch creation.
       </div>
     </div>
   );

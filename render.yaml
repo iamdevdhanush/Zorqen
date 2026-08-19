@@ -1,12 +1,12 @@
-# RAKSHA backend — Render Blueprint (optional).
+# ZORQEN backend — Render Blueprint (optional, legacy — production now uses Cloudflare).
 # You can also create this service manually: New Web Service -> connect repo ->
 # Root Directory `backend` -> Runtime `Docker`. The Dockerfile is authoritative;
 # this file only documents the recommended production settings.
 services:
   - type: web
-    name: raksha-api
+    name: zorqen-api
     runtime: docker
-    repo: https://github.com/iamdevdhanush/Raksha-ai
+    repo: https://github.com/iamdevdhanush/Zorqen
     rootDir: backend
     dockerfilePath: Dockerfile
     plan: starter
@@ -35,25 +35,25 @@ services:
       - key: GITHUB_CLIENT_SECRET
         sync: false
       # REQUIRED: Set to your Render backend URL for the OAuth callback
-      # e.g. https://raksha-api.onrender.com/api/auth/github/callback
+      # e.g. https://zorqen-api.onrender.com/api/auth/github/callback
       - key: GITHUB_REDIRECT_URI
         sync: false
       # REQUIRED: Set to your Vercel frontend URL to allow CORS
-      # e.g. ["https://raksha-ai-pink.vercel.app"]
+      # e.g. ["https://zorqen-ai-pink.vercel.app"]
       - key: CORS_ORIGINS
         sync: false
       # REQUIRED: Set to your Vercel frontend URL
-      # e.g. https://raksha-ai-pink.vercel.app
+      # e.g. https://zorqen-ai-pink.vercel.app
       - key: FRONTEND_URL
         sync: false
-      # OPTIONAL: Groq API key for LLM-powered security reasoning and ASK RAKSHA
+      # OPTIONAL: Groq API key for LLM-powered security reasoning and ASK ZORQEN
       - key: GROQ_API_KEY
         sync: false
       # OPTIONAL: Groq model name (default: openai/gpt-oss-20b).
       # WARNING: do NOT set llama-3.3-70b-versatile — Groq removed it (model_not_found).
       - key: GROQ_MODEL
         value: openai/gpt-oss-20b
-      # OPTIONAL: xAI Grok API key for ASK RAKSHA (takes priority over Groq)
+      # OPTIONAL: xAI Grok API key for ASK ZORQEN (takes priority over Groq)
       - key: GROK_API_KEY
         sync: false
       # OPTIONAL: Grok model name (default: grok-4-latest)

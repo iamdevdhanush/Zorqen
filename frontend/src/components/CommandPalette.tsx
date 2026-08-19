@@ -79,7 +79,7 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
     },
     {
       id: 'copilot',
-      label: copilotOpen ? 'Close Ask RAKSHA' : 'Ask RAKSHA',
+      label: copilotOpen ? 'Close Ask ZORQEN' : 'Ask ZORQEN',
       description: 'context: current repository, finding, evidence',
       icon: <Bot className="w-3.5 h-3.5" />,
       group: 'Actions',

@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   RAKSHA — Acid-Lime Editorial Design Language
+   ZORQEN — Acid-Lime Editorial Design Language
    Palette: Warm Off-White (#F7F7F2), Crisp White (#FFFFFF), Ink (#111111),
    Dark Borders (#111111), Primary Acid Lime Accent (#C5F82A), Hard Shadows (3px 3px 0px #111111).
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -679,7 +679,7 @@ kbd {
   }
 }
 
-/* When ASK RAKSHA (SecurityCopilot) is open, shift or hide BMC widget to prevent collision */
+/* When ASK ZORQEN (SecurityCopilot) is open, shift or hide BMC widget to prevent collision */
 @media (min-width: 640px) {
   body.copilot-open #bmc-wbtn,
   body.copilot-open .bmc-btn-container,

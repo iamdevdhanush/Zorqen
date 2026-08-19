@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, ShieldAlert } from 'lucide-react';
 import Seo from '../../components/Seo';
 
-const TITLE = 'AI-Generated Code Security — RAKSHA';
+const TITLE = 'AI-Generated Code Security — ZORQEN';
 const DESCRIPTION =
   'Why AI-generated code introduces new security risk, which vulnerability classes to watch for, and how to validate AI-assisted code before it ships.';
 
@@ -12,10 +12,10 @@ const JSONLD = [
     '@type': 'Article',
     headline: 'AI-Generated Code Security',
     description: DESCRIPTION,
-    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
-    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
-    url: 'https://app.raksha.ai/ai-generated-code-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    author: { '@type': 'Organization', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
+    publisher: { '@type': 'Organization', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
+    url: 'https://app.zorqen.ai/ai-generated-code-security',
+    isPartOf: { '@type': 'WebSite', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
   },
   {
     '@context': 'https://schema.org',
@@ -42,7 +42,7 @@ const JSONLD = [
         name: 'How do I validate AI-generated code?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Run automated security validation on the repository snapshot: static analysis, secret detection, and dependency review, then use AI-reasoned findings with confidence scores and patch diffs to prioritize fixes. RAKSHA automates this pipeline.',
+          text: 'Run automated security validation on the repository snapshot: static analysis, secret detection, and dependency review, then use AI-reasoned findings with confidence scores and patch diffs to prioritize fixes. ZORQEN automates this pipeline.',
         },
       },
     ],
@@ -69,7 +69,7 @@ const FAQS = [
   ],
   [
     'How do I validate AI-generated code?',
-    'Run automated security validation on the repository snapshot: static analysis, secret detection, and dependency review, then use AI-reasoned findings with confidence scores and patch diffs to prioritize fixes. RAKSHA automates this pipeline.',
+    'Run automated security validation on the repository snapshot: static analysis, secret detection, and dependency review, then use AI-reasoned findings with confidence scores and patch diffs to prioritize fixes. ZORQEN automates this pipeline.',
   ],
 ];
 
@@ -85,7 +85,7 @@ export default function AiGeneratedCodeSecurityPage() {
 
       <div className="max-w-[940px] mx-auto space-y-10 sm:space-y-14">
         <section className="space-y-5">
-          <div className="protocol-tag">raksha://guides/ai-generated-code</div>
+          <div className="protocol-tag">zorqen://guides/ai-generated-code</div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none">
             AI-GENERATED CODE <br />
             <span className="text-[#666666] font-normal">SECURITY.</span>
@@ -97,7 +97,7 @@ export default function AiGeneratedCodeSecurityPage() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link to="/ai-code-security" className="btn btn-accent px-5 py-2.5 text-[13px]">
-              See How RAKSHA Validates <ArrowRight className="w-4 h-4" />
+              See How ZORQEN Validates <ArrowRight className="w-4 h-4" />
             </Link>
             <Link to="/" className="btn btn-primary px-5 py-2.5 text-[13px]">
               Open the Console

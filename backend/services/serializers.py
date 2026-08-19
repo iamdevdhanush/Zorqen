@@ -1,4 +1,4 @@
-"""RAKSHA — Contract Serializers
+"""ZORQEN — Contract Serializers
 Single source of truth for the JSON shapes the frontend console consumes.
 Backend ↔ Frontend contract version: 1.0 (console "Security Operations" UI).
 """
@@ -144,7 +144,7 @@ def _risk_label(raw: Optional[str]) -> str:
 def remediation_contract(r: Optional[Remediation], finding: Finding) -> Optional[Dict[str, Any]]:
     if not r:
         return None
-    branch = r.branch_name or f"raksha/fix/{((finding.cwe_id or 'vuln')).lower()}"
+    branch = r.branch_name or f"zorqen/fix/{((finding.cwe_id or 'vuln')).lower()}"
     return {
         "branch": branch,
         "diff_before": r.code_before or "",
@@ -207,7 +207,7 @@ def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
 
     The orchestrator emits its own internal step names; those are aliased to the
     canonical console steps. Steps the pipeline never reached stay 'pending' —
-    notably SANDBOX VALIDATION, which RAKSHA does not run.
+    notably SANDBOX VALIDATION, which ZORQEN does not run.
     """
     STEP_ALIASES = {
         "repository_indexed": "index",
@@ -249,7 +249,7 @@ def _logs_from_pipeline(assessment: Assessment) -> List[Dict[str, Any]]:
             continue
         logs.append({
             "time": _fmt_time(entry.get("timestamp")) or "—",
-            "source": entry.get("source", "raksha"),
+            "source": entry.get("source", "zorqen"),
             "text": entry["text"],
             "tone": entry.get("tone", "info"),
         })
@@ -257,7 +257,7 @@ def _logs_from_pipeline(assessment: Assessment) -> List[Dict[str, Any]]:
         for entry in assessment.timeline:
             logs.append({
                 "time": "—",
-                "source": "raksha",
+                "source": "zorqen",
                 "text": f"{entry.get('step', 'pipeline')} {entry.get('status', '')}".strip(),
                 "tone": "info",
             })

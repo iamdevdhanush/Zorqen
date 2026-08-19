@@ -51,7 +51,7 @@ export default function AssessmentsPage() {
           <div className="p-4 sm:p-7 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4 sm:space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <div className="protocol-tag">raksha://assessment/{run.id.replace('#', '')}</div>
+                <div className="protocol-tag">zorqen://assessment/{run.id.replace('#', '')}</div>
                 <div className="flex items-center gap-3 flex-wrap pt-1">
                   <h2 className="text-xl sm:text-3xl font-extrabold text-[#111111] tracking-tight">
                     ASSESSMENT {run.id}

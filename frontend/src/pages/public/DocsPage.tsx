@@ -3,18 +3,18 @@ import { ArrowRight, ShieldCheck } from 'lucide-react';
 import Seo from '../../components/Seo';
 import GithubIcon from '../../components/GithubIcon';
 
-const TITLE = 'RAKSHA Docs — How Security Validation Works';
+const TITLE = 'ZORQEN Docs — How Security Validation Works';
 const DESCRIPTION =
-  'Documentation for RAKSHA: the DETECT → REASON → VALIDATE → REMEDIATE → VERIFY pipeline, the console, GitHub integration, finding lifecycle, and privacy model.';
+  'Documentation for ZORQEN: the DETECT → REASON → VALIDATE → REMEDIATE → VERIFY pipeline, the console, GitHub integration, finding lifecycle, and privacy model.';
 
 const JSONLD = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'RAKSHA Documentation',
+    name: 'ZORQEN Documentation',
     description: DESCRIPTION,
-    url: 'https://app.raksha.ai/docs',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    url: 'https://app.zorqen.ai/docs',
+    isPartOf: { '@type': 'WebSite', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
   },
   {
     '@context': 'https://schema.org',
@@ -22,18 +22,18 @@ const JSONLD = [
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'What does RAKSHA do?',
+        name: 'What does ZORQEN do?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'RAKSHA validates the security of software built with AI assistance. It scans a repository snapshot with static analysis, secret detection, and dependency review, then uses AI reasoning to correlate findings, assign confidence, and generate remediation diffs.',
+          text: 'ZORQEN validates the security of software built with AI assistance. It scans a repository snapshot with static analysis, secret detection, and dependency review, then uses AI reasoning to correlate findings, assign confidence, and generate remediation diffs.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Which code does RAKSHA scan?',
+        name: 'Which code does ZORQEN scan?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'RAKSHA scans the repository snapshot you authorize through the GitHub integration. Scans target the codebase, its secrets, and its dependency manifests — never your production environment.',
+          text: 'ZORQEN scans the repository snapshot you authorize through the GitHub integration. Scans target the codebase, its secrets, and its dependency manifests — never your production environment.',
         },
       },
       {
@@ -41,7 +41,7 @@ const JSONLD = [
         name: 'How does the GitHub integration work?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'You connect a GitHub account from the console. RAKSHA then reads the repositories you authorize so an assessment can be run against the chosen snapshot.',
+          text: 'You connect a GitHub account from the console. ZORQEN then reads the repositories you authorize so an assessment can be run against the chosen snapshot.',
         },
       },
       {
@@ -54,7 +54,7 @@ const JSONLD = [
       },
       {
         '@type': 'Question',
-        name: 'Can I try RAKSHA without a GitHub account?',
+        name: 'Can I try ZORQEN without a GitHub account?',
         acceptedAnswer: {
           '@type': 'Answer',
           text: 'Yes. Connect a GitHub account with read-only access and run an assessment on any repository you control — no credit card or trial period required.',
@@ -83,23 +83,23 @@ const CONSOLE = [
 
 const FAQS = [
   [
-    'What does RAKSHA do?',
-    'RAKSHA validates the security of software built with AI assistance. It scans a repository snapshot with static analysis, secret detection, and dependency review, then uses AI reasoning to correlate findings, assign confidence, and generate remediation diffs.',
+    'What does ZORQEN do?',
+    'ZORQEN validates the security of software built with AI assistance. It scans a repository snapshot with static analysis, secret detection, and dependency review, then uses AI reasoning to correlate findings, assign confidence, and generate remediation diffs.',
   ],
   [
-    'Which code does RAKSHA scan?',
-    'RAKSHA scans the repository snapshot you authorize through the GitHub integration. Scans target the codebase, its secrets, and its dependency manifests — never your production environment.',
+    'Which code does ZORQEN scan?',
+    'ZORQEN scans the repository snapshot you authorize through the GitHub integration. Scans target the codebase, its secrets, and its dependency manifests — never your production environment.',
   ],
   [
     'How does the GitHub integration work?',
-    'You connect a GitHub account from the console. RAKSHA then reads the repositories you authorize so an assessment can be run against the chosen snapshot.',
+    'You connect a GitHub account from the console. ZORQEN then reads the repositories you authorize so an assessment can be run against the chosen snapshot.',
   ],
   [
     'Is my source code exposed?',
     'No. Scans run against repository snapshots in isolated sandboxes. Findings, scores, and remediation diffs are surfaced in your console only.',
   ],
   [
-    'Can I try RAKSHA without a GitHub account?',
+    'Can I try ZORQEN without a GitHub account?',
     'Yes. Connect a GitHub account with read-only access and run an assessment on any repository you control — no credit card or trial period required.',
   ],
 ];
@@ -116,12 +116,12 @@ export default function DocsPage() {
 
       <div className="max-w-[940px] mx-auto space-y-10 sm:space-y-14">
         <section className="space-y-5">
-          <div className="protocol-tag">raksha://docs</div>
+          <div className="protocol-tag">zorqen://docs</div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none">
             DOCUMENTATION.
           </h1>
           <p className="text-base sm:text-lg text-[#333333] max-w-[640px] leading-relaxed font-medium">
-            Everything you need to understand how RAKSHA validates the security of
+            Everything you need to understand how ZORQEN validates the security of
             AI-built software — the pipeline, the console, and the finding lifecycle.
           </p>
           <div className="flex flex-wrap items-center gap-3">

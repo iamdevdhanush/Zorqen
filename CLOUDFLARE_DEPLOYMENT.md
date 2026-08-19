@@ -1,4 +1,4 @@
-# RAKSHA — Cloudflare Deployment Guide
+# ZORQEN — Cloudflare Deployment Guide
 
 Current production target: **Cloudflare** (Workers Static Assets + Cloudflare Containers).
 
@@ -15,10 +15,10 @@ assessment orchestration are **unchanged** — this is a deployment-layer migrat
 ## 1. Architecture
 
 ```
-                    https://app.raksha.ai
+                    https://app.zorqen.ai
                           │
             ┌─────────────┴─────────────┐
-            │   Worker "raksha"         │
+            │   Worker "zorqen"         │
             │   cloudflare/src/worker.ts│
             └──────┬───────────┬────────┘
                    │           │
@@ -26,7 +26,7 @@ assessment orchestration are **unchanged** — this is a deployment-layer migrat
    (run_worker_first)          │
                    ▼           ▼
    ┌─────────────────────┐  Workers Static Assets (frontend/dist)
-   │ RakshaContainer (DO)│  SPA fallback via
+   │ ZorqenContainer (DO)│  SPA fallback via
    │ Container "standard-1"│  not_found_handling
    │ FastAPI (uvicorn :8000)│
    └──────────┬──────────┘
@@ -35,7 +35,7 @@ assessment orchestration are **unchanged** — this is a deployment-layer migrat
    Supabase PostgreSQL · GitHub API · Groq/xAI
 ```
 
-Single origin: the browser only ever talks to `app.raksha.ai`. There is no
+Single origin: the browser only ever talks to `app.zorqen.ai`. There is no
 cross-origin traffic, same-origin `HttpOnly` cookies work, and `VITE_API_URL` can be
 omitted (the frontend falls back to the relative `/api` path).
 
@@ -51,10 +51,10 @@ static traffic.
 | File | Purpose |
 |---|---|
 | `cloudflare/wrangler.jsonc` | Cloudflare project config (assets, containers, DO binding, secrets list) |
-| `cloudflare/src/worker.ts` | Worker entrypoint: `RakshaContainer` class + fetch handler forwarding `/api/*` to the container |
+| `cloudflare/src/worker.ts` | Worker entrypoint: `ZorqenContainer` class + fetch handler forwarding `/api/*` to the container |
 | `cloudflare/package.json` | Worker project deps (`wrangler`, `@cloudflare/containers`, `typescript`) |
 | `cloudflare/tsconfig.json` | TypeScript config for the Worker |
-| `backend/Dockerfile` | Unchanged image, plus a non-root runtime user (`USER raksha`, `ENV HOME=/tmp`) |
+| `backend/Dockerfile` | Unchanged image, plus a non-root runtime user (`USER zorqen`, `ENV HOME=/tmp`) |
 | `frontend/src/services/api.ts` | API base falls back to same-origin `/api` when `VITE_API_URL` is unset |
 
 The backend code itself is **not** modified by this migration.
@@ -80,16 +80,16 @@ The backend code itself is **not** modified by this migration.
 - `assets.run_worker_first: ["/api/*", "/health*"]` — Worker only runs for backend traffic.
 - `assets.not_found_handling: "single-page-application"` — SPA deep links (`/repos`, `/assessments/...`) work on refresh.
 - `containers[0]`:
-  - `class_name: "RakshaContainer"` — must match the exported class in `src/worker.ts` and the DO binding.
+  - `class_name: "ZorqenContainer"` — must match the exported class in `src/worker.ts` and the DO binding.
   - `image: "../backend/Dockerfile"` — built & pushed by `wrangler deploy` (local Docker).
   - `instance_type: "standard-1"` (1/2 vCPU, 4 GiB RAM, 8 GB disk). Upgrade to `standard-2` (1 vCPU, 6 GiB) if Semgrep runs out of memory on large repos.
   - `max_instances: 1` — one concurrent instance; the singleton Durable Object keeps all requests on the same container (required for the in-memory OAuth state store and in-process assessment workers).
   - `rollout_active_grace_period: 300` — image rollouts wait 5 minutes before replacing a container that recently started a request, protecting in-flight assessments during deploys.
-- `durable_objects.bindings[0].name: "RAKSHA_CONTAINER"` + `migrations` with `new_sqlite_classes: ["RakshaContainer"]` — container-enabled DO classes use SQLite-backed DO storage.
+- `durable_objects.bindings[0].name: "ZORQEN_CONTAINER"` + `migrations` with `new_sqlite_classes: ["ZorqenContainer"]` — container-enabled DO classes use SQLite-backed DO storage.
 - `secrets.required` — deploy fails fast if any listed secret is missing.
 - `observability.enabled: true` — container logs in the dashboard (3-day retention on Free, 7-day on Paid).
 - `vars` — non-secret runtime values (see section 5).
-- `workers_dev: true` — the Worker is also reachable at `raksha.<account>.workers.dev`, useful during cutover.
+- `workers_dev: true` — the Worker is also reachable at `zorqen.<account>.workers.dev`, useful during cutover.
 
 `cloudflare/src/worker.ts` highlights:
 
@@ -117,12 +117,12 @@ npx wrangler secret put GROK_API_KEY
 | Variable | Where | Required | Example / purpose |
 |---|---|---|---|
 | `APP_ENV` | `vars` | Yes | `production` |
-| `FRONTEND_URL` | `vars` | Yes | `https://app.raksha.ai` — OAuth redirect + trusted hosts |
-| `BACKEND_URL` | `vars` | Yes | `https://app.raksha.ai` — trusted hosts (same origin) |
-| `CORS_ORIGINS` | `vars` | Yes | `["https://app.raksha.ai"]` — satisfies the backend's fail-fast validator; same-origin traffic needs no CORS |
-| `TRUSTED_HOSTS` | `vars` | Yes | `["app.raksha.ai", "*.workers.dev"]` — the `*.workers.dev` entry keeps the interim workers.dev URL working until DNS cutover |
+| `FRONTEND_URL` | `vars` | Yes | `https://app.zorqen.ai` — OAuth redirect + trusted hosts |
+| `BACKEND_URL` | `vars` | Yes | `https://app.zorqen.ai` — trusted hosts (same origin) |
+| `CORS_ORIGINS` | `vars` | Yes | `["https://app.zorqen.ai"]` — satisfies the backend's fail-fast validator; same-origin traffic needs no CORS |
+| `TRUSTED_HOSTS` | `vars` | Yes | `["app.zorqen.ai", "*.workers.dev"]` — the `*.workers.dev` entry keeps the interim workers.dev URL working until DNS cutover |
 | `GITHUB_CLIENT_ID` | `vars` | Yes | GitHub OAuth App client ID (public) |
-| `GITHUB_REDIRECT_URI` | `vars` | Yes | `https://app.raksha.ai/api/auth/github/callback` |
+| `GITHUB_REDIRECT_URI` | `vars` | Yes | `https://app.zorqen.ai/api/auth/github/callback` |
 | `GROQ_MODEL` / `GROK_MODEL` | `vars` | No | `openai/gpt-oss-20b` / `grok-4-latest` |
 | `SANDBOX_ENABLED` | `vars` | Yes | `false` — Docker sandbox is dormant; Semgrep runs directly in the container |
 | `SECRET_KEY` | secret | Yes | JWT signing key (startup refuses to boot without a strong value) |
@@ -137,8 +137,8 @@ npx wrangler secret put GROK_API_KEY
 ## 6. GitHub OAuth changes
 
 1. Edit the GitHub OAuth App (https://github.com/settings/developers):
-   - **Homepage URL** → `https://app.raksha.ai`
-   - **Authorization callback URL** → `https://app.raksha.ai/api/auth/github/callback`
+   - **Homepage URL** → `https://app.zorqen.ai`
+   - **Authorization callback URL** → `https://app.zorqen.ai/api/auth/github/callback`
 2. `GITHUB_REDIRECT_URI` in `vars` must match the callback URL **exactly**.
 3. The frontend builds its login URL as `/api/auth/github` (same origin — no cross-domain
    redirect). After OAuth, the backend redirects to `{FRONTEND_URL}/auth/callback?token=…`.
@@ -147,16 +147,16 @@ npx wrangler secret put GROK_API_KEY
 
 ## 7. DNS
 
-If the `raksha.ai` zone is already on Cloudflare, add a **Custom Domain** (no DNS records
-to create) via `npx wrangler domains add app.raksha.ai` (or the dashboard).
+If the `zorqen.ai` zone is already on Cloudflare, add a **Custom Domain** (no DNS records
+to create) via `npx wrangler domains add app.zorqen.ai` (or the dashboard).
 
 If the zone is elsewhere, add a CNAME:
 
 ```
-app.raksha.ai  CNAME  raksha.<account-subdomain>.workers.dev
+app.zorqen.ai  CNAME  zorqen.<account-subdomain>.workers.dev
 ```
 
-Until the cutover, the app also runs at `raksha.<account-subdomain>.workers.dev`
+Until the cutover, the app also runs at `zorqen.<account-subdomain>.workers.dev`
 (`workers_dev: true`) with `*.workers.dev` in `TRUSTED_HOSTS`, so everything can be
 verified before touching production DNS.
 
@@ -208,7 +208,7 @@ Official-docs facts that constrain this deployment:
   inactivity; the next request cold-starts it in ~1–3 s.
 - **Ephemeral disk.** Everything outside the image is wiped on sleep/restart — fine here
   (Semgrep temp dirs under `/tmp` are disposable; state lives in PostgreSQL).
-- **No root privileges.** The image runs as an unprivileged user (`USER raksha`).
+- **No root privileges.** The image runs as an unprivileged user (`USER zorqen`).
 - **No swap.** Memory exhaustion → OOM restart. `standard-1` gives 4 GiB; upgrade if
   Semgrep OOMs on large repositories.
 - **Single instance.** `max_instances: 1` — no horizontal scaling. Acceptable for the
@@ -222,27 +222,27 @@ Official-docs facts that constrain this deployment:
 
 ```bash
 # API health (expect 200, database ok, github_configured true)
-curl -s https://app.raksha.ai/api/health
+curl -s https://app.zorqen.ai/api/health
 
 # OpenAPI served by the container through the Worker
-curl -s https://app.raksha.ai/api/openapi.json | head
+curl -s https://app.zorqen.ai/api/openapi.json | head
 
 # OAuth start (expect 307 → github.com/login/oauth/authorize)
-curl -s -o /dev/null -D - https://app.raksha.ai/api/auth/github
+curl -s -o /dev/null -D - https://app.zorqen.ai/api/auth/github
 
 # OAuth callback rejects missing params (expect 307 to frontend with error)
-curl -s -o /dev/null -D - "https://app.raksha.ai/api/auth/github/callback"
+curl -s -o /dev/null -D - "https://app.zorqen.ai/api/auth/github/callback"
 
 # SPA deep links return index.html (200, not 404)
-curl -s -o /dev/null -w "%{http_code}\n" https://app.raksha.ai/repos
-curl -s -o /dev/null -w "%{http_code}\n" https://app.raksha.ai/assessments
+curl -s -o /dev/null -w "%{http_code}\n" https://app.zorqen.ai/repos
+curl -s -o /dev/null -w "%{http_code}\n" https://app.zorqen.ai/assessments
 ```
 
 - [ ] `GET /api/health` returns 200 with `database.ok` and `github.configured: true`
 - [ ] Browser login via GitHub completes and returns signed-in
 - [ ] A **real assessment** starts and completes (Semgrep + AI pipeline)
 - [ ] SPA deep links work on refresh (`/repos`, `/assessments/:id`, `/findings/:id`)
-- [ ] Settings page shows the API endpoint as `https://app.raksha.ai/api`
+- [ ] Settings page shows the API endpoint as `https://app.zorqen.ai/api`
 - [ ] No CORS errors in the browser console (same-origin)
 - [ ] No `localhost` URLs in the production build
 - [ ] No secrets in the repo (`git check-ignore .env` passes; greps for key names clean)

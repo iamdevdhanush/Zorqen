@@ -1,4 +1,4 @@
-"""RAKSHA — Copilot LLM client for the ASK RAKSHA investigation copilot.
+"""ZORQEN — Copilot LLM client for the ASK ZORQEN investigation copilot.
 
 Provider-first strategy (server-side ONLY):
   1. GROK_API_KEY set       → xAI Grok via https://api.x.ai/v1 (OpenAI-compatible)
@@ -149,13 +149,13 @@ class GrokService:
                     await asyncio.sleep(0.5 * (attempt + 1))
                     continue
                 log.warning("[GROK] request timed out", provider="grok", timeout=settings.grok_timeout_seconds)
-                raise GrokAPIError("ASK RAKSHA timed out", code="GROK_TIMEOUT")
+                raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
             except httpx.HTTPError as e:
                 if attempt < retries:
                     await asyncio.sleep(0.5 * (attempt + 1))
                     continue
                 log.warning("[GROK] transport error", provider="grok", error_type=type(e).__name__)
-                raise GrokAPIError("ASK RAKSHA unavailable")
+                raise GrokAPIError("ASK ZORQEN unavailable")
 
             if resp.status_code in (401, 403):
                 log.warning("[GROK] authentication rejected", provider="grok", status=resp.status_code)
@@ -223,7 +223,7 @@ class GrokService:
                     await asyncio.sleep(0.5 * (attempt + 1))
                     continue
                 log.warning("[GROK] groq timeout", provider="groq")
-                raise GrokAPIError("ASK RAKSHA timed out", code="GROK_TIMEOUT")
+                raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
             except (AuthenticationError, PermissionDeniedError):
                 log.warning("[GROK] groq authentication rejected", provider="groq")
                 raise GrokAPIError("Copilot LLM authentication failed", status=401, code="GROK_AUTH_ERROR")

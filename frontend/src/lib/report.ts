@@ -4,7 +4,7 @@ import type { AssessmentRun, Finding, RepoMeta } from './types';
 
 export function exportAssessmentReport(assessment: AssessmentRun, repo: RepoMeta | null, findings: Finding[]) {
   const report = {
-    tool: 'RAKSHA — Security Validation',
+    tool: 'ZORQEN — Security Validation',
     generated_at: new Date().toISOString(),
     repository: repo?.name,
     commit: repo?.commit,
@@ -32,14 +32,14 @@ export function exportAssessmentReport(assessment: AssessmentRun, repo: RepoMeta
         ? { branch: f.remediation.branch, risk: f.remediation.risk, regression: `${f.remediation.regression_passed}/${f.remediation.regression_tests}` }
         : undefined,
     })),
-    scope_note: 'Report reflects the assessed commit snapshot only. RAKSHA never scans production systems and never modifies a repository without explicit approval.',
+    scope_note: 'Report reflects the assessed commit snapshot only. ZORQEN never scans production systems and never modifies a repository without explicit approval.',
   };
 
   const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `raksha-report-${repo?.name ?? 'assessment'}-${assessment.id.replace('#', '')}.json`;
+  a.download = `zorqen-report-${repo?.name ?? 'assessment'}-${assessment.id.replace('#', '')}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();

@@ -1,4 +1,4 @@
-"""RAKSHA — Deterministic Security Scoring
+"""ZORQEN — Deterministic Security Scoring
 Pure functions: identical inputs always produce identical outputs.
 """
 from __future__ import annotations

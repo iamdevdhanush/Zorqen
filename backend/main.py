@@ -1,5 +1,5 @@
 """
-RAKSHA — FastAPI Application Entry Point
+ZORQEN — FastAPI Application Entry Point
 """
 from __future__ import annotations
 
@@ -98,7 +98,7 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     _assert_production_safety()
     log.info(
-        "RAKSHA starting up",
+        "ZORQEN starting up",
         version="1.1.0",
         env=settings.app_env,
         database="postgres" if settings.is_postgres else "sqlite",
@@ -148,13 +148,13 @@ async def lifespan(app: FastAPI):
         )
         raise
     yield
-    log.info("RAKSHA shutting down")
+    log.info("ZORQEN shutting down")
     from services.grok import grok
     await grok.aclose()
 
 
 app = FastAPI(
-    title="RAKSHA API",
+    title="ZORQEN API",
     description="AI-Powered Autonomous Security Validation & Vulnerability Remediation Platform",
     version="1.1.0",
     lifespan=lifespan,
@@ -275,7 +275,7 @@ async def health():
         grok_status = {
             "status": "degraded",
             "configured": False,
-            "message": "Neither GROK_API_KEY nor GROQ_API_KEY is set — ASK RAKSHA unavailable",
+            "message": "Neither GROK_API_KEY nor GROQ_API_KEY is set — ASK ZORQEN unavailable",
         }
 
     # Database failure is fatal; everything else is degraded but functional.
@@ -331,14 +331,14 @@ async def health_grok():
     return {
         "status": "degraded",
         "configured": False,
-        "message": "Set GROK_API_KEY (xAI) or GROQ_API_KEY (Groq) to enable ASK RAKSHA",
+        "message": "Set GROK_API_KEY (xAI) or GROQ_API_KEY (Groq) to enable ASK ZORQEN",
     }
 
 
 @app.get("/")
 async def root():
     return {
-        "message": "RAKSHA — Find it. Fix it. Prove it.",
+        "message": "ZORQEN — Find it. Fix it. Prove it.",
         "docs": "/api/docs",
         "health": "/api/health",
     }

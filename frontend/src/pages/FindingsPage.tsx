@@ -98,7 +98,7 @@ export default function FindingsPage() {
       {/* Editorial Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-4 sm:pb-6 border-b border-[#111111]">
         <div className="space-y-1">
-          <div className="protocol-tag">raksha://findings/all</div>
+          <div className="protocol-tag">zorqen://findings/all</div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111111] tracking-tighter">
             SECURITY FINDINGS
           </h1>

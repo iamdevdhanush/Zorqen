@@ -1,5 +1,5 @@
 """
-RAKSHA — Server-side encryption for sensitive data at rest.
+ZORQEN — Server-side encryption for sensitive data at rest.
 Uses AES-256-GCM via cryptography library.
 """
 from __future__ import annotations
@@ -101,7 +101,7 @@ def is_encrypted(value: str) -> bool:
 
 
 # Known plaintext token shapes that pass the base64 heuristic above (40-char
-# GitHub tokens decode to exactly 30 bytes) but are NOT RAKSHA ciphertext.
+# GitHub tokens decode to exactly 30 bytes) but are NOT ZORQEN ciphertext.
 _PLAINTEXT_TOKEN_PREFIXES = (
     "ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_", "glpat_",
     "xoxb-", "xoxp-", "xoxa-", "sk-", "AKIA", "AIza",
@@ -109,7 +109,7 @@ _PLAINTEXT_TOKEN_PREFIXES = (
 
 
 def _looks_like_ciphertext(value: str) -> bool:
-    """True when `value` has the shape of RAKSHA ciphertext (base64, 4-aligned,
+    """True when `value` has the shape of ZORQEN ciphertext (base64, 4-aligned,
     at least nonce+tag length). Plaintext tokens shorter than 29 decoded bytes
     or with non-base64 characters fail this check."""
     if len(value) % 4 != 0:

@@ -1,4 +1,4 @@
-"""RAKSHA — Assessment service: run creation, resolution, contract building"""
+"""ZORQEN — Assessment service: run creation, resolution, contract building"""
 from __future__ import annotations
 
 import asyncio
@@ -146,7 +146,7 @@ async def create_assessment(
                 "step": "index",
                 "status": "pending",
                 "timestamp": None,
-                "source": "raksha",
+                "source": "zorqen",
                 "text": f"assessment queued · {repository.name}@{branch or 'main'}",
                 "tone": "info",
             }],

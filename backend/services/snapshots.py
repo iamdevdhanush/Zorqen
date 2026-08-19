@@ -1,4 +1,4 @@
-"""RAKSHA — Snapshots service: score time-series + recording"""
+"""ZORQEN — Snapshots service: score time-series + recording"""
 from __future__ import annotations
 
 from typing import Optional

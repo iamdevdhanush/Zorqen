@@ -1,4 +1,4 @@
-"""RAKSHA — Repositories, Assessments, Findings, Remediation, Copilot routers
+"""ZORQEN — Repositories, Assessments, Findings, Remediation, Copilot routers
 Console contract (frontend/src/lib/types.ts) via services.serializers.
 """
 from __future__ import annotations
@@ -84,11 +84,11 @@ async def list_github_repos(
             public_repositories=len(repos) - private_count,
         )
 
-        # Build a lookup from GitHub integer ID → RAKSHA UUID for all connected repos
+        # Build a lookup from GitHub integer ID → ZORQEN UUID for all connected repos
         connected = await db.execute(
             select(Repository).where(Repository.user_id == current_user.id)
         )
-        github_to_raksha = {
+        github_to_zorqen = {
             r.github_repo_id: r.id
             for r in connected.scalars().all()
             if r.github_repo_id
@@ -98,8 +98,8 @@ async def list_github_repos(
         contracts = []
         for r in repos:
             gh_id = r.get("id")
-            raksha_id = github_to_raksha.get(gh_id)
-            c = GitHubClient.normalize_repo(r, raksha_id=raksha_id)
+            zorqen_id = github_to_zorqen.get(gh_id)
+            c = GitHubClient.normalize_repo(r, zorqen_id=zorqen_id)
             meta = latest.get(c["fullName"])
             if meta:
                 c["latestScore"] = meta["score"]
@@ -240,7 +240,7 @@ async def get_repo_by_github_id(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Resolve a GitHub integer repository ID to the RAKSHA repository record.
+    """Resolve a GitHub integer repository ID to the ZORQEN repository record.
 
     If the repository has not been connected yet, auto-connect it from GitHub
     using the authenticated user's token and return the created record.
@@ -248,7 +248,7 @@ async def get_repo_by_github_id(
     if not current_user.get_github_token():
         raise HTTPException(status_code=400, detail="No GitHub access token — re-connect your GitHub account.")
 
-    # Check if already connected in RAKSHA DB
+    # Check if already connected in ZORQEN DB
     result = await db.execute(
         select(Repository).where(
             Repository.github_repo_id == github_id,
@@ -302,10 +302,10 @@ async def get_repo_by_github_id(
     await db.commit()
     await db.refresh(repo)
     log.info(
-        "[RAKSHA] auto_connected_repository",
+        "[ZORQEN] auto_connected_repository",
         github_id=github_id,
         full_name=full_name,
-        raksha_id=repo.id,
+        zorqen_id=repo.id,
     )
     return repo_meta(repo)
 
@@ -319,7 +319,7 @@ async def get_repository_detail(
     """Real GitHub-backed repo detail: default branch, HEAD commit, tree, languages.
 
     Resolution chain:
-      1. Resolve repo_id → RAKSHA record (UUID or GitHub integer ID).
+      1. Resolve repo_id → ZORQEN record (UUID or GitHub integer ID).
       2. If GitHub ID provided but not in DB, auto-connect from GitHub API.
       3. Fetch fresh repository metadata from GitHub (default_branch, etc.).
       4. Resolve HEAD commit SHA from the branch ref (never use a stale SHA).
@@ -340,8 +340,8 @@ async def get_repository_detail(
     repo = await _resolve_repo_with_auto_connect(repo_id, current_user, db, client)
 
     log.info(
-        "[RAKSHA] repository_detail_start",
-        raksha_id=repo.id,
+        "[ZORQEN] repository_detail_start",
+        zorqen_id=repo.id,
         github_repo_id=repo.github_repo_id,
         owner=repo.owner,
         name=repo.name,
@@ -381,7 +381,7 @@ async def get_repository_detail(
             },
         )
 
-    # Sync fresh metadata from GitHub into the RAKSHA record
+    # Sync fresh metadata from GitHub into the ZORQEN record
     fresh_default_branch = gh_repo_data.get("default_branch") or repo.default_branch or "main"
     fresh_language = gh_repo_data.get("language") or repo.language
     fresh_private = bool(gh_repo_data.get("private"))
@@ -395,7 +395,7 @@ async def get_repository_detail(
         repo.is_private = fresh_private
         await db.commit()
         log.info(
-            "[RAKSHA] repository_metadata_synced",
+            "[ZORQEN] repository_metadata_synced",
             owner=repo.owner,
             name=repo.name,
             default_branch=fresh_default_branch,
@@ -425,7 +425,7 @@ async def get_repository_detail(
         repo.head_commit = head_sha
         await db.commit()
         log.info(
-            "[RAKSHA] head_commit_updated",
+            "[ZORQEN] head_commit_updated",
             owner=repo.owner,
             name=repo.name,
             head_sha=head_sha[:7] if head_sha else None,
@@ -496,7 +496,7 @@ async def get_repository_detail(
         languages = {}
 
     log.info(
-        "[RAKSHA] repository_detail_complete",
+        "[ZORQEN] repository_detail_complete",
         owner=repo.owner,
         name=repo.name,
         default_branch=default_branch,
@@ -572,14 +572,14 @@ async def get_commits(repo_id: str, branch: str = "main",
 
 
 async def _get_repo_or_404(repo_id: str, user_id: str, db: AsyncSession) -> Repository:
-    """Resolve a repository by RAKSHA UUID OR GitHub integer database ID.
+    """Resolve a repository by ZORQEN UUID OR GitHub integer database ID.
 
     The frontend URL /repos/{id} contains the GitHub integer ID returned by
-    normalize_repo().  The RAKSHA DB uses UUID primary keys.  When a UUID
+    normalize_repo().  The ZORQEN DB uses UUID primary keys.  When a UUID
     lookup misses, fall back to a github_repo_id integer lookup so that either
     form of the ID works transparently.
     """
-    # 1. Try UUID primary key lookup (fast path — RAKSHA-internal navigation)
+    # 1. Try UUID primary key lookup (fast path — ZORQEN-internal navigation)
     repo = await db.get(Repository, repo_id)
     if repo and repo.user_id == user_id:
         return repo
@@ -619,9 +619,9 @@ async def _resolve_repo_with_auto_connect(
     """Resolve a repository for the detail endpoint, auto-connecting if needed.
 
     Resolution order:
-      1. RAKSHA UUID primary key lookup.
+      1. ZORQEN UUID primary key lookup.
       2. GitHub integer ID lookup (finds already-connected repos by GitHub ID).
-      3. Auto-connect: fetch the GitHub repo via the integer ID, create RAKSHA record.
+      3. Auto-connect: fetch the GitHub repo via the integer ID, create ZORQEN record.
 
     Never creates a record for a repo the user's token can't actually access.
     """
@@ -648,9 +648,9 @@ async def _resolve_repo_with_auto_connect(
     if repo:
         return repo
 
-    # 3. Auto-connect: look up in user's GitHub repos list and create RAKSHA record
+    # 3. Auto-connect: look up in user's GitHub repos list and create ZORQEN record
     log.info(
-        "[RAKSHA] auto_connect_attempt",
+        "[ZORQEN] auto_connect_attempt",
         github_id=github_id_int,
         user_id=current_user.id,
     )
@@ -710,10 +710,10 @@ async def _resolve_repo_with_auto_connect(
     await db.commit()
     await db.refresh(repo)
     log.info(
-        "[RAKSHA] auto_connected_repository",
+        "[ZORQEN] auto_connected_repository",
         github_id=github_id_int,
         full_name=full_name,
-        raksha_id=repo.id,
+        zorqen_id=repo.id,
     )
     return repo
 
@@ -741,7 +741,7 @@ async def debug_github_repository(
 
     result: dict = {
         "repo_id_received": repo_id,
-        "raksha_repository_id": None,
+        "zorqen_repository_id": None,
         "github_repository_id": None,
         "owner": None,
         "name": None,
@@ -784,7 +784,7 @@ async def debug_github_repository(
             pass
 
     if repo:
-        result["raksha_repository_id"] = repo.id
+        result["zorqen_repository_id"] = repo.id
         result["github_repository_id"] = repo.github_repo_id
         result["owner"] = repo.owner
         result["name"] = repo.name
@@ -820,7 +820,7 @@ async def debug_github_repository(
             result["languages_status"] = f"HTTP_{e.response.status_code}"
             result["errors"].append(f"GET_LANGUAGES_FAILED: HTTP {e.response.status_code}")
     else:
-        result["errors"].append(f"REPO_NOT_IN_RAKSHA_DB: id={repo_id}")
+        result["errors"].append(f"REPO_NOT_IN_ZORQEN_DB: id={repo_id}")
 
     return result
 
@@ -1005,7 +1005,7 @@ async def list_repo_assessments(
     log.info(
         "[ASSESSMENTS] list_repo_assessments",
         github_repo_id=repo.github_repo_id,
-        raksha_repository_id=repo.id,
+        zorqen_repository_id=repo.id,
         owner=repo.owner,
         name=repo.name,
     )
@@ -1124,7 +1124,7 @@ async def generate_finding_fix(
             cwe_id=finding.cwe_id,
         )
     except LLM_EXTERNAL_ERRORS:
-        log.warning("[RAKSHA] fix_generation_unavailable", finding_ref=finding_ref)
+        log.warning("[ZORQEN] fix_generation_unavailable", finding_ref=finding_ref)
         raise HTTPException(
             status_code=503,
             detail="AI fix generation is temporarily unavailable. Please try again.",
@@ -1175,7 +1175,7 @@ async def _resolve_finding(db: AsyncSession, user: User, ref: str) -> Finding:
     return finding
 
 
-# ── ASK RAKSHA Investigation Copilot ────────────────────────────────────────
+# ── ASK ZORQEN Investigation Copilot ────────────────────────────────────────
 
 copilot_router = APIRouter(prefix="/copilot", tags=["copilot"])
 
@@ -1186,11 +1186,11 @@ async def copilot_chat(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Evidence-grounded ASK RAKSHA: targeted retrieval → Grok → grounded answer + sources.
+    """Evidence-grounded ASK ZORQEN: targeted retrieval → Grok → grounded answer + sources.
 
     Grok runs server-side only. The frontend sends page context (route,
     repository, assessment, finding) plus conversation history; the backend
-    retrieves the relevant Raksha evidence, grounds the answer in it, and
+    retrieves the relevant Zorqen evidence, grounds the answer in it, and
     returns structured source references. Never exposes the API key or stacks.
     """
     try:
@@ -1203,23 +1203,23 @@ async def copilot_chat(
         )
         raise HTTPException(
             status_code=429 if e.status == 429 else 503,
-            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
         )
     except GrokConfigurationError:
         log.warning("[COPILOT] grok_not_configured", error_code="GROK_CONFIGURATION_ERROR")
         raise HTTPException(
             status_code=503,
-            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
         )
     except CopilotContextError:
         log.warning("[COPILOT] context_error", error_code="ASSESSMENT_CONTEXT_ERROR")
         raise HTTPException(
             status_code=503,
-            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
         )
     except Exception as e:
         log.warning("[COPILOT] unexpected_error", error_code="BACKEND_ERROR", error_type=type(e).__name__)
         raise HTTPException(
             status_code=503,
-            detail="ASK RAKSHA is temporarily unavailable. Please try again.",
+            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
         )

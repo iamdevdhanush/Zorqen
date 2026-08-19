@@ -1,4 +1,4 @@
-"""RAKSHA — Finding Fingerprinting & Deduplication
+"""ZORQEN — Finding Fingerprinting & Deduplication
 Deterministic fingerprinting so the same vulnerability in the same location
 always maps to the same stable slug (F-XXXX) across runs.
 """

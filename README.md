@@ -1,4 +1,4 @@
-# RAKSHA — AI-Powered Autonomous Security Validation & Vulnerability Remediation Platform
+# ZORQEN — AI-Powered Autonomous Security Validation & Vulnerability Remediation Platform
 
 > **"Find it. Fix it. Prove it."**
 
@@ -11,7 +11,7 @@ Demo Mode works **without** GitHub OAuth or Groq API key.
 ### 1. Start the Backend
 
 ```powershell
-cd "d:\RAKSHA AI\backend"
+cd "d:\ZORQEN AI\backend"
 pip install fastapi "uvicorn[standard]" pydantic pydantic-settings sqlalchemy aiosqlite greenlet httpx "python-jose[cryptography]" "passlib[bcrypt]" groq python-dotenv aiofiles structlog sse-starlette python-multipart cryptography gitpython pygments pyyaml
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
@@ -19,7 +19,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ### 2. Start the Frontend
 
 ```powershell
-cd "d:\RAKSHA AI\frontend"
+cd "d:\ZORQEN AI\frontend"
 npm install
 npm run dev
 ```
@@ -54,7 +54,7 @@ Copy `.env.example` to `.env` in the project root and fill in your values.
 ## 🏗️ Architecture
 
 ```
-RAKSHA/
+ZORQEN/
 ├── frontend/          # React + TypeScript + Vite + Tailwind v4
 │   ├── src/
 │   │   ├── pages/     # LandingPage, DemoPage, DashboardPage
@@ -172,4 +172,4 @@ Key endpoints:
 ---
 
 *Assessment performed only against the authorized repository and isolated test environment.*  
-*RAKSHA — Find it. Fix it. Prove it.*
+*ZORQEN — Find it. Fix it. Prove it.*

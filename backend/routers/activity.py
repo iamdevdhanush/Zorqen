@@ -1,4 +1,4 @@
-"""RAKSHA — Activity feed router (console contract)"""
+"""ZORQEN — Activity feed router (console contract)"""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends

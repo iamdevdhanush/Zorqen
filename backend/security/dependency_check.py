@@ -1,4 +1,4 @@
-"""RAKSHA — Deterministic Dependency Vulnerability Checker
+"""ZORQEN — Deterministic Dependency Vulnerability Checker
 
 Parses manifest files and compares pinned dependency versions against a small
 curated advisory database. Pure/stateless: identical input always produces

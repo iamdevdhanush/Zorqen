@@ -1,4 +1,4 @@
-# RAKSHA — robots.txt
+# ZORQEN — robots.txt
 # Public marketing/documentation pages are crawlable.
 # Private application routes (console, findings, assessments, auth) are blocked
 # from crawling AND marked noindex in the app (robots.txt is not a security boundary).
@@ -19,4 +19,4 @@ Disallow: /settings
 Disallow: /auth
 Disallow: /auth/
 
-Sitemap: https://app.raksha.ai/sitemap.xml
+Sitemap: https://app.zorqen.ai/sitemap.xml

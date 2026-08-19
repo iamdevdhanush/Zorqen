@@ -31,7 +31,7 @@ export default function AssessmentDetailPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-6 border-b border-[#111111]">
         <div className="space-y-1">
-          <div className="protocol-tag">raksha://assessment/{run.id.replace('#', '')}</div>
+          <div className="protocol-tag">zorqen://assessment/{run.id.replace('#', '')}</div>
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-3xl font-extrabold text-[#111111] tracking-tight">
               ASSESSMENT {run.id}

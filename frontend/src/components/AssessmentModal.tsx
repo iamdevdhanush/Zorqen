@@ -91,7 +91,7 @@ export default function AssessmentModal({ onClose }: AssessmentModalProps) {
         {/* Header */}
         <div className="flex items-start justify-between p-5 sm:p-6 border-b border-[#111111] bg-[#FAFAFA]">
           <div className="space-y-1">
-            <div className="protocol-tag">raksha://pipeline/configure</div>
+            <div className="protocol-tag">zorqen://pipeline/configure</div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight">
               RUN ASSESSMENT
             </h2>
@@ -228,7 +228,7 @@ export default function AssessmentModal({ onClose }: AssessmentModalProps) {
           <div className="pt-2 border-t border-[#111111]/10 flex items-start gap-2.5 text-[11.5px] text-[#555555] font-medium leading-relaxed">
             <ShieldCheck className="w-4 h-4 text-[#111111] shrink-0 mt-0.5" />
             <span>
-              Raksha analyzes a repository snapshot and never modifies your repository automatically.
+              Zorqen analyzes a repository snapshot and never modifies your repository automatically.
             </span>
           </div>
         </div>

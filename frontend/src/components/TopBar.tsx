@@ -127,7 +127,7 @@ export default function TopBar({ onOpenCmd }: TopBarProps) {
       {/* Left: wordmark + breadcrumb context */}
       <div className="flex items-center gap-0.5 min-w-0">
         <span className="mono font-bold text-[12px] tracking-[0.16em] px-2 select-none" style={{ color: 'var(--color-ink)' }}>
-          RAKSHA
+          ZORQEN
         </span>
         <span className="hidden lg:block" style={{ width: 1, height: 16, background: 'var(--color-line-2)' }} />
 
@@ -162,16 +162,16 @@ export default function TopBar({ onOpenCmd }: TopBarProps) {
         </div>
       </div>
 
-      {/* Right: Ask RAKSHA, notifications, cmd hint */}
+      {/* Right: Ask ZORQEN, notifications, cmd hint */}
       <div className="flex items-center gap-1 ml-auto">
         <button
           onClick={() => setCopilotOpen(!copilotOpen)}
-          title="Ask RAKSHA about this assessment"
+          title="Ask ZORQEN about this assessment"
           className="flex items-center gap-1.5 px-2 py-[3px] h-[26px] rounded-[6px] text-[11px] font-medium transition-colors hover:bg-[var(--color-hover)]"
           style={{ color: copilotOpen ? 'var(--color-accent)' : 'var(--color-ink-2)' }}
         >
           <Bot className="w-[13px] h-[13px]" style={{ color: copilotOpen ? 'var(--color-accent)' : 'var(--color-ink-3)' }} strokeWidth={1.75} />
-          Ask RAKSHA
+          Ask ZORQEN
         </button>
 
         {/* Notifications */}

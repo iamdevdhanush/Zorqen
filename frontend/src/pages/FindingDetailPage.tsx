@@ -45,7 +45,7 @@ export default function FindingDetailPage() {
           <span>FINDINGS INVESTIGATION</span>
         </button>
 
-        <div className="protocol-tag">raksha://finding/{finding.cwe_id.toLowerCase()}</div>
+        <div className="protocol-tag">zorqen://finding/{finding.cwe_id.toLowerCase()}</div>
       </div>
 
       {/* Forensic Investigation Header Banner */}

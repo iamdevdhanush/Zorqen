@@ -1,4 +1,4 @@
-"""RAKSHA — Remediation Agent
+"""ZORQEN — Remediation Agent
 Generates minimal, safe code patches for confirmed vulnerabilities using Groq.
 """
 from __future__ import annotations
@@ -10,7 +10,7 @@ import structlog
 
 log = structlog.get_logger()
 
-SYSTEM_PROMPT = """You are RAKSHA's Remediation Agent — a senior application security engineer specializing in minimal, safe code fixes.
+SYSTEM_PROMPT = """You are ZORQEN's Remediation Agent — a senior application security engineer specializing in minimal, safe code fixes.
 
 You receive a vulnerability finding with the vulnerable code and must generate a MINIMAL, targeted fix.
 

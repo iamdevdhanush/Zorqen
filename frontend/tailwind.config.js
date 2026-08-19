@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        raksha: {
+        zorqen: {
           bg: '#0a0c0f',
           surface: '#111318',
           border: '#1e2229',

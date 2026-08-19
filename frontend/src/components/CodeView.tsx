@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import Editor from '@monaco-editor/react';
-import { defineRakshaTheme, MONACO_OPTIONS, useMonacoStatus } from '../lib/monaco';
+import { defineZorqenTheme, MONACO_OPTIONS, useMonacoStatus } from '../lib/monaco';
 
 const LANG_MAP: Record<string, string> = {
   python: 'python',
@@ -112,10 +112,10 @@ const CodeView = memo(function CodeView({
         language={LANG_MAP[language] ?? 'plaintext'}
         value={snippet}
         theme="vs-dark"
-        beforeMount={defineRakshaTheme}
+        beforeMount={defineZorqenTheme}
         options={{ ...MONACO_OPTIONS }}
         onMount={(editor, monaco) => {
-          defineRakshaTheme(monaco);
+          defineZorqenTheme(monaco);
           if (changedLines.length) {
             editor.createDecorationsCollection(
               changedLines.map((ln) => ({

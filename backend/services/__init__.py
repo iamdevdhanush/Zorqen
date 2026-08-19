@@ -1,3 +1,3 @@
-"""RAKSHA — services package
+"""ZORQEN — services package
 Layered business logic (scoring, dedup, serializers, query layers).
 """

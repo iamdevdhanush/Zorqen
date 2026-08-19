@@ -58,7 +58,7 @@ function App() {
             <Route path="/ai-application-security" element={<AiApplicationSecurityPage />} />
             <Route path="/docs" element={<DocsPage />} />
 
-            {/* The console shell — RAKSHA opens directly into the workspace */}
+            {/* The console shell — ZORQEN opens directly into the workspace */}
             <Route path="/" element={<AppShell />}>
               <Route index element={<OverviewPage />} />
               <Route path="/repos" element={<RepositoriesPage />} />

@@ -54,15 +54,15 @@ export const MONACO_OPTIONS = {
   folding: false,
 };
 
-export function defineRakshaTheme(monaco: any) {
+export function defineZorqenTheme(monaco: any) {
   if (monaco.editor.getTheme) {
     try {
-      if (monaco.editor.getTheme() === 'raksha-dark') return;
+      if (monaco.editor.getTheme() === 'zorqen-dark') return;
     } catch {
       /* noop */
     }
   }
-  monaco.editor.defineTheme('raksha-dark', {
+  monaco.editor.defineTheme('zorqen-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
@@ -87,5 +87,5 @@ export function defineRakshaTheme(monaco: any) {
       'editorWidget.background': '#101318',
     },
   });
-  monaco.editor.setTheme('raksha-dark');
+  monaco.editor.setTheme('zorqen-dark');
 }

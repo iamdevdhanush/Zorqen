@@ -1,4 +1,4 @@
-"""RAKSHA — Findings service: search, filter, paginate across the user's repos"""
+"""ZORQEN — Findings service: search, filter, paginate across the user's repos"""
 from __future__ import annotations
 
 from typing import List, Optional, Tuple

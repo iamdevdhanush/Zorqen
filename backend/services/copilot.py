@@ -1,7 +1,7 @@
-"""RAKSHA — ASK RAKSHA investigation copilot.
+"""ZORQEN — ASK ZORQEN investigation copilot.
 
 Architecture:
-  RAKSHA DATA → RETRIEVAL → EVIDENCE CONTEXT → GROK REASONING
+  ZORQEN DATA → RETRIEVAL → EVIDENCE CONTEXT → GROK REASONING
              → GROUNDED ANSWER → SOURCE REFERENCES
 
 The copilot is READ-ONLY. It inspects the user's repositories, assessments,
@@ -35,7 +35,7 @@ log = structlog.get_logger()
 
 
 class CopilotContextError(RuntimeError):
-    """Raised when the Raksha assessment context cannot be loaded (DB failure,
+    """Raised when the Zorqen assessment context cannot be loaded (DB failure,
     model error). The router maps this to the ASSESSMENT_CONTEXT_ERROR log code.
 
     Never carries secrets or stack details to the API response.
@@ -85,7 +85,7 @@ class CopilotRequest(BaseModel):
 # ── Intent detection (targeted retrieval) ────────────────────────────────────
 
 def detect_intent(message: str) -> str:
-    """Classify the question so only the relevant Raksha data is retrieved.
+    """Classify the question so only the relevant Zorqen data is retrieved.
 
     Explicit IDs in the page context are always resolved regardless of intent;
     this decides which EXTRA aggregates are pulled in.
@@ -265,13 +265,13 @@ def _files_aggregation(findings: List[Finding]) -> list:
     return ranked[:MAX_FILES]
 
 
-async def build_rakasha_context(
+async def build_zorqen_context(
     db: AsyncSession,
     user: User,
     ctx: ChatContext,
     message: str,
 ) -> dict:
-    """Retrieve ONLY the Raksha evidence relevant to the current question/page."""
+    """Retrieve ONLY the Zorqen evidence relevant to the current question/page."""
     context: Dict[str, Any] = {"page": ctx.page or "/", "retrieved": []}
     intent = detect_intent(message)
 
@@ -373,26 +373,26 @@ async def build_rakasha_context(
 
 # ── System prompt ────────────────────────────────────────────────────────────
 
-_SYSTEM_PROMPT = """You are ASK RAKSHA, the evidence-grounded security investigation copilot for the RAKSHA Security Validation Platform.
+_SYSTEM_PROMPT = """You are ASK ZORQEN, the evidence-grounded security investigation copilot for the ZORQEN Security Validation Platform.
 
-Your job is to answer questions about the currently loaded RAKSHA workspace using ONLY the supplied RAKSHA context and evidence. You are NOT a generic chatbot.
+Your job is to answer questions about the currently loaded ZORQEN workspace using ONLY the supplied ZORQEN context and evidence. You are NOT a generic chatbot.
 
 PRIORITY of evidence (highest first):
 1. Current page context
 2. Currently selected repository
 3. Currently selected assessment
 4. Currently selected finding
-5. Retrieved RAKSHA evidence
+5. Retrieved ZORQEN evidence
 6. Conversation history
 
-HARD RULES — never invent anything that is not in the supplied RAKSHA CONTEXT:
+HARD RULES — never invent anything that is not in the supplied ZORQEN CONTEXT:
 - vulnerabilities, CVEs, source code, endpoints, attack paths
 - repository statistics, security scores, validation results, remediation evidence
 - Finding IDs, CWE mappings, files, lines, commits, repository names
 
-If the supplied RAKSHA CONTEXT does not contain enough evidence to answer a question, explicitly say:
+If the supplied ZORQEN CONTEXT does not contain enough evidence to answer a question, explicitly say:
 
-"I don't have enough evidence in the current Raksha assessment to confirm that."
+"I don't have enough evidence in the current Zorqen assessment to confirm that."
 
 and briefly state which evidence would be needed.
 
@@ -419,7 +419,7 @@ def build_system_prompt(context: dict) -> str:
     context_json = json.dumps(context, ensure_ascii=False, indent=2, default=str)
     return (
         f"{_SYSTEM_PROMPT}\n\n"
-        "# RAKSHA CONTEXT (the ONLY evidence available)\n"
+        "# ZORQEN CONTEXT (the ONLY evidence available)\n"
         f"{context_json}"
     )
 
@@ -438,13 +438,13 @@ _SECRET_PATTERNS = [
 def sanitize_response(text: str) -> str:
     """Treat the model output as untrusted: clean, truncate, redact secrets."""
     if not isinstance(text, str):
-        return "ASK RAKSHA could not produce a readable answer."
+        return "ASK ZORQEN could not produce a readable answer."
     cleaned = text.replace("\r\n", "\n").replace("\r", "\n")
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
     for pattern in _SECRET_PATTERNS:
         cleaned = pattern.sub("[REDACTED]", cleaned)
     cleaned = cleaned[:MAX_ANSWER_CHARS].strip()
-    return cleaned or "ASK RAKSHA could not produce a readable answer."
+    return cleaned or "ASK ZORQEN could not produce a readable answer."
 
 
 # ── Sources ──────────────────────────────────────────────────────────────────
@@ -496,9 +496,9 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
     if not context.finding_id and request.finding_id:
         context.finding_id = request.finding_id
 
-    rakasha_context = None
+    zorqen_context = None
     try:
-        rakasha_context = await build_rakasha_context(db, user, context, request.message)
+        zorqen_context = await build_zorqen_context(db, user, context, request.message)
     except Exception as e:
         log.warning(
             "[COPILOT] context_load_failed",
@@ -506,7 +506,7 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
             error_type=type(e).__name__,
         )
         raise CopilotContextError("Failed to load assessment context") from e
-    system_prompt = build_system_prompt(rakasha_context)
+    system_prompt = build_system_prompt(zorqen_context)
 
     messages: List[Dict[str, str]] = [{"role": "system", "content": system_prompt}]
     for turn in context.history[-MAX_HISTORY_TURNS:]:
@@ -521,6 +521,6 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
     return {
         "answer": answer,
         "response": answer,  # legacy alias for in-flight frontend/backend deploys
-        "sources": build_sources(rakasha_context),
-        "context_loaded": bool(rakasha_context.get("retrieved")),
+        "sources": build_sources(zorqen_context),
+        "context_loaded": bool(zorqen_context.get("retrieved")),
     }

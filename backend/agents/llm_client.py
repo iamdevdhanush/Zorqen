@@ -1,11 +1,11 @@
-"""RAKSHA — Groq LLM Client
+"""ZORQEN — Groq LLM Client
 Shared LLM interface for all agents.
 
 Used by:
   - architecture_analyst  (architecture analysis)
   - security_reasoner     (AI reasoning about findings)
   - remediation_agent     (code fix generation)
-  - services/grok.py      (ASK RAKSHA copilot fallback)
+  - services/grok.py      (ASK ZORQEN copilot fallback)
 
 The model is configured via GROQ_MODEL env var (default: openai/gpt-oss-120b).
 """

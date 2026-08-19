@@ -48,7 +48,7 @@ export default function RemediationPage() {
           ← FINDING INVESTIGATION
         </button>
 
-        <div className="protocol-tag">raksha://remediation/proposal</div>
+        <div className="protocol-tag">zorqen://remediation/proposal</div>
       </div>
 
       {/* Header Banner */}

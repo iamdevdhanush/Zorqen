@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Download, ArrowRight, AlertCircle, GitPullRequest } from 'lucide-react';
 import GithubIcon from '../components/GithubIcon';
 
-const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/raksha';
-const GITHUB_REPO_URL = import.meta.env.VITE_GITHUB_REPO_URL || 'https://github.com/iamdevdhanush/Raksha-ai';
+const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/zorqen';
+const GITHUB_REPO_URL = import.meta.env.VITE_GITHUB_REPO_URL || 'https://github.com/iamdevdhanush/Zorqen';
 const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
 const GITHUB_CONTRIBUTE_URL = `${GITHUB_REPO_URL}#contribute`;
 
@@ -12,8 +12,8 @@ export default function BannerPage() {
 
   const handleDownloadSvg = () => {
     const link = document.createElement('a');
-    link.href = '/raksha-banner.svg';
-    link.download = 'raksha-banner.svg';
+    link.href = '/zorqen-banner.svg';
+    link.download = 'zorqen-banner.svg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -21,7 +21,7 @@ export default function BannerPage() {
 
   const handleDownloadPng = () => {
     setExporting(true);
-    fetch('/raksha-banner.svg')
+    fetch('/zorqen-banner.svg')
       .then((res) => res.text())
       .then((svgText) => {
         const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
@@ -39,7 +39,7 @@ export default function BannerPage() {
             const pngUrl = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.href = pngUrl;
-            link.download = 'raksha-banner-3200x800.png';
+            link.download = 'zorqen-banner-3200x800.png';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -59,13 +59,13 @@ export default function BannerPage() {
       <section className="space-y-6">
         <div className="space-y-3">
           <div className="mono text-[11px] uppercase tracking-[0.2em] text-[#666666] font-bold">
-            SUPPORT RAKSHA
+            SUPPORT ZORQEN
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] tracking-tight leading-[1.15] max-w-[820px]">
             HELP BUILD BETTER SECURITY TOOLS.
           </h1>
           <p className="text-base sm:text-lg text-[#444444] font-medium leading-relaxed max-w-[760px]">
-            RAKSHA is an open security validation platform designed to help developers understand vulnerabilities, trace attack paths, and turn security findings into actionable remediation.
+            ZORQEN is an open security validation platform designed to help developers understand vulnerabilities, trace attack paths, and turn security findings into actionable remediation.
           </p>
         </div>
 
@@ -76,7 +76,7 @@ export default function BannerPage() {
             rel="noreferrer"
             className="btn btn-accent font-extrabold text-sm sm:text-base px-6 py-3 shadow-hard hover:-translate-y-0.5 transition-transform"
           >
-            <span>☕ SUPPORT RAKSHA</span>
+            <span>☕ SUPPORT ZORQEN</span>
           </a>
 
           <a
@@ -95,10 +95,10 @@ export default function BannerPage() {
       <section className="space-y-6 pt-4 border-t border-[#111111]">
         <div className="space-y-2">
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight">
-            WHY SUPPORT RAKSHA?
+            WHY SUPPORT ZORQEN?
           </h2>
           <p className="text-sm sm:text-base text-[#444444] font-medium leading-relaxed max-w-[820px]">
-            Security tooling shouldn&apos;t only belong to large companies with expensive infrastructure. RAKSHA is being built to make practical security analysis more accessible to developers, students, researchers, and open-source projects.
+            Security tooling shouldn&apos;t only belong to large companies with expensive infrastructure. ZORQEN is being built to make practical security analysis more accessible to developers, students, researchers, and open-source projects.
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export default function BannerPage() {
               SUPPORT THE PROJECT
             </h2>
             <p className="text-sm sm:text-base text-[#444444] font-medium leading-relaxed max-w-[680px]">
-              Your support helps fund the time, infrastructure, experimentation, and development required to keep RAKSHA moving forward.
+              Your support helps fund the time, infrastructure, experimentation, and development required to keep ZORQEN moving forward.
             </p>
           </div>
 
@@ -157,7 +157,7 @@ export default function BannerPage() {
               rel="noreferrer"
               className="btn btn-accent font-extrabold text-base sm:text-lg px-8 py-4 inline-flex items-center gap-3 shadow-hard hover:-translate-y-0.5 transition-transform"
             >
-              <span>SUPPORT RAKSHA</span>
+              <span>SUPPORT ZORQEN</span>
               <ArrowRight className="w-5 h-5 stroke-[2.5]" />
             </a>
           </div>
@@ -218,22 +218,22 @@ export default function BannerPage() {
         </div>
       </section>
 
-      {/* ── SECTION 5 — RAKSHA BRAND ASSETS ───────────────────────────────── */}
+      {/* ── SECTION 5 — ZORQEN BRAND ASSETS ───────────────────────────────── */}
       <section className="space-y-5 pt-4 border-t border-[#111111]">
         <div className="space-y-1.5">
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight">
-            RAKSHA BRAND ASSETS
+            ZORQEN BRAND ASSETS
           </h2>
           <p className="text-xs sm:text-sm text-[#555555] font-medium max-w-[700px]">
-            Want to feature RAKSHA on your project page, profile, or community post? Use the official RAKSHA artwork below.
+            Want to feature ZORQEN on your project page, profile, or community post? Use the official ZORQEN artwork below.
           </p>
         </div>
 
         <div className="space-y-4">
           <div className="w-full overflow-hidden border-2 border-[#111111] rounded-xl shadow-hard bg-[#F7F7F2]">
             <img
-              src="/raksha-banner.svg"
-              alt="Official RAKSHA Artwork Banner"
+              src="/zorqen-banner.svg"
+              alt="Official ZORQEN Artwork Banner"
               className="w-full h-auto block object-contain"
             />
           </div>

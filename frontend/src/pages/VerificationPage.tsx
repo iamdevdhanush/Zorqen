@@ -30,7 +30,7 @@ export default function VerificationPage() {
           ← BACK
         </button>
 
-        <div className="protocol-tag">raksha://verification</div>
+        <div className="protocol-tag">zorqen://verification</div>
       </div>
 
       {/* Header Banner */}

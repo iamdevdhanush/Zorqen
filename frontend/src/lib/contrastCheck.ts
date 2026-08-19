@@ -1,5 +1,5 @@
 /**
- * Development-only Contrast Safeguard for Raksha AI
+ * Development-only Contrast Safeguard for Zorqen AI
  * 
  * Inspects computed color styles for text elements in development mode
  * to flag any suspicious low-contrast text vs background combinations.
@@ -34,7 +34,7 @@ export function auditContrast(container: HTMLElement = document.body) {
       const opacity = parseFloat(style.opacity);
 
       if (opacity < 0.7 && opacity > 0) {
-        console.warn(`[Raksha Contrast Safeguard] Element has low opacity (${opacity}):`, el);
+        console.warn(`[Zorqen Contrast Safeguard] Element has low opacity (${opacity}):`, el);
         issuesCount++;
       }
 
@@ -44,7 +44,7 @@ export function auditContrast(container: HTMLElement = document.body) {
         const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
 
         if (ratio < 4.5) {
-          console.warn(`[Raksha Contrast Safeguard] Low contrast ratio (${ratio.toFixed(2)}:1):`, el);
+          console.warn(`[Zorqen Contrast Safeguard] Low contrast ratio (${ratio.toFixed(2)}:1):`, el);
           issuesCount++;
         }
       }
@@ -52,6 +52,6 @@ export function auditContrast(container: HTMLElement = document.body) {
   });
 
   if (issuesCount === 0) {
-    console.log('[Raksha Contrast Safeguard] Audit passed: All text elements meet WCAG AA contrast standards.');
+    console.log('[Zorqen Contrast Safeguard] Audit passed: All text elements meet WCAG AA contrast standards.');
   }
 }

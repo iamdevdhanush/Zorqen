@@ -1,4 +1,4 @@
-"""RAKSHA — Audit log helper (activity feed + compliance trail)"""
+"""ZORQEN — Audit log helper (activity feed + compliance trail)"""
 from __future__ import annotations
 
 from typing import Optional

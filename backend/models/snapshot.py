@@ -1,4 +1,4 @@
-"""RAKSHA — RepositorySnapshot model
+"""ZORQEN — RepositorySnapshot model
 Time-series snapshots of repository security posture, powering the overview score chart.
 """
 from __future__ import annotations

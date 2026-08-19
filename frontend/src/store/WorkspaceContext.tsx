@@ -16,7 +16,7 @@ function fmtTime(d: Date): string {
 
 /** Returns true when localStorage has a JWT that has not expired yet. */
 function hasValidToken(): boolean {
-  const token = localStorage.getItem('raksha_token');
+  const token = localStorage.getItem('zorqen_token');
   if (!token) return false;
   try {
     // JWT payload is the middle base64url segment
@@ -152,13 +152,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
        1. Token must be present and valid before the request fires.
        2. Concurrent calls for the same repoId are debounced (one in-flight at a time).
        3. 401 responses are silently discarded — the interceptor already dispatches
-          raksha:401 which clears the session. We must NOT retry or loop here.
+          zorqen:401 which clears the session. We must NOT retry or loop here.
   */
   const loadAssessments = useCallback(async (repoId: string) => {
     // Guard 1: require a valid JWT before touching auth-gated endpoints.
     if (!hasValidToken()) {
       if (import.meta.env.DEV) {
-        console.warn('[RAKSHA][ASSESSMENTS] skipped — no valid token', { repoId });
+        console.warn('[ZORQEN][ASSESSMENTS] skipped — no valid token', { repoId });
       }
       return;
     }
@@ -166,7 +166,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     // Guard 2: debounce — skip if a request is already in flight.
     if (assessmentsInFlightRef.current) {
       if (import.meta.env.DEV) {
-        console.warn('[RAKSHA][ASSESSMENTS] skipped — request already in flight', { repoId });
+        console.warn('[ZORQEN][ASSESSMENTS] skipped — request already in flight', { repoId });
       }
       return;
     }
@@ -175,7 +175,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     assessmentsInFlightRef.current = true;
 
     if (import.meta.env.DEV) {
-      console.log('[RAKSHA][ASSESSMENTS] request_start', {
+      console.log('[ZORQEN][ASSESSMENTS] request_start', {
         repoId,
         reqId,
         hasToken: true,
@@ -189,7 +189,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       // Guard 3: stale response — a newer call superseded this one.
       if (reqId !== assessmentsReqIdRef.current) {
         if (import.meta.env.DEV) {
-          console.log('[RAKSHA][ASSESSMENTS] stale response discarded', { repoId, reqId });
+          console.log('[ZORQEN][ASSESSMENTS] stale response discarded', { repoId, reqId });
         }
         return;
       }
@@ -210,7 +210,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (runs[0]?.commit) setCommit(runs[0].commit);
 
       if (import.meta.env.DEV) {
-        console.log('[RAKSHA][ASSESSMENTS] response_ok', {
+        console.log('[ZORQEN][ASSESSMENTS] response_ok', {
           repoId,
           reqId,
           runCount: runs.length,
@@ -220,7 +220,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const status = (err as { response?: { status?: number } })?.response?.status;
 
       if (import.meta.env.DEV) {
-        console.warn('[RAKSHA][ASSESSMENTS] response_error', {
+        console.warn('[ZORQEN][ASSESSMENTS] response_error', {
           repoId,
           reqId,
           status,
@@ -228,7 +228,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // 401: the Axios interceptor already dispatches raksha:401 which clears the
+      // 401: the Axios interceptor already dispatches zorqen:401 which clears the
       // session. Do NOT retry, do NOT loop — just bail out silently.
       // Any other error: also do NOT erase existing valid data.
     } finally {
@@ -242,16 +242,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     (repo: RepoMeta) => {
       if (!hasValidToken()) return; // never load a repo without a valid session
 
-      const dbId = repo.rakshaId || repo.id;
+      const dbId = repo.zorqenId || repo.id;
       const prev = currentRepoRef.current;
 
       // Check if this is the same repository already loaded in workspace
       const isSameRepo = prev && (
         prev.id === repo.id ||
         String(prev.id) === String(repo.id) ||
-        (repo.rakshaId && prev.rakshaId === repo.rakshaId) ||
-        (repo.rakshaId && prev.id === repo.rakshaId) ||
-        (prev.rakshaId && prev.rakshaId === repo.id)
+        (repo.zorqenId && prev.zorqenId === repo.zorqenId) ||
+        (repo.zorqenId && prev.id === repo.zorqenId) ||
+        (prev.zorqenId && prev.zorqenId === repo.id)
       );
 
       if (isSameRepo) {
@@ -348,7 +348,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const repo = currentRepoRef.current;
     if (!repo || !hasValidToken()) return;
 
-    const dbId = repo.rakshaId || repo.id;
+    const dbId = repo.zorqenId || repo.id;
 
     // LIFECYCLE GUARD: never POST while an assessment is already active for
     // this repository. A freshly created run is serialized as IDLE (PENDING)
@@ -380,7 +380,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       pushNotification({
         time: fmtTime(new Date()),
-        source: 'raksha',
+        source: 'zorqen',
         text: detail || 'failed to start assessment',
         tone: 'err',
       });
@@ -403,16 +403,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const signInGithub = useCallback((u: AuthUser) => {
     setUser(u);
     setGithubConnected(true);
-    localStorage.setItem('raksha_user', JSON.stringify(u));
+    localStorage.setItem('zorqen_user', JSON.stringify(u));
     setRepos([]);
     void refreshRepos();
   }, [refreshRepos]);
 
   const signOut = useCallback(() => {
     stopPolling();
-    localStorage.removeItem('raksha_token');
-    localStorage.removeItem('raksha_user');
-    localStorage.removeItem('raksha_repo'); // must be cleared to prevent retry on next load
+    localStorage.removeItem('zorqen_token');
+    localStorage.removeItem('zorqen_user');
+    localStorage.removeItem('zorqen_repo'); // must be cleared to prevent retry on next load
     setUser(null);
     setGithubConnected(false);
     setCurrentRepo(null);
@@ -438,7 +438,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setCurrentAssessment(null);
     setAssessments([]);
     setRepos([]);
-    localStorage.removeItem('raksha_repo');
+    localStorage.removeItem('zorqen_repo');
     assessmentsFetchedForRef.current = null;
   }, [stopPolling]);
 
@@ -466,8 +466,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (initialRestoredRef.current) return;
     initialRestoredRef.current = true;
 
-    const storedUser = localStorage.getItem('raksha_user');
-    const storedRepo = localStorage.getItem('raksha_repo');
+    const storedUser = localStorage.getItem('zorqen_user');
+    const storedRepo = localStorage.getItem('zorqen_repo');
     const tokenValid = hasValidToken();
 
     if (storedUser && tokenValid) {
@@ -482,9 +482,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } else if (!tokenValid) {
       // Token expired or absent — clear stale session data so we don't attempt
       // auth-gated requests with a dead token.
-      localStorage.removeItem('raksha_token');
-      localStorage.removeItem('raksha_user');
-      localStorage.removeItem('raksha_repo');
+      localStorage.removeItem('zorqen_token');
+      localStorage.removeItem('zorqen_user');
+      localStorage.removeItem('zorqen_repo');
     }
 
     if (storedRepo && tokenValid) {
@@ -493,7 +493,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setCurrentRepo(r);
         setBranch(r.defaultBranch || 'main');
         setCommit(r.commit || 'main');
-        const dbId = r.rakshaId || r.id;
+        const dbId = r.zorqenId || r.id;
         if (dbId) void loadAssessments(dbId);
       } catch {
         /* ignore malformed session */
@@ -508,7 +508,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   /* Persist the selected repository so a reload restores the workspace */
   useEffect(() => {
-    if (currentRepo) localStorage.setItem('raksha_repo', JSON.stringify(currentRepo));
+    if (currentRepo) localStorage.setItem('zorqen_repo', JSON.stringify(currentRepo));
   }, [currentRepo]);
 
   /* Cleanup poller on unmount */
@@ -520,16 +520,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
      The interceptor no longer does window.location.href = '/' (which caused full reloads).
      Instead it fires this event so the WorkspaceProvider can handle session expiry cleanly.
 
-     IMPORTANT: must clear localStorage.raksha_repo here so that the next cold start
+     IMPORTANT: must clear localStorage.zorqen_repo here so that the next cold start
      does NOT attempt to reload assessments with an invalid/missing token. */
   useEffect(() => {
     const handle = () => {
       stopPolling();
       // Clear persisted repo — otherwise on next load session restore will call
       // loadAssessments again with no token → immediate 401 → loop
-      localStorage.removeItem('raksha_token');
-      localStorage.removeItem('raksha_user');
-      localStorage.removeItem('raksha_repo');
+      localStorage.removeItem('zorqen_token');
+      localStorage.removeItem('zorqen_user');
+      localStorage.removeItem('zorqen_repo');
       setUser(null);
       setGithubConnected(false);
       setCurrentRepo(null);
@@ -541,8 +541,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       assessmentsFetchedForRef.current = null;
       assessmentsInFlightRef.current = false;
     };
-    window.addEventListener('raksha:401', handle);
-    return () => window.removeEventListener('raksha:401', handle);
+    window.addEventListener('zorqen:401', handle);
+    return () => window.removeEventListener('zorqen:401', handle);
   }, [stopPolling]);
 
   const uiValue = useMemo<WorkspaceUIState>(

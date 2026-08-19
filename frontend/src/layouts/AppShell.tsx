@@ -38,8 +38,8 @@ function AppShellInner() {
     <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)]">
       {/* Console is a private authenticated workspace — never index it. */}
       <Seo
-        title="RAKSHA — Security Operations Console"
-        description="RAKSHA security validation console: run assessments, review findings, and remediate vulnerabilities in repositories you control."
+        title="ZORQEN — Security Operations Console"
+        description="ZORQEN security validation console: run assessments, review findings, and remediate vulnerabilities in repositories you control."
         canonicalPath="/"
         noIndex
       />
@@ -77,7 +77,7 @@ function AppShellInner() {
       <footer className="border-t border-[var(--color-line)] bg-white px-4 sm:px-6 py-3 sm:py-4 mt-auto">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11.5px] text-[var(--color-ink-3)]">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-[var(--color-ink)]">RAKSHA</span>
+            <span className="font-semibold text-[var(--color-ink)]">ZORQEN</span>
             <span>— findings &amp; scores reflect assessed commit snapshots only</span>
           </div>
           <div className="mono text-[10.5px]">

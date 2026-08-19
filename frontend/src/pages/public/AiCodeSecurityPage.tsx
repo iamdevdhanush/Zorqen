@@ -11,9 +11,9 @@ import {
 } from 'lucide-react';
 import Seo from '../../components/Seo';
 
-const TITLE = 'AI Code Security — RAKSHA';
+const TITLE = 'AI Code Security — ZORQEN';
 const DESCRIPTION =
-  'RAKSHA provides autonomous security validation for AI-built software: detect, reason, validate, and remediate vulnerabilities in repositories you control.';
+  'ZORQEN provides autonomous security validation for AI-built software: detect, reason, validate, and remediate vulnerabilities in repositories you control.';
 
 const JSONLD = [
   {
@@ -21,17 +21,17 @@ const JSONLD = [
     '@type': 'WebPage',
     name: TITLE,
     description: DESCRIPTION,
-    url: 'https://app.raksha.ai/ai-code-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    url: 'https://app.zorqen.ai/ai-code-security',
+    isPartOf: { '@type': 'WebSite', name: 'ZORQEN', url: 'https://app.zorqen.ai/' },
   },
   {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'RAKSHA',
+    name: 'ZORQEN',
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Web',
     description: 'Security validation for AI-built software: static analysis, secret detection, dependency review, and AI-reasoned vulnerability remediation.',
-    url: 'https://app.raksha.ai/ai-code-security',
+    url: 'https://app.zorqen.ai/ai-code-security',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   },
   {
@@ -40,31 +40,31 @@ const JSONLD = [
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'What kinds of vulnerabilities does RAKSHA detect?',
+        name: 'What kinds of vulnerabilities does ZORQEN detect?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'RAKSHA runs static analysis with Semgrep OWASP Top Ten and secrets rulesets, custom security checks, hardcoded secret detection, and dependency manifest review across the repository snapshot you authorize.',
+          text: 'ZORQEN runs static analysis with Semgrep OWASP Top Ten and secrets rulesets, custom security checks, hardcoded secret detection, and dependency manifest review across the repository snapshot you authorize.',
         },
       },
       {
         '@type': 'Question',
-        name: 'How does RAKSHA use AI?',
+        name: 'How does ZORQEN use AI?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'In the reasoning phase RAKSHA correlates raw findings with entry points and sensitive sinks, assigns confidence scores, traces attack paths, and drafts localized patch diffs for remediation.',
+          text: 'In the reasoning phase ZORQEN correlates raw findings with entry points and sensitive sinks, assigns confidence scores, traces attack paths, and drafts localized patch diffs for remediation.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Does RAKSHA scan production systems?',
+        name: 'Does ZORQEN scan production systems?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'No. RAKSHA scans repository snapshots in isolated sandboxes and never runs against production environments.',
+          text: 'No. ZORQEN scans repository snapshots in isolated sandboxes and never runs against production environments.',
         },
       },
       {
         '@type': 'Question',
-        name: 'How does RAKSHA validate findings?',
+        name: 'How does ZORQEN validate findings?',
         acceptedAnswer: {
           '@type': 'Answer',
           text: 'Each finding carries a confidence score and a validation state, from unvalidated through validated or confirmed, shown directly in the console alongside remediation proposals.',
@@ -93,19 +93,19 @@ const CHECKS = [
 
 const FAQS = [
   [
-    'What kinds of vulnerabilities does RAKSHA detect?',
-    'RAKSHA runs static analysis with Semgrep OWASP Top Ten and secrets rulesets, custom security checks, hardcoded secret detection, and dependency manifest review across the repository snapshot you authorize.',
+    'What kinds of vulnerabilities does ZORQEN detect?',
+    'ZORQEN runs static analysis with Semgrep OWASP Top Ten and secrets rulesets, custom security checks, hardcoded secret detection, and dependency manifest review across the repository snapshot you authorize.',
   ],
   [
-    'How does RAKSHA use AI?',
-    'In the reasoning phase RAKSHA correlates raw findings with entry points and sensitive sinks, assigns confidence scores, traces attack paths, and drafts localized patch diffs for remediation.',
+    'How does ZORQEN use AI?',
+    'In the reasoning phase ZORQEN correlates raw findings with entry points and sensitive sinks, assigns confidence scores, traces attack paths, and drafts localized patch diffs for remediation.',
   ],
   [
-    'Does RAKSHA scan production systems?',
-    'No. RAKSHA scans repository snapshots in isolated sandboxes and never runs against production environments.',
+    'Does ZORQEN scan production systems?',
+    'No. ZORQEN scans repository snapshots in isolated sandboxes and never runs against production environments.',
   ],
   [
-    'How does RAKSHA validate findings?',
+    'How does ZORQEN validate findings?',
     'Each finding carries a confidence score and a validation state, from unvalidated through validated or confirmed, shown directly in the console alongside remediation proposals.',
   ],
   [
@@ -127,13 +127,13 @@ export default function AiCodeSecurityPage() {
       <div className="max-w-[1240px] mx-auto space-y-10 sm:space-y-14">
         {/* Hero */}
         <section className="space-y-5 sm:space-y-6">
-          <div className="protocol-tag">raksha://platform/ai-code-security</div>
+          <div className="protocol-tag">zorqen://platform/ai-code-security</div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none">
             SECURITY VALIDATION <br />
             <span className="text-[#666666] font-normal">FOR AI-BUILT SOFTWARE.</span>
           </h1>
           <p className="text-base sm:text-lg text-[#333333] max-w-[620px] leading-relaxed font-medium">
-            AI-assisted development ships code faster — and ships more vulnerabilities. RAKSHA
+            AI-assisted development ships code faster — and ships more vulnerabilities. ZORQEN
             gives you an autonomous pipeline that detects, reasons through, validates, and
             helps you remediate security issues in repositories you control.
           </p>
@@ -168,11 +168,11 @@ export default function AiCodeSecurityPage() {
           </div>
         </section>
 
-        {/* What RAKSHA checks */}
+        {/* What ZORQEN checks */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#111111]" />
-            <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">WHAT RAKSHA CHECKS</h2>
+            <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">WHAT ZORQEN CHECKS</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {CHECKS.map(([IconComponent, title, desc], idx) => {
@@ -198,8 +198,8 @@ export default function AiCodeSecurityPage() {
           <h2 className="text-lg sm:text-2xl font-extrabold text-[#111111] tracking-tight">GET STARTED IN THREE STEPS</h2>
           <ol className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              ['01', 'Connect GitHub', 'Authorize RAKSHA from the console to access the repositories you want to validate.'],
-              ['02', 'Run an assessment', 'RAKSHA snapshots the repository and streams results through the detection pipeline.'],
+              ['01', 'Connect GitHub', 'Authorize ZORQEN from the console to access the repositories you want to validate.'],
+              ['02', 'Run an assessment', 'ZORQEN snapshots the repository and streams results through the detection pipeline.'],
               ['03', 'Investigate and fix', 'Review findings, confidence, and attack paths — then apply the generated patch diffs.'],
             ].map(([num, title, desc]) => (
               <li key={num} className="p-4 rounded-lg border border-[#111111] bg-[#FAFAFA] shadow-hard-sm space-y-1.5">
@@ -221,7 +221,7 @@ export default function AiCodeSecurityPage() {
             ['/ai-vulnerability-scanner', 'AI Vulnerability Scanner', 'What a scanner for AI-built applications covers: from static rules to dependency audit.'],
             ['/vibe-coded-app-security', 'Vibe-Coded App Security', 'How to keep rapid, vibe-coded development fast without shipping obvious vulnerabilities.'],
             ['/ai-application-security', 'AI Application Security', 'Applying application security testing to software built with AI assistance.'],
-            ['/docs', 'Docs', 'How RAKSHA works: the pipeline, the console, and the full finding lifecycle.'],
+            ['/docs', 'Docs', 'How ZORQEN works: the pipeline, the console, and the full finding lifecycle.'],
           ].map(([to, title, desc]) => (
             <Link key={to} to={to} className="group p-5 rounded-xl bg-white border border-[#111111] shadow-hard space-y-2 hover:-translate-y-0.5 transition-transform">
               <div className="flex items-center justify-between">

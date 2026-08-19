@@ -11,7 +11,7 @@ interface Message {
   sources?: CopilotSource[];
 }
 
-const ERROR_MESSAGE = 'ASK RAKSHA is temporarily unavailable. Please try again.';
+const ERROR_MESSAGE = 'ASK ZORQEN is temporarily unavailable. Please try again.';
 
 const MAX_HISTORY = 8;
 
@@ -68,7 +68,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `ASK RAKSHA • INVESTIGATION CONSOLE\nContext: ${currentRepo?.name ?? 'no repository'}${currentAssessment ? ` • ${currentAssessment.id}` : ''}${
+      content: `ASK ZORQEN • INVESTIGATION CONSOLE\nContext: ${currentRepo?.name ?? 'no repository'}${currentAssessment ? ` • ${currentAssessment.id}` : ''}${
         finding ? ` • ${finding.id} ${finding.title}` : ''
       }\n\nGrounded in assessed repository evidence, static analysis rules, and sandbox validation transcripts.`,
       sources: [],
@@ -147,7 +147,7 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
             <Terminal className="w-4 h-4 text-[#C5F82A]" />
           </div>
           <div>
-            <div className="font-extrabold text-[13px] text-[#111111] leading-none">ASK RAKSHA</div>
+            <div className="font-extrabold text-[13px] text-[#111111] leading-none">ASK ZORQEN</div>
             <div className="mono text-[9px] text-[#4A4A4A] font-extrabold mt-0.5">INVESTIGATION CONSOLE</div>
           </div>
         </div>

@@ -43,7 +43,7 @@ export default function Sidebar() {
       {/* Wordmark */}
       <div className="px-4 pt-[12px] pb-[10px] border-b border-[var(--color-line)]">
         <div className="mono font-bold text-[13px] tracking-[0.18em]" style={{ color: 'var(--color-ink)' }}>
-          RAKSHA
+          ZORQEN
         </div>
         <div className="mono text-[8.5px] tracking-[0.1em] mt-[3px]" style={{ color: 'var(--color-ink-3)' }}>
           SECURITY VALIDATION

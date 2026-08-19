@@ -1,4 +1,4 @@
-"""RAKSHA — Overview service: cross-repo dashboard contract"""
+"""ZORQEN — Overview service: cross-repo dashboard contract"""
 from __future__ import annotations
 
 from sqlalchemy import select

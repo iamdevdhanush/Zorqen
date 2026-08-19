@@ -23,10 +23,10 @@ RUN mkdir -p /data
 # config) stays under the world-writable /tmp directory; /data is owned by
 # the app user but is only written in SQLite dev mode (production uses
 # PostgreSQL via DATABASE_URL).
-RUN useradd --create-home --uid 1000 raksha \
-    && chown -R raksha:raksha /data
+RUN useradd --create-home --uid 1000 zorqen \
+    && chown -R zorqen:zorqen /data
 
-USER raksha
+USER zorqen
 ENV HOME=/tmp
 
 EXPOSE 8000

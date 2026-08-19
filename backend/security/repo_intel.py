@@ -1,4 +1,4 @@
-"""RAKSHA — Repository Intelligence Layer
+"""ZORQEN — Repository Intelligence Layer
 
 Deterministic extraction of security-relevant context from a repository's
 file tree and file contents. This is the first real stage of the pipeline:

@@ -37,7 +37,7 @@ export default function OverviewPage() {
     return (
       <div className="max-w-[840px] mx-auto py-8 sm:py-16 px-2 sm:px-4 fade-in space-y-6 sm:space-y-8">
         <div className="space-y-3 sm:space-y-4">
-          <div className="protocol-tag">raksha://platform/overview</div>
+          <div className="protocol-tag">zorqen://platform/overview</div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none">
             SECURITY VALIDATION <br />
             <span className="text-[#666666] font-normal">FOR AI-BUILT SOFTWARE.</span>
@@ -98,7 +98,7 @@ export default function OverviewPage() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <div className="protocol-tag">raksha://repository/security-posture</div>
+            <div className="protocol-tag">zorqen://repository/security-posture</div>
             <h1 className="text-3xl sm:text-5xl font-extrabold text-[#111111] tracking-tighter leading-none mt-2">
               SECURITY VALIDATION <br />
               <span className="text-[#4A4A4A] font-bold">FOR AI-BUILT SOFTWARE.</span>
@@ -291,11 +291,11 @@ export default function OverviewPage() {
         )}
       </div>
 
-      {/* ── 4. WHAT RAKSHA CHECKS (6-Card Feature Matrix) ───────── */}
+      {/* ── 4. WHAT ZORQEN CHECKS (6-Card Feature Matrix) ───────── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-[#111111]" />
-          <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">WHAT RAKSHA CHECKS</h2>
+          <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">WHAT ZORQEN CHECKS</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">

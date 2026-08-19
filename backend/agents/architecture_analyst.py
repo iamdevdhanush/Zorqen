@@ -1,4 +1,4 @@
-"""RAKSHA — Architecture Analyst Agent
+"""ZORQEN — Architecture Analyst Agent
 Identifies application components from repo structure and source code.
 """
 from __future__ import annotations
