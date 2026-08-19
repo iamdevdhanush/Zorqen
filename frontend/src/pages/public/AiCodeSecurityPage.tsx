@@ -21,8 +21,8 @@ const JSONLD = [
     '@type': 'WebPage',
     name: TITLE,
     description: DESCRIPTION,
-    url: 'https://raksha-ai-pink.vercel.app/ai-code-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
+    url: 'https://app.raksha.ai/ai-code-security',
+    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
   },
   {
     '@context': 'https://schema.org',
@@ -31,7 +31,7 @@ const JSONLD = [
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Web',
     description: 'Security validation for AI-built software: static analysis, secret detection, dependency review, and AI-reasoned vulnerability remediation.',
-    url: 'https://raksha-ai-pink.vercel.app/ai-code-security',
+    url: 'https://app.raksha.ai/ai-code-security',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   },
   {

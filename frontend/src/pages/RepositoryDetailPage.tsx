@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Play } from 'lucide-react';
 import { BackLink, EmptyState, PageHeader, Panel, SevBadge } from '../components/ui';
 import RepositoryTree from '../components/RepositoryTree';
-import { useWorkspace, useFindings } from '../store/WorkspaceContext';
+import { useWorkspace, useFindings, useAssessmentActive } from '../store/WorkspaceContext';
 import { getRepoDetail } from '../services/api';
 import api from '../services/api';
 import type { RepoDetail, RepoMeta } from '../lib/types';
@@ -27,6 +27,7 @@ export default function RepositoryDetailPage() {
   const { repoId } = useParams<{ repoId: string }>();
   const { currentRepo, currentAssessment, startAssessment, loadRepo, authReady } = useWorkspace();
   const findings = useFindings();
+  const running = useAssessmentActive();
   const navigate = useNavigate();
 
   const [detail, setDetail] = useState<RepoDetail | null>(null);
@@ -126,7 +127,6 @@ export default function RepositoryDetailPage() {
   }
 
   const repo = currentRepo;
-  const running = currentAssessment?.status === 'RUNNING';
   const lastScore = currentAssessment?.score;
   const riskBand = lastScore == null ? null : lastScore >= 80 ? 'LOW RISK' : lastScore >= 60 ? 'MODERATE RISK' : 'HIGH RISK';
 

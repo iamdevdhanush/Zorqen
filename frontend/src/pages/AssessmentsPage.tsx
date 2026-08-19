@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Circle, Play, ShieldAlert, Zap, MinusCircle } from 'lucide-react';
 import { PageHeader, Panel, RunStatus, SevBadge, ValidationBadge } from '../components/ui';
 import AssessmentModal from '../components/AssessmentModal';
-import { useWorkspace } from '../store/WorkspaceContext';
+import { useWorkspace, useAssessmentActive } from '../store/WorkspaceContext';
 
 export default function AssessmentsPage() {
   const { assessments, currentRepo, currentAssessment, startAssessment } = useWorkspace();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
-  const isRunning = currentAssessment?.status === 'RUNNING';
+  const isRunning = useAssessmentActive();
 
   const run = currentAssessment ?? assessments[0];
 

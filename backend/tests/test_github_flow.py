@@ -808,13 +808,17 @@ class TestRunNumberUniqueness:
         no_active = MagicMock()
         no_active.scalar_one_or_none.return_value = None
 
-        # call 1: active-assessment check (None) · call 2: next run 25 ·
-        # call 3: after IntegrityError rollback → next run 26
+        # call 1: active-assessment check (None) · call 2: current max run 24 →
+        # next 25 · call 3: after run_number IntegrityError rollback → next 26
+        # (a run_number conflict re-allocates without re-checking active rows)
         db.execute = AsyncMock(
             side_effect=[no_active, make_execute_result(24), make_execute_result(25)]
         )
 
-        commits = iter([IntegrityError("stmt", {}, Exception("dup")), None])
+        # UNIQUE constraint failed: assessments.run_number (SQLite reports the
+        # column name; PostgreSQL reports the constraint name — both contain
+        # "run_number", which is what the conflict classifier keys on)
+        commits = iter([IntegrityError("stmt", {}, Exception("UNIQUE constraint failed: assessments.run_number")), None])
         async def fake_commit():
             try:
                 err = next(commits)
@@ -830,7 +834,8 @@ class TestRunNumberUniqueness:
         repo.id = "repo-1"
         repo.default_branch = "main"
 
-        assessment = await create_assessment(db, repo, branch="main")
+        assessment, created = await create_assessment(db, repo, branch="main")
+        assert created is True
         assert assessment.run_number == 26
         assert db.rollback.await_count == 1
 

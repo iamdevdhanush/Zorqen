@@ -17,7 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatedNumber, SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
-import { useWorkspace, useFindings } from '../store/WorkspaceContext';
+import { useWorkspace, useFindings, useAssessmentActive } from '../store/WorkspaceContext';
 
 export default function OverviewPage() {
   const {
@@ -29,6 +29,7 @@ export default function OverviewPage() {
     connectGithub,
   } = useWorkspace();
   const findings = useFindings();
+  const running = useAssessmentActive();
   const navigate = useNavigate();
 
   /* ── Empty State ─────────────────────────────────────────── */
@@ -107,11 +108,11 @@ export default function OverviewPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={startAssessment}
-              disabled={currentAssessment?.status === 'RUNNING'}
+              disabled={running}
               className="btn btn-accent px-5 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[13.5px]"
             >
               <Play className="w-4 h-4 fill-current" />
-              {currentAssessment?.status === 'RUNNING' ? 'Pipeline Running…' : 'Run Assessment'}
+              {running ? 'Pipeline Running…' : 'Run Assessment'}
             </button>
           </div>
         </div>

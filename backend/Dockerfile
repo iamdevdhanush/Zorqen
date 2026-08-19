@@ -18,6 +18,17 @@ COPY . .
 # Create data directory
 RUN mkdir -p /data
 
+# Cloudflare Containers run images WITHOUT root privileges, so the app must
+# run as an unprivileged user. Scratch space (Semgrep scan temp dirs, git
+# config) stays under the world-writable /tmp directory; /data is owned by
+# the app user but is only written in SQLite dev mode (production uses
+# PostgreSQL via DATABASE_URL).
+RUN useradd --create-home --uid 1000 raksha \
+    && chown -R raksha:raksha /data
+
+USER raksha
+ENV HOME=/tmp
+
 EXPOSE 8000
 
 # Koyeb / Render / other PaaS inject PORT at runtime; fall back to 8000 for local Docker use.

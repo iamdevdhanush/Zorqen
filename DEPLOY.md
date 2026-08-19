@@ -2,8 +2,16 @@
 
 Production deployment for the RAKSHA security validation platform:
 
-- **Frontend** → Vercel (React / Vite SPA)
-- **Backend** → Koyeb (FastAPI / Uvicorn, Docker image)
+> **Current production target: Cloudflare** — see [CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md).
+> - **Frontend** → Workers Static Assets (React / Vite SPA)
+> - **Backend** → Cloudflare Containers (existing `backend/Dockerfile`, FastAPI / Uvicorn)
+> - **Database** → PostgreSQL via Supabase (`DATABASE_URL`, unchanged)
+>
+> The sections below document the **legacy** Render + Vercel / Koyeb deployment and are
+> kept for history and rollback. Do not use them for new production deploys.
+
+- **Frontend** → Vercel (React / Vite SPA) — *legacy*
+- **Backend** → Koyeb (FastAPI / Uvicorn, Docker image) — *legacy*
 - **Database** → PostgreSQL (recommended, via `DATABASE_URL`) or SQLite (local/dev only)
 
 ---
@@ -99,7 +107,7 @@ Do not commit real values. `frontend/.env.example` documents the name only.
 | `GITHUB_CLIENT_SECRET` | No | — | GitHub OAuth client secret |
 | `GITHUB_REDIRECT_URI` | No | `https://your-koyeb-service.koyeb.app/api/auth/github/callback` | OAuth callback URL |
 | `GROQ_API_KEY` | No | — | Groq LLM key (AI agents + copilot) |
-| `GROQ_MODEL` | No | `openai/gpt-oss-120b` | LLM model |
+| `GROQ_MODEL` | No | `openai/gpt-oss-20b` | LLM model (free Groq-hosted model; `llama-3.3-70b-versatile` is deprecated and no longer served by Groq) |
 | `DEMO_MODE_ENABLED` | No | `true` | Seed demo workspace at startup |
 | `JWT_EXPIRE_HOURS` | No | `24` | Token lifetime |
 | `LOG_LEVEL` | No | `INFO` | Logging verbosity |
@@ -110,7 +118,7 @@ Never put real secrets in `.env.example` or this document.
 
 ---
 
-## 5. Backend Deployment — Koyeb
+## 5. Backend Deployment — Koyeb *(legacy — superseded by Cloudflare, see CLOUDFLARE_DEPLOYMENT.md)*
 
 The backend ships a production Dockerfile (`backend/Dockerfile`) that installs
 all dependencies and runs Uvicorn on the environment-provided `PORT`
@@ -139,7 +147,7 @@ Notes:
 
 ---
 
-## 6. Frontend Deployment — Vercel
+## 6. Frontend Deployment — Vercel *(legacy — superseded by Cloudflare, see CLOUDFLARE_DEPLOYMENT.md)*
 
 1. Push the repository to GitHub.
 2. Open [vercel.com](https://vercel.com) → **Add New Project** → import the repo.
@@ -406,7 +414,7 @@ rebuild the image.
 
 ---
 
-## 14. Production URLs
+## 14. Production URLs *(legacy — current production is Cloudflare, see CLOUDFLARE_DEPLOYMENT.md)*
 
 Frontend:
 https://YOUR-VERCEL-DOMAIN

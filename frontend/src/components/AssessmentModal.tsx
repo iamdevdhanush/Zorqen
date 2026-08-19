@@ -11,7 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import GithubIcon from './GithubIcon';
-import { useWorkspace } from '../store/WorkspaceContext';
+import { useWorkspace, useAssessmentActive } from '../store/WorkspaceContext';
 
 const MODULES = [
   { id: 'static',       label: 'STATIC ANALYSIS',       detail: 'Semgrep + custom rules' },
@@ -27,7 +27,8 @@ interface AssessmentModalProps {
 }
 
 export default function AssessmentModal({ onClose }: AssessmentModalProps) {
-  const { currentRepo, branch, commit, startAssessment, currentAssessment } = useWorkspace();
+  const { currentRepo, branch, commit, startAssessment } = useWorkspace();
+  const isRunning = useAssessmentActive();
   const navigate = useNavigate();
 
   const [modules, setModules] = useState<Record<string, boolean>>(
@@ -46,7 +47,6 @@ export default function AssessmentModal({ onClose }: AssessmentModalProps) {
 
   if (!currentRepo) return null;
 
-  const isRunning = currentAssessment?.status === 'RUNNING';
   const isSubmitting = submitting || isRunning;
 
   const handleRun = async () => {

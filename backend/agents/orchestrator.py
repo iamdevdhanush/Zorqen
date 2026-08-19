@@ -7,6 +7,7 @@ import asyncio
 import os
 import shutil
 import tempfile
+import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 
@@ -21,10 +22,9 @@ from models.finding import Finding, FindingStatus
 from models.repository import Repository
 from models.user import User
 from agents.architecture_analyst import analyze_architecture
-from agents.llm_client import ModelNotFoundError
-from agents.security_reasoner import reason_about_finding
+from agents.security_reasoner import reason_batch
 from security.repo_intel import analyze_repository
-from security.semgrep_runner import run_semgrep
+from security.semgrep_runner import SemgrepError, run_semgrep
 from security.secret_detector import scan_files as scan_secrets
 from security.custom_checks import scan_files as custom_scan
 from github.client import GitHubClient
@@ -52,7 +52,13 @@ async def _update_assessment(
     status: str = AssessmentStatus.RUNNING,
     **kwargs,
 ):
-    """Update assessment status and timeline in DB."""
+    """Update assessment status and timeline in DB.
+
+    Each stage is written exactly once: if the trailing timeline entry already
+    records the same step, it is replaced rather than appended. Progress is
+    therefore monotonic and never duplicated, regardless of how many workers
+    touch the row.
+    """
     async with AsyncSessionLocal() as db:
         assessment = await db.get(Assessment, assessment_id)
         if not assessment:
@@ -66,34 +72,55 @@ async def _update_assessment(
             if step == "failed" or status == AssessmentStatus.FAILED
             else ("completed" if progress > 0 else "running")
         )
+        now = utcnow().isoformat()
 
-        # Update timeline
-        timeline = assessment.timeline or []
-        timeline.append({
-            "step": step,
-            "status": log_status,
-            "timestamp": utcnow().isoformat(),
-        })
+        # Timeline — dedupe the trailing entry for the same step.
+        # A fresh list copy is assigned so the JSON column always registers
+        # the mutation with SQLAlchemy's change tracking.
+        timeline = list(assessment.timeline or [])
+        if timeline and timeline[-1].get("step") == step:
+            timeline[-1] = {"step": step, "status": log_status, "timestamp": now}
+        else:
+            timeline.append({"step": step, "status": log_status, "timestamp": now})
         assessment.timeline = timeline
 
-        # Update pipeline log with the real step record
-        pipeline_log = assessment.pipeline_logs or []
-        pipeline_log.append({
-            "step": step,
-            "status": log_status,
-            "progress": progress,
-            "timestamp": utcnow().isoformat(),
-            "source": "orchestrator",
-            "text": f"{step.replace('_', ' ')} — {progress}%",
-            "tone": "err" if log_status == "failed" else "info",
-        })
+        # Pipeline log — dedupe the trailing entry for the same step.
+        pipeline_log = list(assessment.pipeline_logs or [])
+        if pipeline_log and pipeline_log[-1].get("step") == step:
+            pipeline_log[-1] = {
+                "step": step,
+                "status": log_status,
+                "progress": progress,
+                "timestamp": now,
+                "source": "orchestrator",
+                "text": f"{step.replace('_', ' ')} — {progress}%",
+                "tone": "err" if log_status == "failed" else "info",
+            }
+        else:
+            pipeline_log.append({
+                "step": step,
+                "status": log_status,
+                "progress": progress,
+                "timestamp": now,
+                "source": "orchestrator",
+                "text": f"{step.replace('_', ' ')} — {progress}%",
+                "tone": "err" if log_status == "failed" else "info",
+            })
         assessment.pipeline_logs = pipeline_log
 
         for k, v in kwargs.items():
             setattr(assessment, k, v)
 
         await db.commit()
-        log.info("Assessment updated", step=step, progress=progress)
+        log.info(
+            "Assessment updated",
+            assessment_id=assessment.id,
+            run_number=assessment.run_number,
+            repository_id=assessment.repository_id,
+            step=step,
+            progress=progress,
+            status=status,
+        )
 
 
 def _calculate_security_score(findings: List[Finding]) -> float:
@@ -105,7 +132,13 @@ def _calculate_security_score(findings: List[Finding]) -> float:
     )
 
 
-async def run_assessment(assessment_id: str, access_token: Optional[str] = None):
+async def run_assessment(
+    assessment_id: str,
+    access_token: Optional[str] = None,
+    *,
+    request_id: Optional[str] = None,
+    worker_id: Optional[str] = None,
+):
     """
     Main assessment pipeline. Runs in background.
     Steps:
@@ -113,23 +146,66 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
     2. Clone/fetch repository files
     3. Architecture analysis
     4. Security scanning (Semgrep + custom + secret detection)
-    5. AI reasoning
+    5. AI reasoning (batched, quota-aware)
     6. Save findings
     7. Calculate score
+
+    Idempotency: this worker may ONLY run when the assessment row is still
+    PENDING. If another worker already transitioned it to RUNNING, this
+    invocation exits immediately — it is a duplicate.
     """
-    log.info("Starting assessment", assessment_id=assessment_id)
+    worker_id = worker_id or str(uuid.uuid4())
 
+    async with AsyncSessionLocal() as db:
+        assessment = await db.get(Assessment, assessment_id)
+        if not assessment:
+            log.error(
+                "Assessment not found",
+                assessment_id=assessment_id,
+                request_id=request_id,
+                worker_id=worker_id,
+            )
+            return
+        if assessment.status != AssessmentStatus.PENDING:
+            # Duplicate worker — the router may only launch a worker for a
+            # freshly created PENDING row, but if two workers were somehow
+            # scheduled, only the first one gets to run.
+            log.info(
+                "Duplicate worker suppressed — assessment already active",
+                assessment_id=assessment.id,
+                run_number=assessment.run_number,
+                repository_id=assessment.repository_id,
+                status=assessment.status,
+                request_id=request_id,
+                worker_id=worker_id,
+                existing=True,
+                worker_started=False,
+            )
+            return
+        repository = await db.get(Repository, assessment.repository_id)
+        if not repository:
+            log.error(
+                "Repository not found for assessment",
+                assessment_id=assessment_id,
+                repository_id=assessment.repository_id,
+                request_id=request_id,
+                worker_id=worker_id,
+            )
+            return
+        user = await db.get(User, repository.user_id)
+
+    # Bind execution identity to every log line emitted by this worker.
+    structlog.contextvars.bind_contextvars(
+        assessment_id=assessment_id,
+        run_number=assessment.run_number,
+        repository_id=repository.id,
+        request_id=request_id,
+        worker_id=worker_id,
+    )
+    log.info("Starting assessment", existing=False, worker_started=True)
+
+    tmp_dir: Optional[str] = None
     try:
-        async with AsyncSessionLocal() as db:
-            assessment = await db.get(Assessment, assessment_id)
-            if not assessment:
-                log.error("Assessment not found", id=assessment_id)
-                return
-            repository = await db.get(Repository, assessment.repository_id)
-            if not repository:
-                return
-            user = await db.get(User, repository.user_id)
-
         # Determine GitHub token
         gh_token = access_token or (user.get_github_token() if user else None)
 
@@ -143,7 +219,6 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
 
         file_tree: List[str] = []
         file_contents: Dict[str, str] = {}
-        tmp_dir: Optional[str] = None
 
         if gh_token and repository.clone_url:
             # Fetch files via GitHub API against the pinned commit SHA.
@@ -249,8 +324,19 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
                         "source_tool": "semgrep",
                         "rule_id": sf.rule_id,
                     })
+            except SemgrepError as e:
+                # Never silently convert a real Semgrep failure into a clean run.
+                await _update_assessment(
+                    assessment_id,
+                    "failed",
+                    0,
+                    status=AssessmentStatus.FAILED,
+                    error_message=f"Semgrep scan failed: {e}",
+                )
+                log.error("Semgrep scan failed — assessment failed", error=str(e))
+                return
             except Exception as e:
-                log.warning("Semgrep scan failed", error=str(e))
+                log.warning("Semgrep scan raised unexpected error", error=str(e))
             finally:
                 # Clean up the scan directory as soon as the scan finishes —
                 # never leave temp materialized files behind, even on failure.
@@ -261,65 +347,38 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
         await _update_assessment(assessment_id, "secrets", 50)
         await _update_assessment(assessment_id, "dependencies", 55)
 
-        # ── Step 4: AI Reasoning ─────────────────────────────────────────────
+        # ── Step 4: AI Reasoning (batched, quota-aware) ─────────────────────
         await _update_assessment(assessment_id, "ai_reasoning", 65)
 
-        # Detect model availability once; if unavailable, skip AI enrichment
-        # for all findings rather than failing the entire assessment.
-        # When AI is unavailable:
-        #   - confidence: preserved from the scanner (semgrep/custom/secret detector)
-        #   - confidence_pct: 0 = "not AI-evaluated" (display-only field)
-        #   - ai_reasoning: explicit unavailability message
-        #   - scoring: uses the scanner's confidence string, unaffected by AI absence
-        ai_model_available = True
-        ai_unavailable_reason = ""
-        enriched_findings = []
-        for raw in all_raw_findings[:50]:  # Cap at 50 to avoid token limits
-            try:
-                reasoning = await reason_about_finding(
-                    finding_type=raw.get("vulnerability_type", "Unknown"),
-                    severity=raw.get("severity", "medium"),
-                    file_path=raw.get("file_path", ""),
-                    line_number=raw.get("line_number", 0),
-                    code_snippet=raw.get("code_snippet", ""),
-                    tool_message=raw.get("message", ""),
-                    architecture_context=arch_map,
-                )
-                enriched_findings.append({**raw, **reasoning})
-            except ModelNotFoundError as e:
-                if ai_model_available:
-                    ai_unavailable_reason = str(e)
-                    log.warning(
-                        "Groq model unavailable — AI reasoning skipped",
-                        model=settings.groq_model,
-                    )
-                    ai_model_available = False
-                enriched_findings.append({
-                    **raw,
-                    # Preserve the scanner's confidence — do NOT override with "possible"
-                    "confidence_pct": 0,
-                    "is_exploitable": None,
-                    "ai_reasoning": f"AI reasoning unavailable — model '{settings.groq_model}' not found. Scanner finding preserved; manual review required.",
-                    "false_positive_reason": None,
-                })
-            except Exception as e:
-                log.warning("Reasoning failed for finding", error=str(e))
-                enriched_findings.append({
-                    **raw,
-                    # Preserve the scanner's confidence — do NOT override
-                    "confidence_pct": 0,
-                    "is_exploitable": None,
-                    "ai_reasoning": "AI reasoning unavailable. Scanner finding preserved; manual review required.",
-                    "false_positive_reason": None,
-                })
+        # Only the raw findings (bounded at 50) reach the LLM — never the whole
+        # repository. Findings are reasoned in small batches to respect Groq
+        # rate/token limits. When AI is unavailable the scanner's own confidence
+        # is preserved and confidence_pct stays 0 ("not AI-evaluated") — no
+        # fabricated reasoning is ever stored.
+        enriched_findings, ai_unavailable_reason = await reason_batch(
+            all_raw_findings[:50], arch_map
+        )
+        if ai_unavailable_reason:
+            await _update_assessment(
+                assessment_id,
+                "ai_reasoning",
+                70,
+                ai_unavailable_reason=ai_unavailable_reason[:500],
+            )
+        else:
+            await _update_assessment(assessment_id, "ai_reasoning", 75)
 
         # ── Step 5: Save Findings ────────────────────────────────────────────
-        await _update_assessment(assessment_id, "security_scan", 80)
+        await _update_assessment(assessment_id, "findings", 80)
 
         score_data = await _save_findings(assessment_id, enriched_findings, arch_map)
         score_data["dependencies"] = len(intel.dependencies)
 
-        # ── Step 6: Complete ─────────────────────────────────────────────────
+        # ── Step 6: Score ────────────────────────────────────────────────────
+        await _update_assessment(assessment_id, "scoring", 90,
+                                 security_score=score_data["score"])
+
+        # ── Step 7: Complete ─────────────────────────────────────────────────
         await _update_assessment(
             assessment_id,
             "completed",
@@ -335,10 +394,10 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
             completed_at=utcnow(),
         )
 
-        log.info("Assessment completed", assessment_id=assessment_id, score=score_data["score"])
+        log.info("Assessment completed", score=score_data["score"], status="completed")
 
     except Exception as e:
-        log.error("Assessment pipeline failed", assessment_id=assessment_id, error=str(e))
+        log.error("Assessment pipeline failed", error=str(e))
         await _update_assessment(
             assessment_id, "failed", 0,
             status=AssessmentStatus.FAILED,
@@ -347,6 +406,9 @@ async def run_assessment(assessment_id: str, access_token: Optional[str] = None)
     finally:
         if tmp_dir and os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir, ignore_errors=True)
+        structlog.contextvars.unbind_contextvars(
+            "assessment_id", "run_number", "repository_id", "request_id", "worker_id"
+        )
 
 
 async def _fetch_repo_files(

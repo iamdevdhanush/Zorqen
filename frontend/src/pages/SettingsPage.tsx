@@ -1,6 +1,7 @@
 import { LogOut, PlugZap, ShieldCheck } from 'lucide-react';
 import { KV, KVCol, Panel } from '../components/ui';
 import { useWorkspace } from '../store/WorkspaceContext';
+import { getApiBase } from '../services/api';
 import GithubIcon from '../components/GithubIcon';
 
 export default function SettingsPage() {
@@ -62,7 +63,7 @@ export default function SettingsPage() {
 
       <Panel title="System Environment">
         <div className="p-4 space-y-3">
-          <KVCol k="API Endpoint" v={<span className="mono text-[11.5px] text-[#0F8A5A]">{import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}</span>} />
+          <KVCol k="API Endpoint" v={<span className="mono text-[11.5px] text-[#0F8A5A]">{getApiBase()}</span>} />
           <KVCol k="Runtime Stack" v={<span className="mono text-[11.5px]">React 19 • Vite • Monaco Code Viewer</span>} />
           <KVCol k="Security Policy" v={<span className="mono text-[11.5px]">Assessment artifacts are processed inside isolated sandboxes; exports generated client-side.</span>} />
         </div>

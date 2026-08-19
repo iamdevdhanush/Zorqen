@@ -12,10 +12,10 @@ const JSONLD = [
     '@type': 'Article',
     headline: 'AI Application Security',
     description: DESCRIPTION,
-    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
-    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
-    url: 'https://raksha-ai-pink.vercel.app/ai-application-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
+    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    url: 'https://app.raksha.ai/ai-application-security',
+    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
   },
 ];
 

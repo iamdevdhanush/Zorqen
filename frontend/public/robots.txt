@@ -19,4 +19,4 @@ Disallow: /settings
 Disallow: /auth
 Disallow: /auth/
 
-Sitemap: https://raksha-ai-pink.vercel.app/sitemap.xml
+Sitemap: https://app.raksha.ai/sitemap.xml

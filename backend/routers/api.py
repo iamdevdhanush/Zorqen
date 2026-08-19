@@ -5,11 +5,12 @@ from __future__ import annotations
 
 import httpx
 import structlog
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
 from core.config import settings
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -910,6 +911,7 @@ class StartAssessmentRequest(BaseModel):
 async def start_assessment(
     req: StartAssessmentRequest,
     background_tasks: BackgroundTasks,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -948,18 +950,48 @@ async def start_assessment(
             detail="GitHub is unreachable. Please retry.",
         )
 
-    assessment = await create_assessment(
+    assessment, created = await create_assessment(
         db,
         repo,
         branch=req.branch,
         commit_sha=resolved_sha,
         user=current_user,
     )
-    # Only launch the background pipeline if this is a freshly created
-    # (PENDING) assessment.  If create_assessment returned an existing
-    # active one, the pipeline is already running — do not duplicate it.
-    if assessment.status == AssessmentStatus.PENDING:
-        background_tasks.add_task(run_assessment, assessment.id, gh_token)
+    request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
+
+    # Launch the background pipeline ONLY when this request actually created the
+    # assessment row. When create_assessment returns an existing active
+    # assessment (PENDING or RUNNING), its worker is already running — adding
+    # another would spawn a duplicate Semgrep process and corrupt the timeline.
+    if created:
+        worker_id = str(uuid.uuid4())
+        log.info(
+            "Starting assessment",
+            assessment_id=assessment.id,
+            run_number=assessment.run_number,
+            repository_id=repo.id,
+            request_id=request_id,
+            worker_id=worker_id,
+            existing=False,
+            worker_started=True,
+        )
+        background_tasks.add_task(
+            run_assessment,
+            assessment.id,
+            gh_token,
+            request_id=request_id,
+            worker_id=worker_id,
+        )
+    else:
+        log.info(
+            "Assessment already active — no worker launched",
+            assessment_id=assessment.id,
+            run_number=assessment.run_number,
+            repository_id=repo.id,
+            request_id=request_id,
+            existing=True,
+            worker_started=False,
+        )
     return await get_run(db, assessment, with_findings=False)
 
 

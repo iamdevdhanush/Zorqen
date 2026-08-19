@@ -1,6 +1,6 @@
 # RAKSHA — SEO Guide
 
-Production site: **https://raksha-ai-pink.vercel.app**
+Production site: **https://app.raksha.ai**
 
 RAKSHA is an SPA (React + Vite). Public SEO pages are statically built and client-rendered, so
 technical SEO is handled through route-level metadata, static robots/sitemap, and a hard-404
@@ -85,9 +85,9 @@ until that exists.
 
 ## 5. Search Console & Bing steps (post-deploy)
 
-1. Verify `https://raksha-ai-pink.vercel.app` in Google Search Console (DNS or HTML-tag method) and
+1. Verify `https://app.raksha.ai` in Google Search Console (DNS or HTML-tag method) and
    Bing Webmaster Tools.
-2. Submit `https://raksha-ai-pink.vercel.app/sitemap.xml`.
+2. Submit `https://app.raksha.ai/sitemap.xml`.
 3. Submit the URL prefix in each GSC property for the 6 public pages individually.
 4. After 1–2 weeks, run the URL Inspection Tool on `/ai-code-security` and request indexing.
 5. Monitor "Pages → not indexed → noindexed" to confirm only private routes are excluded.

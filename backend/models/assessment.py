@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from sqlalchemy import String, DateTime, Boolean, Text, Integer, Float, ForeignKey, JSON, Index
+from sqlalchemy import String, DateTime, Boolean, Text, Integer, Float, ForeignKey, JSON, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 
@@ -36,6 +36,18 @@ class Assessment(Base):
     __tablename__ = "assessments"
     __table_args__ = (
         Index("ix_assessments_run_number_unique", "run_number", unique=True),
+        # Database-level idempotency: at most ONE PENDING/RUNNING assessment per
+        # repository. This makes concurrent create requests race-safe — the second
+        # INSERT violates this partial unique index and the caller returns the
+        # existing active assessment instead of spawning a duplicate worker.
+        # FAILED / COMPLETED / CANCELLED rows do not block a new run.
+        Index(
+            "ix_assessments_one_active_per_repo",
+            "repository_id",
+            unique=True,
+            postgresql_where=text("status IN ('pending', 'running')"),
+            sqlite_where=text("status IN ('pending', 'running')"),
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

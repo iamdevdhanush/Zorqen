@@ -12,10 +12,10 @@ const JSONLD = [
     '@type': 'Article',
     headline: 'Vibe-Coded App Security',
     description: DESCRIPTION,
-    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
-    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
-    url: 'https://raksha-ai-pink.vercel.app/vibe-coded-app-security',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
+    author: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    publisher: { '@type': 'Organization', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
+    url: 'https://app.raksha.ai/vibe-coded-app-security',
+    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
   },
 ];
 

@@ -13,8 +13,8 @@ const JSONLD = [
     '@type': 'WebPage',
     name: 'RAKSHA Documentation',
     description: DESCRIPTION,
-    url: 'https://raksha-ai-pink.vercel.app/docs',
-    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://raksha-ai-pink.vercel.app/' },
+    url: 'https://app.raksha.ai/docs',
+    isPartOf: { '@type': 'WebSite', name: 'RAKSHA', url: 'https://app.raksha.ai/' },
   },
   {
     '@context': 'https://schema.org',

@@ -103,7 +103,16 @@ async def lifespan(app: FastAPI):
         env=settings.app_env,
         database="postgres" if settings.is_postgres else "sqlite",
         target=database_target(settings.database_url),
+        groq_model=settings.groq_model,
     )
+    if settings.groq_model_deprecated:
+        log.error(
+            "GROQ_MODEL is deprecated and no longer served by the Groq API "
+            "(model_not_found). Set GROQ_MODEL=openai/gpt-oss-20b in the "
+            "deployment environment.",
+            groq_model=settings.groq_model,
+            suggested="openai/gpt-oss-20b",
+        )
     try:
         # Alembic's env.py uses asyncio.run(); run it in a worker thread so it
         # gets its own event loop instead of clashing with the app's running loop.

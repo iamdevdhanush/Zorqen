@@ -265,7 +265,10 @@ class Settings(BaseSettings):
 
     # Groq LLM — used for architecture analysis, security reasoning, remediation
     groq_api_key: str = ""
-    groq_model: str = "openai/gpt-oss-120b"
+    # Free, Groq-hosted OSS model. Overridable via GROQ_MODEL env var. The old
+    # llama-3.3-70b-versatile deployment value is deprecated and no longer
+    # served by the Groq API (model_not_found).
+    groq_model: str = "openai/gpt-oss-20b"
 
     # Grok (xAI) — ASK RAKSHA investigation copilot (backend only, never exposed)
     grok_api_key: str = ""
@@ -371,6 +374,20 @@ class Settings(BaseSettings):
     @property
     def grok_configured(self) -> bool:
         return bool(self.grok_api_key)
+
+    @property
+    def groq_model_deprecated(self) -> bool:
+        """True when GROQ_MODEL points at a model Groq no longer serves.
+
+        llama-3.3-70b-versatile was retired by the Groq API (HTTP 404
+        model_not_found). Operators who still have it set in their deployment
+        environment get a loud boot warning instead of silent AI degradation.
+        """
+        return self.groq_model.strip().lower() in {
+            "llama-3.3-70b-versatile",
+            "llama3-70b-8192",
+            "llama3-8b-8192",
+        }
 
     @property
     def ai_configured(self) -> bool:

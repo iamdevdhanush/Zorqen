@@ -22,7 +22,7 @@ export default function AssessmentDetailPage() {
     );
   }
 
-  const isRunning = run.status === 'RUNNING';
+  const isRunning = run.status === 'RUNNING' || run.status === 'IDLE';
   const isCompleted = run.status === 'COMPLETED';
 
   return (

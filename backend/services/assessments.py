@@ -1,11 +1,12 @@
 """RAKSHA — Assessment service: run creation, resolution, contract building"""
 from __future__ import annotations
 
-from typing import Optional
+import asyncio
+from typing import Optional, Tuple
 
 import structlog
 from sqlalchemy import select, desc
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -65,6 +66,38 @@ async def get_next_run_number(db: AsyncSession, *, retries: int = 5) -> int:
     raise RuntimeError(f"Failed to allocate run_number after {retries} attempts")
 
 
+async def _find_active_assessment(
+    db: AsyncSession, repository_id: str
+) -> Optional[Assessment]:
+    """Return the newest PENDING/RUNNING assessment for a repository, if any."""
+    result = await db.execute(
+        select(Assessment).where(
+            Assessment.repository_id == repository_id,
+            Assessment.status.in_([AssessmentStatus.PENDING, AssessmentStatus.RUNNING]),
+        ).order_by(desc(Assessment.created_at)).limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
+def _is_run_number_conflict(exc: IntegrityError) -> bool:
+    """True when the IntegrityError is the run_number uniqueness violation.
+
+    Distinguishes the run_number unique index from the one-active-per-repository
+    partial unique index so the caller can decide whether to re-allocate the
+    run number or return an existing active assessment.
+    """
+    orig = exc.orig
+    # PostgreSQL: the constraint name is reported via exc.orig.diag.
+    diag = getattr(orig, "diag", None)
+    if diag is not None:
+        constraint = getattr(diag, "constraint_name", None)
+        if constraint:
+            return "run_number" in str(constraint)
+    # SQLite: the failure message names the unique column or index.
+    message = str(getattr(orig, "message", orig) or exc)
+    return "run_number" in message
+
+
 async def create_assessment(
     db: AsyncSession,
     repository: Repository,
@@ -72,60 +105,103 @@ async def create_assessment(
     branch: str = "main",
     commit_sha: Optional[str] = None,
     user: Optional[User] = None,
-) -> Assessment:
+) -> Tuple[Assessment, bool]:
     """Create a new assessment with the next run number.
 
-    Idempotency guard: if a PENDING or RUNNING assessment already exists for
-    this repository, return it instead of creating a duplicate. This prevents
-    rapid double-clicks or frontend retries from spawning parallel pipelines
-    against the same repo.
+    Returns ``(assessment, created)`` where ``created`` is True only when this
+    call actually inserted a brand-new row. When an active (PENDING or RUNNING)
+    assessment already exists for this repository — including one created by a
+    concurrent request that won the race — the existing row is returned with
+    ``created=False``.
+
+    Idempotency is enforced at two levels:
+
+    1. Application level: an active assessment is looked up first and returned.
+    2. Database level: a partial unique index on ``repository_id`` WHERE the
+       status is PENDING/RUNNING rejects a second concurrent INSERT. That
+       IntegrityError is caught here and converted into a "return existing"
+       result — never a duplicate row and never a duplicate worker.
     """
-    existing = await db.execute(
-        select(Assessment).where(
-            Assessment.repository_id == repository.id,
-            Assessment.status.in_([AssessmentStatus.PENDING, AssessmentStatus.RUNNING]),
-        ).order_by(desc(Assessment.created_at)).limit(1)
-    )
-    active = existing.scalar_one_or_none()
-    if active:
+    existing = await _find_active_assessment(db, repository.id)
+    if existing:
         log.info(
             "Returning existing active assessment",
-            assessment_id=active.id,
-            run_number=active.run_number,
-            status=active.status,
+            assessment_id=existing.id,
+            run_number=existing.run_number,
+            repository_id=repository.id,
+            status=existing.status,
+            existing=True,
+            worker_started=False,
         )
-        return active
+        return existing, False
 
-    assessment = Assessment(
-        repository_id=repository.id,
-        branch=branch or repository.default_branch or "main",
-        commit_sha=commit_sha,
-        status=AssessmentStatus.PENDING,
-        run_number=await get_next_run_number(db),
-        pipeline_logs=[{
-            "step": "index",
-            "status": "pending",
-            "timestamp": None,
-            "source": "raksha",
-            "text": f"assessment queued · {repository.name}@{branch or 'main'}",
-            "tone": "info",
-        }],
-    )
-    db.add(assessment)
-    # Retry on unique-constraint violation (run_number race between concurrent requests)
+    def _new_assessment() -> Assessment:
+        return Assessment(
+            repository_id=repository.id,
+            branch=branch or repository.default_branch or "main",
+            commit_sha=commit_sha,
+            status=AssessmentStatus.PENDING,
+            run_number=0,  # allocated below via get_next_run_number
+            pipeline_logs=[{
+                "step": "index",
+                "status": "pending",
+                "timestamp": None,
+                "source": "raksha",
+                "text": f"assessment queued · {repository.name}@{branch or 'main'}",
+                "tone": "info",
+            }],
+        )
+
+    assessment = _new_assessment()
     for attempt in range(5):
+        assessment.run_number = await get_next_run_number(db)
+        db.add(assessment)
         try:
             await db.commit()
             await db.refresh(assessment)
-            return assessment
-        except IntegrityError:
+            log.info(
+                "Assessment created",
+                assessment_id=assessment.id,
+                run_number=assessment.run_number,
+                repository_id=repository.id,
+                status=assessment.status,
+                existing=False,
+                worker_started=False,
+            )
+            return assessment, True
+        except IntegrityError as exc:
             await db.rollback()
-            assessment.run_number = await get_next_run_number(db)
-            db.add(assessment)
-    # Final attempt — let the error propagate
-    await db.commit()
-    await db.refresh(assessment)
-    return assessment
+            if not _is_run_number_conflict(exc):
+                # The one-active-per-repository partial unique index rejected the
+                # INSERT — another request created (or already had) an active
+                # assessment while we were between the lookup and the commit.
+                # Return that existing assessment; the caller must NOT launch a
+                # worker.
+                active = await _find_active_assessment(db, repository.id)
+                if active:
+                    log.info(
+                        "Returning existing active assessment (race)",
+                        assessment_id=active.id,
+                        run_number=active.run_number,
+                        repository_id=repository.id,
+                        status=active.status,
+                        existing=True,
+                        worker_started=False,
+                    )
+                    return active, False
+                # No active row found but the insert was rejected — retry with a
+                # fresh run_number (e.g. the conflict was a stale duplicate row).
+                assessment = _new_assessment()
+                continue
+            # run_number collision with a completed/failed run — re-allocate and
+            # retry with a fresh object (the previous one is unusable after rollback).
+            assessment = _new_assessment()
+        except OperationalError:
+            # e.g. SQLite "database is locked" under heavy concurrency.
+            await db.rollback()
+            assessment = _new_assessment()
+            await asyncio.sleep(0.05 * (attempt + 1))
+    raise RuntimeError(f"Failed to allocate a unique assessment after 5 attempts")
 
 
 async def list_user_runs(db: AsyncSession, user: User, *, limit: int = 50) -> list:

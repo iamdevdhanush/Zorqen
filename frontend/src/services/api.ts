@@ -2,15 +2,15 @@ import axios from 'axios';
 
 /** Effective RAKSHA API base URL, always ending in `/api`.
  *
- * `VITE_API_URL` is a deployment setting that operators have historically set
- * to the bare backend origin (e.g. `https://raksha-ai-b8wf.onrender.com`)
- * without the `/api` suffix. All backend routes live under `/api`, so requests
- * built from the raw value silently 404. This normalizes the value so the
- * frontend always targets the canonical `/api` namespace regardless of how the
- * environment variable was configured.
+ * `VITE_API_URL` is a build-time deployment setting. In the Cloudflare
+ * deployment the frontend and backend share one origin, so the value is left
+ * unset and the same-origin relative path `/api` is used. When set, the
+ * value may be a bare backend origin (without the `/api` suffix) — all
+ * backend routes live under `/api`, so the raw value is normalized to always
+ * target the canonical `/api` namespace.
  */
 export function getApiBase(): string {
-  const raw = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').trim();
+  const raw = (import.meta.env.VITE_API_URL || '/api').trim();
   return raw.replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 }
 

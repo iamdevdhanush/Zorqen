@@ -7,9 +7,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    # The image now defaults to a non-root user (required by Cloudflare
+    # Containers). Local dev mounts a root-owned named volume for SQLite, so
+    # run as root here to preserve the original write behaviour.
+    user: "0:0"
     environment:
       # Local full-stack environment (SQLite + persistent volume). Production
-      # deploys (Render/Koyeb) use APP_ENV=production with a real PostgreSQL
+      # deploys (Cloudflare) use APP_ENV=production with a real PostgreSQL
       # DATABASE_URL — the app refuses SQLite when APP_ENV=production.
       - APP_ENV=development
       - DATABASE_URL=sqlite+aiosqlite:////data/raksha.db

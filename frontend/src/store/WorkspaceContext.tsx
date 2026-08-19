@@ -96,6 +96,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const assessmentsReqIdRef = useRef(0);
   const initialRestoredRef = useRef(false);
 
+  // True while a POST /assessments is in flight — rapid double-clicks must
+  // never fire concurrent create requests.
+  const assessmentStartInFlightRef = useRef(false);
+
   // Tracks the last repoId for which loadAssessments succeeded, so we never
   // fire a duplicate call for the same repo while one is already in flight.
   const assessmentsFetchedForRef = useRef<string | null>(null);
@@ -108,6 +112,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   // Stable ref to repos — allows selectRepo to read latest value without being in deps
   const reposRef = useRef<RepoMeta[]>([]);
   reposRef.current = repos;
+
+  // Stable ref to assessments — allows startAssessment to check for an active
+  // run without depending on the assessments state value.
+  const assessmentsRef = useRef<AssessmentRun[]>([]);
+  assessmentsRef.current = assessments;
 
   // Stable ref to branch — allows startAssessment to read latest value without being in deps
   const branchRef = useRef<string>('main');
@@ -310,10 +319,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           if (last && (last.tone === 'warn' || last.tone === 'err')) {
             pushNotification({ time: last.time, source: last.source, text: last.text, tone: last.tone });
           }
-          if (run.status === 'RUNNING' && attempts < 300) {
-            setCurrentAssessment(run);
-            setAssessments((prev) => [run, ...prev.filter((a) => a.id !== run.id)]);
-            return;
+          if (run.status === 'RUNNING' || run.status === 'IDLE') {
+            // Keep polling while the assessment is active. IDLE means the
+            // worker has been scheduled but has not written RUNNING yet —
+            // stopping on IDLE would freeze the UI mid-start.
+            if (attempts < 300) {
+              setCurrentAssessment(run);
+              setAssessments((prev) => [run, ...prev.filter((a) => a.id !== run.id)]);
+              return;
+            }
           }
           stopPolling();
           setCurrentAssessment(run);
@@ -333,9 +347,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const startAssessment = useCallback(async () => {
     const repo = currentRepoRef.current;
     if (!repo || !hasValidToken()) return;
+
+    const dbId = repo.rakshaId || repo.id;
+
+    // LIFECYCLE GUARD: never POST while an assessment is already active for
+    // this repository. A freshly created run is serialized as IDLE (PENDING)
+    // until the worker writes RUNNING, so both states must block new POSTs.
+    // If an active run exists, resume polling it instead — GET only.
+    const activeRun = assessmentsRef.current.find(
+      (a) =>
+        (a.status === 'IDLE' || a.status === 'RUNNING') &&
+        a.repoId === dbId
+    );
+    if (activeRun) {
+      pollAssessment(activeRun.id.replace('#', ''));
+      return;
+    }
+
+    // In-flight guard: rapid double-clicks must not fire concurrent POSTs.
+    if (assessmentStartInFlightRef.current) return;
+    assessmentStartInFlightRef.current = true;
+
     stopPolling();
     try {
-      const dbId = repo.rakshaId || repo.id;
       const { data } = await apiStartAssessment({ repository_id: dbId, branch: branchRef.current });
       const run = data as AssessmentRun;
       setAssessments((prev) => [run, ...prev]);
@@ -350,6 +384,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         text: detail || 'failed to start assessment',
         tone: 'err',
       });
+    } finally {
+      assessmentStartInFlightRef.current = false;
     }
   }, [pollAssessment, pushNotification, stopPolling]);
 
@@ -579,6 +615,18 @@ export function useWorkspace(): WorkspaceState {
 export function useFindings(): Finding[] {
   const { currentAssessment } = useWorkspaceData();
   return currentAssessment?.findings ?? [];
+}
+
+/**
+ * True while an assessment is active (IDLE = freshly created PENDING, still
+ * waiting for the worker to write RUNNING, or RUNNING). All Run Assessment
+ * affordances must disable in BOTH states — otherwise clicks during the IDLE
+ * window issue duplicate POST /assessments requests.
+ */
+export function useAssessmentActive(): boolean {
+  const { currentAssessment } = useWorkspaceData();
+  const status = currentAssessment?.status;
+  return status === 'IDLE' || status === 'RUNNING';
 }
 
 export function useFinding(id: string | undefined): Finding | undefined {

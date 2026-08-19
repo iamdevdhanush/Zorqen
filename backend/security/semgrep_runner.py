@@ -1,29 +1,32 @@
 """RAKSHA — Semgrep Runner
 Async wrapper around the Semgrep CLI.
 Parses SARIF output and maps to internal finding format.
+
+Failure policy: a real Semgrep failure (timeout, binary missing, unparsable
+output) RAISES SemgrepError so the orchestrator can mark the assessment
+FAILED with an explicit reason. A timeout is never silently converted into a
+successful (empty) scan.
 """
 from __future__ import annotations
 
 import asyncio
 import json
 import os
-import tempfile
+import uuid
 from dataclasses import dataclass
 from typing import List, Optional
 import structlog
 
 log = structlog.get_logger()
 
-# Semgrep rules to use (OSS, no token required)
+# Semgrep rules to use (OSS, no token required).
+# owasp-top-ten + secrets are always on; language-specific rulesets are added
+# based on the detected primary language. Kept intentionally small so a single
+# worker can finish on a low-memory host without re-downloading dozens of rule
+# packs on every run.
 SEMGREP_RULESETS = [
-    "p/python",
-    "p/javascript",
-    "p/typescript",
     "p/owasp-top-ten",
     "p/secrets",
-    "p/sql-injection",
-    "p/xss",
-    "p/command-injection",
 ]
 
 SEVERITY_MAP = {
@@ -31,6 +34,14 @@ SEVERITY_MAP = {
     "WARNING": "medium",
     "INFO": "low",
 }
+
+
+class SemgrepError(RuntimeError):
+    """A real Semgrep execution failure. The assessment must report this."""
+
+    def __init__(self, reason: str, kind: str = "error"):
+        super().__init__(reason)
+        self.kind = kind
 
 
 @dataclass
@@ -47,26 +58,31 @@ class SemgrepFinding:
     source_tool: str = "semgrep"
 
 
-async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> List[SemgrepFinding]:
-    """Run semgrep on a repository directory. Returns list of findings."""
-
-    # Select rulesets based on detected languages
-    rulesets = ["p/owasp-top-ten", "p/secrets"]
+def _pick_rulesets(languages: Optional[List[str]]) -> List[str]:
+    """Language-aware ruleset selection for a single process."""
+    rulesets = list(SEMGREP_RULESETS)  # owasp-top-ten + secrets always
     if languages:
         lang_lower = [l.lower() for l in languages]
         if any(l in lang_lower for l in ["python"]):
             rulesets.append("p/python")
         if any(l in lang_lower for l in ["javascript", "typescript", "js", "ts"]):
-            rulesets.extend(["p/javascript", "p/typescript", "p/xss"])
+            rulesets.append("p/javascript")
         if any(l in lang_lower for l in ["go", "golang"]):
             rulesets.append("p/golang")
         if any(l in lang_lower for l in ["java"]):
             rulesets.append("p/java")
         if any(l in lang_lower for l in ["ruby"]):
             rulesets.append("p/ruby")
-    
-    if not rulesets:
-        rulesets = ["p/owasp-top-ten", "p/secrets"]
+    return rulesets
+
+
+async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> List[SemgrepFinding]:
+    """Run semgrep on a repository directory. Returns list of findings.
+
+    Raises SemgrepError on any real execution failure.
+    """
+    run_id = uuid.uuid4().hex[:8]
+    rulesets = _pick_rulesets(languages)
 
     ruleset_args = []
     for rs in rulesets:
@@ -78,12 +94,22 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
         "--no-git-ignore",
         "--timeout", "60",
         "--max-memory", "512",
+        "--metrics", "off",
+        "--jobs", str(max(1, (os.cpu_count() or 1) // 2)),
+        "--optimizations", "all",
         *ruleset_args,
         repo_path,
     ]
 
-    log.info("Running semgrep", cmd=" ".join(cmd))
+    log.info(
+        "Running semgrep",
+        semgrep_run_id=run_id,
+        rulesets=rulesets,
+        target=repo_path,
+        cmd=" ".join(cmd),
+    )
 
+    proc = None
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd,
@@ -91,23 +117,57 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
             stderr=asyncio.subprocess.PIPE,
             cwd=repo_path,
         )
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
-    except asyncio.TimeoutError:
-        log.warning("Semgrep timed out")
-        return []
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        except asyncio.TimeoutError:
+            proc.kill()
+            try:
+                await proc.wait()
+            except Exception:
+                pass
+            log.error(
+                "Semgrep timed out",
+                semgrep_run_id=run_id,
+                timeout_seconds=120,
+                rulesets=rulesets,
+            )
+            raise SemgrepError(
+                "Semgrep exceeded the 120s execution budget for this repository "
+                "and was terminated. The scan did not complete.",
+                kind="timeout",
+            )
     except FileNotFoundError:
-        log.warning("Semgrep not found in PATH, skipping")
-        return []
+        log.error("Semgrep binary not found in PATH", semgrep_run_id=run_id)
+        raise SemgrepError(
+            "Semgrep is not installed in this environment — cannot run static "
+            "analysis.",
+            kind="not_installed",
+        )
 
     if not stdout:
-        log.warning("Semgrep produced no output", stderr=stderr.decode()[:500])
-        return []
+        stderr_text = (stderr or b"").decode(errors="replace")[:500]
+        log.error(
+            "Semgrep produced no output",
+            semgrep_run_id=run_id,
+            stderr=stderr_text,
+        )
+        raise SemgrepError(
+            "Semgrep exited without producing results.",
+            kind="empty_output",
+        )
 
     try:
         data = json.loads(stdout.decode())
-    except json.JSONDecodeError:
-        log.warning("Failed to parse semgrep JSON output")
-        return []
+    except json.JSONDecodeError as e:
+        log.error(
+            "Failed to parse semgrep JSON output",
+            semgrep_run_id=run_id,
+            error=str(e),
+        )
+        raise SemgrepError(
+            "Semgrep returned unparsable output.",
+            kind="bad_json",
+        )
 
     findings = []
     for result in data.get("results", []):
@@ -137,5 +197,5 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
             owasp=owasp,
         ))
 
-    log.info("Semgrep completed", findings=len(findings))
+    log.info("Semgrep completed", semgrep_run_id=run_id, findings=len(findings))
     return findings

@@ -2,7 +2,7 @@
 
 Provider-first strategy (server-side ONLY):
   1. GROK_API_KEY set       → xAI Grok via https://api.x.ai/v1 (OpenAI-compatible)
-  2. GROQ_API_KEY set       → Groq via the shared agents.llm_client (openai/gpt-oss-120b)
+  2. GROQ_API_KEY set       → Groq via the shared agents.llm_client (settings.groq_model)
   3. neither set            → GrokConfigurationError (GROK_CONFIGURATION_ERROR)
 
 API keys live only in the environment and are never exposed to the frontend or
@@ -202,7 +202,7 @@ class GrokService:
         temperature: float,
         retries: int,
     ) -> str:
-        """Fallback: call Groq (llama) with the same grounded messages."""
+        """Fallback: call Groq with the same grounded messages."""
         from agents.llm_client import llm as groq_llm
 
         system = next((m["content"] for m in messages if m["role"] == "system"), "")
