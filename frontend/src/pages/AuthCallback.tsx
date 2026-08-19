@@ -17,7 +17,32 @@ export default function AuthCallback() {
       return;
     }
 
-    // Retrieve JWT from secure HttpOnly cookie via backend endpoint
+    // Primary handoff: JWT delivered in the URL fragment (#token=...).
+    // The fragment is never sent to the server; strip it from the address
+    // bar as soon as it has been captured.
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const fragmentToken = hashParams.get('token');
+
+    if (fragmentToken && fragmentToken.length > 0) {
+      localStorage.setItem('zorqen_token', fragmentToken);
+      // Remove the token from the URL so it does not remain visible
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+
+      getMe()
+        .then(({ data: userData }) => {
+          localStorage.setItem('zorqen_user', JSON.stringify(userData));
+          signInGithub(userData);
+          navigate('/', { replace: true });
+        })
+        .catch(() => {
+          localStorage.removeItem('zorqen_token');
+          navigate('/?auth=failed', { replace: true });
+        });
+      return;
+    }
+
+    // Fallback: retrieve JWT from the secure HttpOnly cookie via the backend
+    // endpoint (local development / legacy compatibility).
     api.get('/auth/token')
       .then(({ data }) => {
         const token = data.token;

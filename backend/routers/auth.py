@@ -132,8 +132,14 @@ async def github_callback(
         expires_delta=timedelta(hours=settings.jwt_expire_hours),
     )
 
-    # Redirect to frontend WITHOUT token in URL — token is in secure HttpOnly cookie
-    resp = RedirectResponse(url=f"{settings.frontend_url}/auth/callback")
+    # Redirect to frontend with the JWT in the URL fragment (#token=...).
+    # Fragments are never sent to the server, and the frontend strips them
+    # from the address bar immediately. This is the primary token handoff
+    # because the cross-site HttpOnly cookie is unreliable in modern browsers
+    # (third-party cookie blocking). The cookie is kept for compatibility.
+    resp = RedirectResponse(
+        url=f"{settings.frontend_url}/auth/callback#token={jwt_token}"
+    )
     _set_auth_cookie(resp, jwt_token)
     return resp
 
