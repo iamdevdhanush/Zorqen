@@ -6,20 +6,28 @@ import SecurityCopilot from '../components/SecurityCopilot';
 import CommandPalette from '../components/CommandPalette';
 import ConnectGithubModal from '../components/ConnectGithubModal';
 import { ToastProvider } from '../components/ToastProvider';
-import BuyMeACoffeeWidget from '../components/BuyMeACoffeeWidget';
+import ZorqenStartupScreen from '../components/ZorqenStartupScreen';
 import { useWorkspaceData, useWorkspaceUI } from '../store/WorkspaceContext';
 
 function AppShellInner() {
   const { copilotOpen, setCopilotOpen, githubModalOpen } = useWorkspaceUI();
   const { currentAssessment, currentRepo } = useWorkspaceData();
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [showStartup, setShowStartup] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !sessionStorage.getItem('zorqen_started');
+  });
 
   const handleOpenCmd = useCallback(() => setCmdOpen(true), []);
   const handleCloseCmd = useCallback(() => setCmdOpen(false), []);
   const handleCloseCopilot = useCallback(() => setCopilotOpen(false), [setCopilotOpen]);
 
-  /* Global keyboard shortcut: Cmd/Ctrl+K → command palette.
-     cmdOpen is read via functional updater / state setter — never needed in deps. */
+  const handleStartupComplete = useCallback(() => {
+    sessionStorage.setItem('zorqen_started', 'true');
+    setShowStartup(false);
+  }, []);
+
+  /* Global keyboard shortcut: Cmd/Ctrl+K → command palette */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -30,19 +38,22 @@ function AppShellInner() {
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []); // no deps — stable for the lifetime of AppShell
+  }, []);
 
   const runningStep = currentAssessment?.steps.find((s) => s.status === 'running');
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)]">
-      {/* Console is a private authenticated workspace — never index it. */}
+      {/* Console SEO settings */}
       <Seo
         title="ZORQEN — Security Operations Console"
         description="ZORQEN security validation console: run assessments, review findings, and remediate vulnerabilities in repositories you control."
         canonicalPath="/"
         noIndex
       />
+
+      {/* Professional ZORQEN Startup Sequence (First load only, non-blocking) */}
+      {showStartup && <ZorqenStartupScreen onComplete={handleStartupComplete} />}
 
       {/* Top Header Navigation */}
       <TopNav onOpenCmd={handleOpenCmd} />
@@ -80,11 +91,11 @@ function AppShellInner() {
       {/* Footer */}
       <footer className="border-t border-[var(--color-line)] bg-white px-4 sm:px-6 py-3 sm:py-4 mt-auto">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11.5px] text-[var(--color-ink-3)]">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-[var(--color-ink)]">ZORQEN</span>
+          <div className="flex items-center gap-2 flex-wrap font-sans">
+            <span className="font-extrabold text-[var(--color-ink)]">ZORQEN</span>
             <span>— findings &amp; scores reflect assessed commit snapshots only</span>
           </div>
-          <div className="mono text-[10.5px]">
+          <div className="mono text-[10.5px] font-semibold">
             scans run in isolated sandboxes • never against production
           </div>
         </div>
@@ -103,9 +114,6 @@ function AppShellInner() {
 
       {/* Command Palette */}
       {cmdOpen && <CommandPalette onClose={handleCloseCmd} />}
-
-      {/* Global Buy Me a Coffee Floating Widget */}
-      <BuyMeACoffeeWidget />
     </div>
   );
 }
