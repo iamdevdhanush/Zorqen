@@ -234,8 +234,8 @@ export function Dropdown({
       </button>
       {open && (
         <div
-          className="absolute top-[calc(100%+8px)] z-50 bg-white border border-[#111111] rounded-xl shadow-hard-lg overflow-hidden animate-dropdown-in"
-          style={{ ...(align === 'right' ? { right: 0 } : { left: 0 }), minWidth: 260 }}
+          className="absolute top-[calc(100%+8px)] z-50 bg-white border-2 border-[#111111] rounded-[18px] shadow-hard-lg overflow-hidden animate-dropdown-in"
+          style={{ ...(align === 'right' ? { right: 0 } : { left: 0 }), minWidth: 280 }}
           onClick={(e) => e.stopPropagation()}
         >
           {children(() => setOpen(false))}

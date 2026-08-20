@@ -18,18 +18,18 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111111]/60 backdrop-blur-xs fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111111]/70 fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="meet-dev-title"
     >
       <div
-        className="w-full max-w-[460px] bg-white border border-[#111111] rounded-xl shadow-hard-lg overflow-hidden slide-up"
+        className="w-full max-w-[460px] bg-white border-2 border-[#111111] rounded-[18px] shadow-hard-lg overflow-hidden slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-[#FAFAFA] border-b border-[#111111]">
+        <div className="flex items-center justify-between px-5 py-3.5 bg-[#FAFAFA] border-b-2 border-[#111111]">
           <div className="flex items-center gap-2">
             <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111]">
               MEET THE DEVELOPER

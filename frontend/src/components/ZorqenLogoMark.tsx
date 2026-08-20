@@ -31,7 +31,8 @@ export const ZorqenLogoMark = memo(function ZorqenLogoMark({
         viewBox="0 0 40 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0 transition-transform duration-200 group-hover:scale-105"
+        className="shrink-0"
+        shapeRendering="geometricPrecision"
         aria-hidden="true"
       >
         {/* Outer Shadow Box offset */}

@@ -148,7 +148,7 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
         <div className="max-h-[360px] overflow-y-auto scroll-thin pb-2">
           {filtered.length === 0 && (
             <div className="px-4 py-8 text-center mono text-[11px] text-[var(--color-ink-3)]">
-              No commands match &ldquo;{query}&rdquo;
+              No commands match “{query}”
             </div>
           )}
           {Object.entries(groups).map(([group, items]) => (

@@ -92,7 +92,7 @@ export default function OverviewPage() {
   const criticalHigh = counts.critical + counts.high;
 
   return (
-    <div className="max-w-[1240px] mx-auto space-y-6 sm:space-y-10 fade-in py-2">
+    <div className="max-w-[1240px] mx-auto space-y-8 fade-in py-2">
       
       {/* ── 1. LARGE EDITORIAL HERO SECTION ─────────────────────── */}
       <div className="space-y-4 sm:space-y-6">
@@ -120,7 +120,7 @@ export default function OverviewPage() {
         <div className="h-[2px] bg-[#111111] w-full" />
 
         {/* Repository Header Target Strip */}
-        <div className="p-4 sm:p-5 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-4 sm:gap-6">
+        <div className="p-5 sm:p-6 rounded-[18px] bg-white border-2 border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1 min-w-0">
             <div className="mono text-[10.5px] font-extrabold tracking-wider text-[#4A4A4A] uppercase">
               TARGET REPOSITORY
@@ -199,10 +199,10 @@ export default function OverviewPage() {
 
           <div className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight leading-snug">
             {criticalHigh > 0
-              ? `&ldquo;${criticalHigh} critical &amp; high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.&rdquo;`
+              ? `“${criticalHigh} critical & high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.”`
               : findings.length > 0
-                ? '&ldquo;No critical or high findings — remaining issues are lower priority.&rdquo;'
-                : '&ldquo;No findings yet — run an assessment to scan this repository.&rdquo;'}
+                ? '“No critical or high findings — remaining issues are lower priority.”'
+                : '“No findings yet — run an assessment to scan this repository.”'}
           </div>
           <div className="text-[12.5px] sm:text-[13px] text-[#555555] font-medium">
             Scan scope encompasses HTTP routes, database ORM queries, environment credentials, and dependency lockfiles across {findings.length} total findings.
