@@ -1,5 +1,20 @@
 """ZORQEN — Assessment Orchestrator
 Controls the full DETECT → REASON → VALIDATE → REMEDIATE → VERIFY pipeline.
+
+Canonical stages (the contract the console renders):
+
+  1. Repository Indexed     (repository_indexed)
+  2. Architecture Analyzed  (architecture_generated)
+  3. Dependencies Scanned   (dependencies)
+  4. Secrets Scan           (secrets)
+  5. Static Analysis        (security_scan)
+  6. AI Correlation         (ai_reasoning)
+  7. Report Generated       (report_generated)
+
+Every stage writes its state to the database FIRST (single source of truth)
+and THEN publishes an SSE progress event via services.events. Per-file
+telemetry (current file, files scanned, ETA) is stream-only — the database
+holds stage boundaries and final counts.
 """
 from __future__ import annotations
 
@@ -27,6 +42,7 @@ from security.repo_intel import analyze_repository
 from security.semgrep_runner import SemgrepError, run_semgrep
 from security.secret_detector import scan_files as scan_secrets
 from security.custom_checks import scan_files as custom_scan
+from services.events import event_bus, publish_progress
 from github.client import GitHubClient
 
 log = structlog.get_logger()
@@ -34,11 +50,24 @@ log = structlog.get_logger()
 IMPORTANT_EXTENSIONS = {
     ".py", ".js", ".ts", ".jsx", ".tsx", ".go", ".java", ".rb", ".php",
     ".env", ".yaml", ".yml", ".json", ".toml", ".ini", ".cfg", ".conf",
-    "Dockerfile", "docker-compose.yml",
+    "Dockerfile", "docker-compose.yml", ".xml",
 }
 
 MAX_FILES_TO_ANALYZE = 100
 MAX_FILE_SIZE = 100_000  # 100KB
+
+# Internal step name → canonical console stage label.
+STAGE_LABELS = {
+    "repository_indexed": "Repository Indexed",
+    "architecture_generated": "Architecture Analyzed",
+    "dependencies": "Dependencies Scanned",
+    "secrets": "Secrets Scan",
+    "security_scan": "Static Analysis",
+    "ai_reasoning": "AI Correlation",
+    "report_generated": "Report Generated",
+    "completed": "Report Generated",
+    "failed": "Assessment Failed",
+}
 
 
 def utcnow():
@@ -52,12 +81,14 @@ async def _update_assessment(
     status: str = AssessmentStatus.RUNNING,
     **kwargs,
 ):
-    """Update assessment status and timeline in DB.
+    """Update assessment status, progress, timeline and pipeline log in DB,
+    then publish a live SSE event for the console.
 
     Each stage is written exactly once: if the trailing timeline entry already
     records the same step, it is replaced rather than appended. Progress is
     therefore monotonic and never duplicated, regardless of how many workers
-    touch the row.
+    touch the row. SSE events are emitted only after the commit succeeds, so a
+    visible update always corresponds to persisted backend state.
     """
     async with AsyncSessionLocal() as db:
         assessment = await db.get(Assessment, assessment_id)
@@ -75,8 +106,6 @@ async def _update_assessment(
         now = utcnow().isoformat()
 
         # Timeline — dedupe the trailing entry for the same step.
-        # A fresh list copy is assigned so the JSON column always registers
-        # the mutation with SQLAlchemy's change tracking.
         timeline = list(assessment.timeline or [])
         if timeline and timeline[-1].get("step") == step:
             timeline[-1] = {"step": step, "status": log_status, "timestamp": now}
@@ -111,16 +140,76 @@ async def _update_assessment(
         for k, v in kwargs.items():
             setattr(assessment, k, v)
 
+        eta_seconds = _estimate_eta(assessment.started_at, progress)
+
         await db.commit()
-        log.info(
-            "Assessment updated",
-            assessment_id=assessment.id,
-            run_number=assessment.run_number,
-            repository_id=assessment.repository_id,
-            step=step,
-            progress=progress,
-            status=status,
-        )
+
+    log.info(
+        "Assessment updated",
+        assessment_id=assessment_id,
+        step=step,
+        progress=progress,
+        status=status,
+        eta_seconds=eta_seconds,
+    )
+
+    # Live SSE notification (post-commit, so it mirrors DB state exactly).
+    await publish_progress(
+        assessment_id,
+        stage=STAGE_LABELS.get(step, step.replace("_", " ").title()),
+        progress=progress,
+        status=log_status,
+        eta_seconds=eta_seconds,
+        message=_stage_message(step, progress, kwargs),
+    )
+
+
+def _estimate_eta(started_at: Optional[datetime], progress: int) -> Optional[int]:
+    """Remaining seconds estimated from elapsed time and current progress.
+
+    Returns None until the run has started and made measurable progress.
+    SQLite returns naive datetimes — normalize them to UTC before comparing.
+    """
+    if not started_at or progress <= 0:
+        return None
+    if started_at.tzinfo is None:
+        started_at = started_at.replace(tzinfo=timezone.utc)
+    elapsed = (utcnow() - started_at).total_seconds()
+    if elapsed <= 0:
+        return None
+    remaining = elapsed / progress * (100 - progress)
+    return max(0, int(remaining))
+
+
+def _stage_message(step: str, progress: int, kwargs: Dict[str, Any]) -> str:
+    """Human-readable message for the live event stream."""
+    label = STAGE_LABELS.get(step, step.replace("_", " ").title())
+    if step == "failed":
+        return "Assessment failed — see error details."
+    if step == "completed":
+        return "Report generated — assessment complete."
+    return f"{label} — {progress}%"
+
+
+async def _emit_file_progress(
+    assessment_id: str,
+    stage: str,
+    progress: int,
+    file: Optional[str],
+    scanned: int,
+    total: int,
+    started_at: Optional[datetime],
+) -> None:
+    """Stream-only per-file telemetry (no DB write per file)."""
+    await publish_progress(
+        assessment_id,
+        stage=stage,
+        progress=progress,
+        file=file or "",
+        files_scanned=scanned,
+        total_files=total,
+        eta_seconds=_estimate_eta(started_at, progress),
+    )
 
 
 def _calculate_security_score(findings: List[Finding]) -> float:
@@ -143,12 +232,13 @@ async def run_assessment(
     Main assessment pipeline. Runs in background.
     Steps:
     1. Load assessment + repository from DB
-    2. Clone/fetch repository files
-    3. Architecture analysis
-    4. Security scanning (Semgrep + custom + secret detection)
-    5. AI reasoning (batched, quota-aware)
-    6. Save findings
-    7. Calculate score
+    2. Clone/fetch repository files (Repository Indexed)
+    3. Architecture analysis (Architecture Analyzed)
+    4. Dependency scan (Dependencies Scanned)
+    5. Secret detection (Secrets Scan)
+    6. Static analysis (Static Analysis)
+    7. AI reasoning (AI Correlation)
+    8. Save findings + score + report (Report Generated)
 
     Idempotency: this worker may ONLY run when the assessment row is still
     PENDING. If another worker already transitioned it to RUNNING, this
@@ -214,7 +304,7 @@ async def run_assessment(
         await _update_assessment(assessment_id, "index", 5, status=AssessmentStatus.RUNNING,
                                  started_at=utcnow())
 
-        # ── Step 1: Repository Indexed ──────────────────────────────────────
+        # ── Stage 1: Repository Indexed ────────────────────────────────────
         await _update_assessment(assessment_id, "repository_indexed", 10)
 
         file_tree: List[str] = []
@@ -229,23 +319,30 @@ async def run_assessment(
                     assessment.branch,
                     assessment.commit_sha or assessment.branch,
                     gh_token,
+                    assessment_id=assessment_id,
+                    started_at=assessment.started_at,
                 )
             except Exception as e:
+                code = _classify_fetch_error(e)
                 await _update_assessment(
                     assessment_id, "failed", 0, status=AssessmentStatus.FAILED,
                     error_message=(
                         f"Could not fetch repository contents at pinned commit "
                         f"{assessment.commit_sha or assessment.branch}: {str(e)[:200]}"
                     ),
+                    error_code=code,
                 )
                 return
         else:
             await _update_assessment(assessment_id, "failed", 0, status=AssessmentStatus.FAILED,
-                                     error_message="No GitHub access token available. Re-connect your GitHub account and retry.")
+                                     error_message="No GitHub access token available. Re-connect your GitHub account and retry.",
+                                     error_code="GITHUB_AUTH_MISSING")
             return
 
-        # ── Step 2: Architecture Analysis ───────────────────────────────────
-        await _update_assessment(assessment_id, "architecture_generated", 25)
+        await _update_assessment(assessment_id, "repository_indexed", 15)
+
+        # ── Stage 2: Architecture Analyzed ─────────────────────────────────
+        await _update_assessment(assessment_id, "architecture_generated", 20)
 
         arch_map = await analyze_architecture(file_tree, file_contents, repository.name)
 
@@ -258,12 +355,26 @@ async def run_assessment(
         await _update_assessment(assessment_id, "architecture_generated", 30,
                                  architecture_map=arch_map)
 
-        # ── Step 3: Security Scan ────────────────────────────────────────────
-        await _update_assessment(assessment_id, "security_scan", 40)
+        # ── Stage 3: Dependencies Scanned ──────────────────────────────────
+        await _update_assessment(assessment_id, "dependencies", 35)
+        dependency_count = len(intel.dependencies)
+        await _update_assessment(assessment_id, "dependencies", 45,
+                                 dependency_count=dependency_count)
+
+        # ── Stage 4: Secrets Scan ──────────────────────────────────────────
+        await _update_assessment(assessment_id, "secrets", 50)
+
+        secret_findings = scan_secrets(file_contents)
+        secret_count = len(secret_findings)
+        await _update_assessment(assessment_id, "secrets", 60,
+                                 secrets_count=secret_count)
+
+        # ── Stage 5: Static Analysis ───────────────────────────────────────
+        await _update_assessment(assessment_id, "security_scan", 65)
 
         all_raw_findings: List[Dict[str, Any]] = []
 
-        # 3a. Custom checks
+        # 5a. Custom checks
         custom_findings = custom_scan(file_contents)
         for cf in custom_findings:
             all_raw_findings.append({
@@ -280,8 +391,7 @@ async def run_assessment(
                 "rule_id": cf.check_name,
             })
 
-        # 3b. Secret detection
-        secret_findings = scan_secrets(file_contents)
+        # 5b. Secret findings join the pool
         for sf in secret_findings:
             all_raw_findings.append({
                 "vulnerability_type": f"Hardcoded Secret ({sf.pattern_name})",
@@ -297,7 +407,7 @@ async def run_assessment(
                 "rule_id": "secret_detection",
             })
 
-        # 3c. Semgrep (if tmp_dir available — write files to temp, then scan)
+        # 5c. Semgrep (if tmp_dir available — write files to temp, then scan)
         if tmp_dir is None and file_contents:
             tmp_dir = tempfile.mkdtemp(prefix="zorqen_scan_")
             _write_files_to_dir(file_contents, tmp_dir)
@@ -325,16 +435,26 @@ async def run_assessment(
                         "rule_id": sf.rule_id,
                     })
             except SemgrepError as e:
-                # Never silently convert a real Semgrep failure into a clean run.
-                await _update_assessment(
-                    assessment_id,
-                    "failed",
-                    0,
-                    status=AssessmentStatus.FAILED,
-                    error_message=f"Semgrep scan failed: {e}",
-                )
-                log.error("Semgrep scan failed — assessment failed", error=str(e))
-                return
+                if e.kind == "not_installed":
+                    # Optional scanner missing — degrade to the deterministic
+                    # scanners instead of killing the whole assessment.
+                    log.warning("Semgrep not installed — static analysis degraded", error=str(e))
+                    await _update_assessment(
+                        assessment_id, "security_scan", 70,
+                        semgrep_note="Semgrep not installed — custom static checks applied only.",
+                    )
+                else:
+                    # Never silently convert a real Semgrep failure into a clean run.
+                    await _update_assessment(
+                        assessment_id,
+                        "failed",
+                        0,
+                        status=AssessmentStatus.FAILED,
+                        error_message=f"Semgrep scan failed: {e}",
+                        error_code="SEMGREP_FAILED",
+                    )
+                    log.error("Semgrep scan failed — assessment failed", error=str(e))
+                    return
             except Exception as e:
                 log.warning("Semgrep scan raised unexpected error", error=str(e))
             finally:
@@ -343,12 +463,10 @@ async def run_assessment(
                 shutil.rmtree(tmp_dir, ignore_errors=True)
                 tmp_dir = None
 
-        # Record secrets + dependency analysis as completed pipeline steps
-        await _update_assessment(assessment_id, "secrets", 50)
-        await _update_assessment(assessment_id, "dependencies", 55)
+        await _update_assessment(assessment_id, "security_scan", 75)
 
-        # ── Step 4: AI Reasoning (batched, quota-aware) ─────────────────────
-        await _update_assessment(assessment_id, "ai_reasoning", 65)
+        # ── Stage 6: AI Correlation ────────────────────────────────────────
+        await _update_assessment(assessment_id, "ai_reasoning", 80)
 
         # Only the raw findings (bounded at 50) reach the LLM — never the whole
         # repository. Findings are reasoned in small batches to respect Groq
@@ -362,23 +480,34 @@ async def run_assessment(
             await _update_assessment(
                 assessment_id,
                 "ai_reasoning",
-                70,
+                85,
                 ai_unavailable_reason=ai_unavailable_reason[:500],
             )
         else:
-            await _update_assessment(assessment_id, "ai_reasoning", 75)
+            await _update_assessment(assessment_id, "ai_reasoning", 88)
 
-        # ── Step 5: Save Findings ────────────────────────────────────────────
-        await _update_assessment(assessment_id, "findings", 80)
+        # ── Save Findings ──────────────────────────────────────────────────
+        await _update_assessment(assessment_id, "findings", 90)
 
         score_data = await _save_findings(assessment_id, enriched_findings, arch_map)
-        score_data["dependencies"] = len(intel.dependencies)
+        score_data["dependencies"] = dependency_count
+        score_data["secrets"] = secret_count
 
-        # ── Step 6: Score ────────────────────────────────────────────────────
-        await _update_assessment(assessment_id, "scoring", 90,
-                                 security_score=score_data["score"])
+        # ── Stage 7: Report Generated ──────────────────────────────────────
+        await _update_assessment(
+            assessment_id,
+            "report_generated",
+            95,
+            security_score=score_data["score"],
+            critical_count=score_data["critical"],
+            high_count=score_data["high"],
+            medium_count=score_data["medium"],
+            low_count=score_data["low"],
+            secrets_count=score_data["secrets"],
+            dependency_count=score_data["dependencies"],
+        )
 
-        # ── Step 7: Complete ─────────────────────────────────────────────────
+        # ── Complete ───────────────────────────────────────────────────────
         await _update_assessment(
             assessment_id,
             "completed",
@@ -402,6 +531,7 @@ async def run_assessment(
             assessment_id, "failed", 0,
             status=AssessmentStatus.FAILED,
             error_message=str(e)[:500],
+            error_code="PIPELINE_ERROR",
         )
     finally:
         if tmp_dir and os.path.exists(tmp_dir):
@@ -411,8 +541,27 @@ async def run_assessment(
         )
 
 
+def _classify_fetch_error(exc: Exception) -> str:
+    """Map repository fetch failures to a structured error code."""
+    import httpx
+    if isinstance(exc, httpx.HTTPStatusError):
+        status = exc.response.status_code if exc.response is not None else 0
+        if status == 401:
+            return "GITHUB_AUTH_EXPIRED"
+        if status == 403:
+            remaining = exc.response.headers.get("x-ratelimit-remaining") if exc.response is not None else None
+            return "GITHUB_RATE_LIMIT" if remaining == "0" else "GITHUB_PERMISSION_DENIED"
+        if status == 404:
+            return "GITHUB_TREE_NOT_FOUND"
+        return "GITHUB_API_ERROR"
+    return "GITHUB_UNREACHABLE"
+
+
 async def _fetch_repo_files(
-    owner: str, repo: str, branch: str, ref: str, token: str
+    owner: str, repo: str, branch: str, ref: str, token: str,
+    *,
+    assessment_id: Optional[str] = None,
+    started_at: Optional[datetime] = None,
 ) -> tuple[List[str], Dict[str, str]]:
     """Fetch important source files from GitHub API.
 
@@ -420,6 +569,9 @@ async def _fetch_repo_files(
     strictly — if the pinned commit cannot be fetched, this raises so the
     assessment fails explicitly instead of silently scanning a different
     commit (which would corrupt the assessment's integrity).
+
+    Per-file fetch progress is streamed live over SSE (stream-only; the
+    database records the stage boundary once all files are in).
     """
     client = GitHubClient(token)
 
@@ -435,13 +587,24 @@ async def _fetch_repo_files(
         or os.path.basename(p) in {"Dockerfile", ".env", "docker-compose.yml"}
     ][:MAX_FILES_TO_ANALYZE]
 
+    total = len(important_paths)
     file_contents: Dict[str, str] = {}
-    tasks = [client.get_file_content(owner, repo, path, ref) for path in important_paths]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for path, content in zip(important_paths, results):
+    if assessment_id:
+        await _emit_file_progress(
+            assessment_id, "Repository Indexed", 12, None, 0, total, started_at
+        )
+
+    for index, path in enumerate(important_paths, start=1):
+        content = await client.get_file_content(owner, repo, path, ref)
         if isinstance(content, str) and len(content) <= MAX_FILE_SIZE:
             file_contents[path] = content
+        if assessment_id:
+            progress = 12 + int(3 * (index / max(total, 1)))  # 12 → 15
+            await _emit_file_progress(
+                assessment_id, "Repository Indexed", progress,
+                path, index, total, started_at,
+            )
 
     return file_tree, file_contents
 

@@ -917,7 +917,7 @@ class TestConnectRepositoryValidation:
         fn = content.split("async def connect_repository", 1)[1].split("@repos_router.get", 1)[0]
         assert "client.get_repo(req.owner, req.name)" in fn
         assert "gh_repo" in fn
-        assert 'detail=f"Repository \'{req.owner}/{req.name}\' not found' in fn
+        assert 'GITHUB_REPOSITORY_NOT_FOUND' in fn
 
     def test_connect_repository_requires_token(self):
         """connect_repository must fail clearly without a connected GitHub account."""
@@ -1078,7 +1078,8 @@ class TestBranchesCommitsErrorHandling:
         branches = content.split('async def get_branches', 1)[1]
         assert "except httpx.HTTPStatusError" in branches
         assert "except httpx.HTTPError" in branches
-        assert 'detail="GitHub API unavailable. Check your connection and try again."' in branches
+        assert "_github_error" in branches
+        assert "GITHUB_UNREACHABLE" in branches
 
     def test_commits_endpoint_guards_github_errors(self):
         import pathlib

@@ -245,6 +245,35 @@ class DependencyInfo:
     ecosystem: str
 
 
+ENTRYPOINT_FILENAMES = {
+    "main.py", "app.py", "application.py", "manage.py", "wsgi.py", "asgi.py",
+    "server.py", "run.py", "index.py", "cli.py", "__main__.py",
+    "index.js", "index.ts", "server.js", "server.ts", "app.js", "app.ts",
+    "main.js", "main.ts", "main.go", "main.java", "Application.java",
+    "index.php", "main.rb", "config.ru", "main.rs", "Program.cs",
+}
+
+
+def detect_entrypoints(file_tree: List[str]) -> List[str]:
+    """Detect application entrypoints from the file tree.
+
+    Candidates are matched against known entrypoint filenames and their
+    content is not needed — the tree position (top-level or src/) is used
+    to rank them.
+    """
+    entrypoints: List[str] = []
+    for path in file_tree:
+        basename = os.path.basename(path)
+        if basename in ENTRYPOINT_FILENAMES:
+            entrypoints.append(path)
+        elif basename in {"manage.py", "wsgi.py", "asgi.py"} or path.startswith("src/") and basename in {
+            "index.js", "index.ts", "main.js", "main.ts", "App.js", "App.tsx", "main.tsx"
+        }:
+            entrypoints.append(path)
+    # Deterministic order: shortest path first (top-level entrypoints win).
+    return sorted(set(entrypoints), key=lambda p: (len(p), p))[:10]
+
+
 @dataclass
 class RepositoryIntel:
     repo_name: str = ""
@@ -261,6 +290,7 @@ class RepositoryIntel:
     inputs: List[InputSource] = field(default_factory=list)
     sinks: List[SinkInfo] = field(default_factory=list)
     auth_indicators: List[str] = field(default_factory=list)
+    entrypoints: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         return {
@@ -269,6 +299,7 @@ class RepositoryIntel:
             "languages": self.languages,
             "primary_language": self.primary_language,
             "frameworks": self.frameworks,
+            "entrypoints": self.entrypoints,
             "dependencies": [
                 {"name": d.name, "version": d.version, "file_path": d.file_path, "ecosystem": d.ecosystem}
                 for d in self.dependencies
@@ -345,6 +376,8 @@ def parse_dependencies(file_contents: Dict[str, str]) -> List[DependencyInfo]:
                     pkg = re.split(r"[<=>\s]", line)[0].strip().lower()
                     if pkg:
                         deps.append(DependencyInfo(pkg, None, path, ecosystem))
+        elif name == "pyproject.toml":
+            deps.extend(_parse_pyproject(content, path))
         elif name == "package.json":
             try:
                 import json
@@ -354,6 +387,8 @@ def parse_dependencies(file_contents: Dict[str, str]) -> List[DependencyInfo]:
                         deps.append(DependencyInfo(str(pkg).lower(), str(ver), path, ecosystem))
             except Exception:
                 continue
+        elif name == "pom.xml":
+            deps.extend(_parse_pom_xml(content, path))
         elif name == "go.mod":
             for line in content.splitlines():
                 line = line.strip()
@@ -366,6 +401,83 @@ def parse_dependencies(file_contents: Dict[str, str]) -> List[DependencyInfo]:
                 m = re.search(r"gem\s+['\"]([^'\"]+)['\"](?:\s*,\s*['\"]([^'\"]+)['\"])?", line)
                 if m:
                     deps.append(DependencyInfo(m.group(1).lower(), m.group(2), path, ecosystem))
+    return deps
+
+
+def _parse_pyproject(content: str, path: str) -> List[DependencyInfo]:
+    """Parse PEP 621 `[project]` dependencies + `[tool.poetry]` sections."""
+    deps: List[DependencyInfo] = []
+    section: Optional[str] = None
+    mode: Optional[str] = None  # "pep621" | "poetry"
+    in_array = False
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if line.startswith("[") and line.endswith("]"):
+            section = line[1:-1].strip().lower()
+            mode = "pep621" if section in {"project.dependencies", "project.optional-dependencies"} \
+                else ("poetry" if section == "tool.poetry.dependencies" else None)
+            in_array = False
+            continue
+        if mode is None and section == "project" and line.startswith("dependencies") and line.rstrip().endswith("["):
+            mode = "pep621"
+            in_array = True
+            continue
+        if mode is None:
+            continue
+        if not line or line.startswith(("#", "//")) or line == "]":
+            if line == "]":
+                in_array = False
+            continue
+        # Array list style:  "fastapi>=0.115.0",   /   "uvicorn[standard]~=0.30",
+        if line.startswith('"') or line.startswith("'"):
+            quoted = line.strip().strip('"').strip("'").rstrip(",")
+            m = re.match(r"^([^<>=~!^\s]+)\s*(?:([<>=~!^]+)\s*([0-9][A-Za-z0-9.+-]*))?", quoted)
+            if m:
+                pkg = m.group(1).split("[", 1)[0].lower()
+                deps.append(DependencyInfo(pkg, m.group(3), path, "python"))
+            continue
+        if "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip().strip('"').strip("'")
+        value = value.strip()
+        # Poetry style: "flask = \"^2.0\""
+        if value.startswith(('"', "'")):
+            version = value.strip('"').strip("'").lstrip("^~=<>! ").strip()
+            deps.append(DependencyInfo(key.lower(), version or None, path, "python"))
+        # PEP 621 style: "flask>=2.0,<3.0"
+        elif value.startswith(("<", ">", "=", "~", "!", " ")) or "," in value or value.startswith("*"):
+            version = re.split(r"[,\s]", value)[0].strip()
+            deps.append(DependencyInfo(key.lower(), version or None, path, "python"))
+    return deps
+
+
+def _parse_pom_xml(content: str, path: str) -> List[DependencyInfo]:
+    """Parse Maven <dependency> blocks with groupId:artifactId:version."""
+    deps: List[DependencyInfo] = []
+    try:
+        import xml.etree.ElementTree as ET
+        root = ET.fromstring(content)
+    except Exception:
+        # Fallback regex for malformed/unparsable XML.
+        for m in re.finditer(
+            r"<dependency>\s*<groupId>([^<]+)</groupId>\s*<artifactId>([^<]+)</artifactId>\s*<version>([^<]+)</version>",
+            content,
+            re.DOTALL,
+        ):
+            name = f"{m.group(1).strip()}:{m.group(2).strip()}"
+            deps.append(DependencyInfo(name.lower(), m.group(3).strip(), path, "java"))
+        return deps
+    ns = ""
+    if root.tag.startswith("{"):
+        ns = root.tag.split("}")[0] + "}"
+    for dep in root.iter(f"{ns}dependency"):
+        group = dep.findtext(f"{ns}groupId") or ""
+        artifact = dep.findtext(f"{ns}artifactId") or ""
+        version = dep.findtext(f"{ns}version")
+        if artifact:
+            name = f"{group}:{artifact}" if group else artifact
+            deps.append(DependencyInfo(name.lower(), version or None, path, "java"))
     return deps
 
 
@@ -516,6 +628,7 @@ def analyze_repository(
         inputs=extract_inputs(file_contents),
         sinks=extract_sinks(file_contents),
         auth_indicators=auth_indicators(all_content),
+        entrypoints=detect_entrypoints(file_tree),
     )
     return intel
 

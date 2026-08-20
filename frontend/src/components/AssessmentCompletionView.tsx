@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AssessmentRun, Finding } from '../lib/types';
+import { downloadAssessmentReport } from '../services/api';
 
 interface AssessmentCompletionViewProps {
   run: AssessmentRun;
@@ -23,6 +24,22 @@ export const AssessmentCompletionView: FC<AssessmentCompletionViewProps> = ({
 
   const score = run.score ?? (findings.length === 0 ? 100 : Math.max(0, 100 - counts.critical * 25 - counts.high * 10 - counts.medium * 5));
 
+  const downloadReport = async () => {
+    try {
+      const res = await downloadAssessmentReport(run.id.replace('#', ''));
+      const url = URL.createObjectURL(res.data as Blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Security Validation Report.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Backend unavailable — keep the button inert instead of crashing.
+    }
+  };
+
   return (
     <div className={`p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-6 slide-up ${className}`}>
       {/* Header */}
@@ -42,12 +59,21 @@ export const AssessmentCompletionView: FC<AssessmentCompletionViewProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={() => navigate('/findings')}
-          className="btn btn-accent px-6 py-3 font-extrabold text-[13.5px]"
-        >
-          VIEW {findings.length} FINDINGS →
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => void downloadReport()}
+            className="btn px-5 py-3 font-extrabold text-[13.5px]"
+            title="Download Security Validation Report.pdf"
+          >
+            ↓ DOWNLOAD REPORT
+          </button>
+          <button
+            onClick={() => navigate('/findings')}
+            className="btn btn-accent px-6 py-3 font-extrabold text-[13.5px]"
+          >
+            VIEW {findings.length} FINDINGS →
+          </button>
+        </div>
       </div>
 
       {/* Posture Score & Threat Surface Overview */}

@@ -27,6 +27,7 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
     return (
       <AssessmentFailureView
         errorMessage={errorMessage || run?.errorMessage || 'Validation pipeline execution failed.'}
+        errorCode={run?.errorCode}
         onRetry={onRetry}
         className={className}
       />
@@ -87,10 +88,43 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
                 ? 'COMPLETED · All security vectors validated'
                 : activeStep
                 ? activeStep.label.toUpperCase()
-                : 'CORRELATING REPOSITORY STRUCTURE'}
+                : (run.currentStage || 'CORRELATING REPOSITORY STRUCTURE').toUpperCase()}
             </div>
           </div>
         </div>
+
+        {/* Live Pipeline Progress */}
+        {!isCompleted && (
+          <div className="pt-4 border-t border-[#111111] space-y-2">
+            <div className="flex items-center justify-between mono text-[11px] font-bold text-[#4A4A4A]">
+              <span className="uppercase tracking-wider">
+                {run.currentStage || activeStep?.label || 'PIPELINE EXECUTION'}
+              </span>
+              <span className="text-[#111111]">
+                {run.progress !== undefined && run.progress !== null ? `${run.progress}%` : 'INITIALIZING'}
+              </span>
+            </div>
+            <div className="h-3 bg-white border border-[#111111] rounded-sm overflow-hidden shadow-hard">
+              <div
+                className="h-full bg-[#C5F82A] border-r border-[#111111] transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.max(0, run.progress ?? 0))}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between mono text-[10px] font-bold text-[#666666] uppercase tracking-wider">
+              <span className="truncate max-w-[60%]">
+                {run.currentFile ? `SCANNING: ${run.currentFile}` : 'AWAITING FILE STREAM'}
+              </span>
+              <span className="shrink-0">
+                {run.filesScanned !== undefined && run.totalFiles !== undefined
+                  ? `${run.filesScanned}/${run.totalFiles} FILES · `
+                  : ''}
+                {run.etaSeconds !== undefined && run.etaSeconds !== null
+                  ? `ETA ${run.etaSeconds}s`
+                  : ''}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Technical Micro-Status Bar */}
         <MicroStatusCluster status={run.status} />

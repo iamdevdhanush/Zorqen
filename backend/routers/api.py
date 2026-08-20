@@ -3,6 +3,7 @@ Console contract (frontend/src/lib/types.ts) via services.serializers.
 """
 from __future__ import annotations
 
+import asyncio
 import httpx
 import structlog
 import uuid
@@ -10,6 +11,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from core.config import settings
+from core.errors import structured_error
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select, desc, func
@@ -30,7 +32,7 @@ from models.remediation import Remediation, RemediationStatus
 from models.repository import Repository
 from models.user import User
 from routers.deps import get_current_user
-from services.assessments import create_assessment, get_run, list_user_runs, resolve_assessment
+from services.assessments import create_assessment, get_run, list_user_runs, resolve_assessment, _findings_for
 from services.copilot import CopilotRequest, CopilotContextError, investigate
 from services.findings import find_by_slug, search_findings
 from services.grok import GrokAPIError, GrokConfigurationError
@@ -164,17 +166,24 @@ async def connect_repository(
         if status == 404:
             raise HTTPException(
                 status_code=400,
-                detail=f"Repository '{req.owner}/{req.name}' not found or not accessible on GitHub.",
+                detail={
+                    "success": False,
+                    "stage": "repository_connect",
+                    "code": "GITHUB_REPOSITORY_NOT_FOUND",
+                    "message": f"Repository '{req.owner}/{req.name}' not found or not accessible on GitHub.",
+                },
             )
         raise HTTPException(
             status_code=status,
-            detail="GitHub API error while verifying the repository.",
+            detail={
+                "success": False,
+                "stage": "repository_connect",
+                "code": "GITHUB_API_ERROR",
+                "message": f"GitHub API returned HTTP {status} while verifying the repository.",
+            },
         )
-    except httpx.HTTPError:
-        raise HTTPException(
-            status_code=503,
-            detail="GitHub is unreachable. Please retry.",
-        )
+    except httpx.HTTPError as e:
+        raise _github_error(e, stage="repository_connect", context=f"{req.owner}/{req.name}")
 
     full_name = gh_repo.get("full_name") or f"{req.owner}/{req.name}"
     owner = (gh_repo.get("owner") or {}).get("login") or req.owner
@@ -570,16 +579,9 @@ async def get_branches(repo_id: str, current_user: User = Depends(get_current_us
     except httpx.HTTPStatusError as e:
         status = e.response.status_code
         log.warning("[GITHUB] list_branches_failed", repo_id=repo_id, http_status=status)
-        raise HTTPException(
-            status_code=status,
-            detail=f"GitHub returned HTTP {status} listing branches.",
-        )
-    except httpx.HTTPError:
-        log.warning("[GITHUB] list_branches_unavailable", repo_id=repo_id)
-        raise HTTPException(
-            status_code=502,
-            detail="GitHub API unavailable. Check your connection and try again.",
-        )
+        raise _github_error(e, stage="branches", context=f"{repo.owner}/{repo.name}")
+    except httpx.HTTPError as e:
+        raise _github_error(e, stage="branches", context=f"{repo.owner}/{repo.name}")
     return {"branches": branches}
 
 
@@ -596,16 +598,9 @@ async def get_commits(repo_id: str, branch: str = "main",
     except httpx.HTTPStatusError as e:
         status = e.response.status_code
         log.warning("[GITHUB] list_commits_failed", repo_id=repo_id, branch=branch, http_status=status)
-        raise HTTPException(
-            status_code=status,
-            detail=f"GitHub returned HTTP {status} listing commits for branch '{branch}'.",
-        )
-    except httpx.HTTPError:
-        log.warning("[GITHUB] list_commits_unavailable", repo_id=repo_id, branch=branch)
-        raise HTTPException(
-            status_code=502,
-            detail="GitHub API unavailable. Check your connection and try again.",
-        )
+        raise _github_error(e, stage="commits", context=f"{repo.owner}/{repo.name}@{branch}")
+    except httpx.HTTPError as e:
+        raise _github_error(e, stage="commits", context=f"{repo.owner}/{repo.name}@{branch}")
     return {"commits": commits}
 
 
@@ -945,6 +940,72 @@ class StartAssessmentRequest(BaseModel):
     commit_sha: Optional[str] = None
 
 
+def _github_error(exc: httpx.HTTPError, *, stage: str, context: str) -> HTTPException:
+    """Map a GitHub API failure to a structured, stage-scoped error.
+
+    Never a generic 503: 401 (auth), 403 (rate limit / permission), 404
+    (missing resource), 5xx (GitHub outage) and transport failures each get
+    a distinct code so the console can tell the operator exactly what
+    happened and how to recover.
+    """
+    if isinstance(exc, httpx.HTTPStatusError):
+        status = exc.response.status_code if exc.response is not None else 0
+        if status == 401:
+            return structured_error(
+                status_code=401,
+                stage=stage,
+                code="GITHUB_AUTH_EXPIRED",
+                message="GitHub authentication failed or expired — reconnect your GitHub account.",
+                github_status=status,
+                context=context,
+            )
+        if status == 403:
+            remaining = None
+            if exc.response is not None:
+                remaining = exc.response.headers.get("x-ratelimit-remaining")
+            if remaining == "0":
+                return structured_error(
+                    status_code=429,
+                    stage=stage,
+                    code="GITHUB_RATE_LIMIT",
+                    message="GitHub API rate limit exceeded. Wait for the rate window to reset and retry.",
+                    github_status=status,
+                    context=context,
+                )
+            return structured_error(
+                status_code=403,
+                stage=stage,
+                code="GITHUB_PERMISSION_DENIED",
+                message="GitHub denied the request — the token may lack access to this repository.",
+                github_status=status,
+                context=context,
+            )
+        if status == 404:
+            return structured_error(
+                status_code=404,
+                stage=stage,
+                code="GITHUB_NOT_FOUND",
+                message="GitHub resource not found — the repository or ref may have been removed.",
+                github_status=status,
+                context=context,
+            )
+        return structured_error(
+            status_code=502,
+            stage=stage,
+            code="GITHUB_API_ERROR",
+            message=f"GitHub API returned HTTP {status}.",
+            github_status=status,
+            context=context,
+        )
+    return structured_error(
+        status_code=502,
+        stage=stage,
+        code="GITHUB_UNREACHABLE",
+        message="GitHub is unreachable. Check your connection and retry.",
+        context=context,
+    )
+
+
 @assessments_router.post("")
 async def start_assessment(
     req: StartAssessmentRequest,
@@ -973,20 +1034,19 @@ async def start_assessment(
         if e.response is not None and e.response.status_code == 404:
             raise HTTPException(
                 status_code=400,
-                detail=(
-                    f"Commit or branch '{req.commit_sha or req.branch}' not found "
-                    f"in {repo.owner}/{repo.name}."
-                ),
+                detail={
+                    "success": False,
+                    "stage": "commit_resolution",
+                    "code": "GITHUB_REF_NOT_FOUND",
+                    "message": (
+                        f"Commit or branch '{req.commit_sha or req.branch}' not found "
+                        f"in {repo.owner}/{repo.name}."
+                    ),
+                },
             )
-        raise HTTPException(
-            status_code=503,
-            detail="GitHub could not resolve the requested commit. Please retry.",
-        )
-    except httpx.HTTPError:
-        raise HTTPException(
-            status_code=503,
-            detail="GitHub is unreachable. Please retry.",
-        )
+        raise _github_error(e, stage="commit_resolution", context=f"{repo.owner}/{repo.name}")
+    except httpx.HTTPError as e:
+        raise _github_error(e, stage="commit_resolution", context=f"{repo.owner}/{repo.name}")
 
     assessment, created = await create_assessment(
         db,
@@ -1083,6 +1143,94 @@ async def get_assessment_findings(
     return {"findings": result["findings"], "total": result["total"]}
 
 
+@assessments_router.get("/{assessment_ref}/events")
+async def assessment_events(
+    assessment_ref: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Server-Sent Events stream of live pipeline progress.
+
+    Every event mirrors backend state that was already committed to the
+    database. Event shape:
+
+        {"type": "progress", "stage": "Dependencies Scanned",
+         "progress": 45, "status": "running", "file": "...",
+         "filesScanned": 12, "totalFiles": 40, "etaSeconds": 18}
+
+    The stream also emits a terminal snapshot when the run finishes, so a
+    client that connects late still receives the final state.
+    """
+    import json as _json
+
+    from sse_starlette.sse import EventSourceResponse
+    from services.events import event_bus
+
+    assessment = await _resolve_owned_assessment(db, current_user, assessment_ref)
+    queue = event_bus.subscribe(assessment.id)
+
+    async def _stream():
+        try:
+            # Initial snapshot: replay current persisted state for late joiners.
+            yield {
+                "event": "snapshot",
+                "data": _json.dumps({
+                    "type": "snapshot",
+                    "stage": STAGE_LABEL_FROM_STEP.get(assessment.current_step, assessment.current_step or ""),
+                    "progress": assessment.progress_pct or 0,
+                    "status": assessment.status,
+                }),
+            }
+            if assessment.status in {"completed", "failed"}:
+                return
+            while True:
+                event = await queue.get()
+                yield {"event": "progress", "data": _json.dumps(event)}
+                if event.get("status") in {"completed", "failed"}:
+                    break
+        finally:
+            event_bus.unsubscribe(assessment.id, queue)
+
+    return EventSourceResponse(_stream(), ping=15)
+
+
+STAGE_LABEL_FROM_STEP = {
+    "index": "Queued",
+    "repository_indexed": "Repository Indexed",
+    "architecture_generated": "Architecture Analyzed",
+    "dependencies": "Dependencies Scanned",
+    "secrets": "Secrets Scan",
+    "security_scan": "Static Analysis",
+    "ai_reasoning": "AI Correlation",
+    "report_generated": "Report Generated",
+    "completed": "Report Generated",
+    "failed": "Assessment Failed",
+}
+
+
+@assessments_router.get("/{assessment_ref}/report")
+async def download_assessment_report(
+    assessment_ref: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate and download the enterprise Security Validation Report PDF."""
+    from fastapi.responses import Response
+    from services.report import build_report_pdf
+
+    assessment = await _resolve_owned_assessment(db, current_user, assessment_ref)
+    repo = await db.get(Repository, assessment.repository_id)
+    findings = await _findings_for(db, assessment.id)
+    pdf_bytes = await asyncio.to_thread(build_report_pdf, assessment, findings, repo)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": 'attachment; filename="Security Validation Report.pdf"',
+        },
+    )
+
+
 async def _resolve_owned_assessment(db: AsyncSession, user: User, ref: str) -> Assessment:
     assessment = await resolve_assessment(db, ref)
     if not assessment:
@@ -1163,9 +1311,11 @@ async def generate_finding_fix(
         )
     except LLM_EXTERNAL_ERRORS:
         log.warning("[ZORQEN] fix_generation_unavailable", finding_ref=finding_ref)
-        raise HTTPException(
+        raise structured_error(
             status_code=503,
-            detail="AI fix generation is temporarily unavailable. Please try again.",
+            stage="remediation_generation",
+            code="AI_FIX_UNAVAILABLE",
+            message="AI fix generation is temporarily unavailable. Please try again.",
         )
 
     if existing:
@@ -1239,25 +1389,33 @@ async def copilot_chat(
             error_code=getattr(e, "code", "GROK_API_ERROR"),
             status=e.status,
         )
-        raise HTTPException(
+        raise structured_error(
             status_code=429 if e.status == 429 else 503,
-            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
+            stage="copilot",
+            code="GROK_API_ERROR" if e.status != 429 else "GROK_RATE_LIMIT",
+            message="ASK ZORQEN is temporarily unavailable. Please try again.",
         )
     except GrokConfigurationError:
         log.warning("[COPILOT] grok_not_configured", error_code="GROK_CONFIGURATION_ERROR")
-        raise HTTPException(
+        raise structured_error(
             status_code=503,
-            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
+            stage="copilot",
+            code="GROK_CONFIGURATION_ERROR",
+            message="ASK ZORQEN is not configured. Set GROK_API_KEY to enable it.",
         )
     except CopilotContextError:
         log.warning("[COPILOT] context_error", error_code="ASSESSMENT_CONTEXT_ERROR")
-        raise HTTPException(
-            status_code=503,
-            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
+        raise structured_error(
+            status_code=400,
+            stage="copilot",
+            code="ASSESSMENT_CONTEXT_ERROR",
+            message="The referenced assessment context is missing or stale.",
         )
     except Exception as e:
         log.warning("[COPILOT] unexpected_error", error_code="BACKEND_ERROR", error_type=type(e).__name__)
-        raise HTTPException(
-            status_code=503,
-            detail="ASK ZORQEN is temporarily unavailable. Please try again.",
+        raise structured_error(
+            status_code=500,
+            stage="copilot",
+            code="BACKEND_ERROR",
+            message="ASK ZORQEN encountered an internal error. Please try again.",
         )

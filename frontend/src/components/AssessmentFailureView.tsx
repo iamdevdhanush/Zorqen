@@ -3,12 +3,14 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface AssessmentFailureViewProps {
   errorMessage?: string;
+  errorCode?: string;
   onRetry?: () => void;
   className?: string;
 }
 
 export const AssessmentFailureView: FC<AssessmentFailureViewProps> = ({
-  errorMessage = 'Backend assessment service is unavailable (HTTP 503). Please retry.',
+  errorMessage = 'Backend assessment service is unavailable. Please retry.',
+  errorCode,
   onRetry,
   className = '',
 }) => {
@@ -47,6 +49,11 @@ export const AssessmentFailureView: FC<AssessmentFailureViewProps> = ({
         <div className="mono text-[10px] font-extrabold text-[#555555] uppercase tracking-wider">
           DIAGNOSTIC BACKEND ERROR DETAIL
         </div>
+        {errorCode && (
+          <div className="inline-block mono text-[10.5px] font-extrabold text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111]">
+            {errorCode}
+          </div>
+        )}
         <div className="mono text-[12.5px] font-bold text-[#DC2626] bg-[#FAFAFA] p-3 rounded border border-[#111111] break-all">
           {errorMessage}
         </div>

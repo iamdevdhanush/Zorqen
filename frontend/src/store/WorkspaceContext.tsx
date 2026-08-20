@@ -7,8 +7,10 @@ import {
   listRepoAssessments,
   getAssessment,
   startAssessment as apiStartAssessment,
+  subscribeToAssessmentEvents,
 } from '../services/api';
 import type { AuthUser } from '../App';
+import type { ProgressEvent } from '../lib/types';
 
 function fmtTime(d: Date): string {
   return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -93,6 +95,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activePollRef = useRef<string | null>(null);
+  const sseAbortRef = useRef<AbortController | null>(null);
   const assessmentsReqIdRef = useRef(0);
   const initialRestoredRef = useRef(false);
 
@@ -126,6 +129,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (pollTimerRef.current) {
       clearInterval(pollTimerRef.current);
       pollTimerRef.current = null;
+    }
+    if (sseAbortRef.current) {
+      sseAbortRef.current.abort();
+      sseAbortRef.current = null;
     }
     activePollRef.current = null;
   }, []);
@@ -295,6 +302,51 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /* Apply a live progress event to the current assessment state. */
+  const applyProgressEvent = useCallback((ev: ProgressEvent) => {
+    setCurrentAssessment((prev) => {
+      if (!prev) return prev;
+      const status: AssessmentRun['status'] =
+        ev.status === 'failed' ? 'FAILED'
+        : ev.status === 'completed' ? 'COMPLETED'
+        : prev.status;
+      const stageLabel = ev.stage || prev.currentStage;
+      const merged: AssessmentRun = {
+        ...prev,
+        status,
+        progress: ev.progress ?? prev.progress,
+        currentStage: stageLabel,
+        currentFile: ev.file || prev.currentFile,
+        filesScanned: ev.filesScanned ?? prev.filesScanned,
+        totalFiles: ev.totalFiles ?? prev.totalFiles,
+        etaSeconds: ev.etaSeconds ?? prev.etaSeconds,
+      };
+      if (ev.message && prev.logs[prev.logs.length - 1]?.text !== ev.message) {
+        merged.logs = [
+          ...prev.logs,
+          { time: fmtTime(new Date()), source: 'zorqen', text: ev.message, tone: 'info' },
+        ];
+      }
+      return merged;
+    });
+    setAssessments((prev) => {
+      if (ev.progress === undefined && !ev.stage && !ev.status) return prev;
+      return prev.map((a) => {
+        if (a.id !== activePollRef.current?.replace('#', '')) return a;
+        const status =
+          ev.status === 'failed' ? 'FAILED'
+          : ev.status === 'completed' ? 'COMPLETED'
+          : a.status;
+        return {
+          ...a,
+          progress: ev.progress ?? a.progress,
+          currentStage: ev.stage || a.currentStage,
+          status,
+        };
+      });
+    });
+  }, []);
+
   /* Poll a real run until it leaves RUNNING, then load its final contract.
      Uses GET /api/assessments/{assessment_id} — a specific assessment endpoint,
      NOT the repository history endpoint. Polling is intentional here because
@@ -303,6 +355,26 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     (assessmentRef: string) => {
       stopPolling();
       activePollRef.current = assessmentRef;
+
+      // 1) Subscribe to the live SSE stream (primary channel).
+      const abort = new AbortController();
+      sseAbortRef.current = abort;
+      void subscribeToAssessmentEvents(assessmentRef, (ev) => {
+        if (activePollRef.current !== assessmentRef) return;
+        if (ev.status === 'completed' || ev.status === 'failed') {
+          stopPolling();
+        }
+        applyProgressEvent(ev);
+      }, abort.signal)
+        .catch(() => {
+          // SSE unavailable — fall back to polling below.
+          if (activePollRef.current !== assessmentRef) return;
+        })
+        .finally(() => {
+          if (sseAbortRef.current === abort) sseAbortRef.current = null;
+        });
+
+      // 2) Polling fallback — keeps progress visible if SSE is unavailable.
       let attempts = 0;
       const tick = async () => {
         if (activePollRef.current !== assessmentRef) return;
@@ -340,7 +412,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       pollTimerRef.current = setInterval(tick, 2000);
       void tick();
     },
-    [pushNotification, stopPolling]
+    [pushNotification, stopPolling, applyProgressEvent]
   );
 
   // startAssessment: uses branchRef and currentRepoRef so it never needs them in deps
@@ -377,11 +449,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (run.commit) setCommit(run.commit);
       pollAssessment(run.id.replace('#', ''));
     } catch (err) {
-      const rawDetail = (err as { response?: { data?: { detail?: string | { message?: string } } } })?.response?.data?.detail;
-      const safeMsg = typeof rawDetail === 'string'
-        ? rawDetail
-        : rawDetail?.message || 'Assessment backend unavailable (HTTP 503). Please retry.';
-      
+      const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+      const isStructured =
+        typeof detail === 'object' && detail !== null &&
+        (detail as { success?: boolean }).success === false;
+      const safeMsg = isStructured
+        ? (detail as { message?: string }).message || 'Assessment backend unavailable. Please retry.'
+        : typeof detail === 'string'
+          ? detail
+          : 'Assessment backend unavailable. Please retry.';
+      const errorCode = isStructured ? (detail as { code?: string }).code : undefined;
+
       pushNotification({
         time: fmtTime(new Date()),
         source: 'zorqen',
@@ -396,15 +474,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         commit: repo.commit || 'HEAD',
         branch: branchRef.current,
         status: 'FAILED',
+        errorCode,
         errorMessage: safeMsg,
         steps: [
-          { id: 'index', label: 'Repository indexed', status: 'failed' },
-          { id: 'architecture', label: 'Architecture analyzed', status: 'pending' },
-          { id: 'dependencies', label: 'Dependencies analyzed', status: 'pending' },
-          { id: 'static', label: 'Static analysis completed', status: 'pending' },
-          { id: 'secrets', label: 'Secrets scan completed', status: 'pending' },
-          { id: 'reasoning', label: 'AI reasoning completed', status: 'pending' },
-          { id: 'validation', label: 'Sandbox validation unavailable', status: 'unavailable' },
+          { id: 'repository_indexed', label: 'Repository Indexed', status: 'failed' },
+          { id: 'architecture_generated', label: 'Architecture Analyzed', status: 'pending' },
+          { id: 'dependencies', label: 'Dependencies Scanned', status: 'pending' },
+          { id: 'secrets', label: 'Secrets Scan', status: 'pending' },
+          { id: 'security_scan', label: 'Static Analysis', status: 'pending' },
+          { id: 'ai_reasoning', label: 'AI Correlation', status: 'pending' },
+          { id: 'report_generated', label: 'Report Generated', status: 'pending' },
         ],
         logs: [{ time: fmtTime(new Date()), source: 'zorqen', text: safeMsg, tone: 'err' }],
         findings: [],

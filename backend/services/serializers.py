@@ -18,11 +18,11 @@ from models.validation_result import ValidationResult
 PIPELINE_STEPS: List[Dict[str, str]] = [
     {"id": "index", "label": "Repository indexed"},
     {"id": "architecture", "label": "Architecture analyzed"},
-    {"id": "dependencies", "label": "Dependencies analyzed"},
-    {"id": "static", "label": "Static analysis completed"},
-    {"id": "secrets", "label": "Secrets scan completed"},
-    {"id": "reasoning", "label": "AI reasoning completed"},
-    {"id": "validation", "label": "Sandbox validation unavailable"},
+    {"id": "dependencies", "label": "Dependencies scanned"},
+    {"id": "secrets", "label": "Secrets scan"},
+    {"id": "static", "label": "Static analysis"},
+    {"id": "reasoning", "label": "AI correlation"},
+    {"id": "report", "label": "Report generated"},
 ]
 
 LANGUAGE_BY_EXT = {
@@ -205,17 +205,18 @@ def repo_meta(repo: Repository) -> Dict[str, Any]:
 def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
     """Derive the 7 step states from the most recent pipeline_logs entries.
 
-    The orchestrator emits its own internal step names; those are aliased to the
-    canonical console steps. Steps the pipeline never reached stay 'pending' —
-    notably SANDBOX VALIDATION, which ZORQEN does not run.
+    The orchestrator emits its own internal step names; those are aliased to
+    the canonical console steps. Steps the pipeline never reached stay
+    'pending'.
     """
     STEP_ALIASES = {
         "repository_indexed": "index",
         "architecture_generated": "architecture",
-        "security_scan": "static",
-        "secrets": "secrets",
         "dependencies": "dependencies",
+        "secrets": "secrets",
+        "security_scan": "static",
         "ai_reasoning": "reasoning",
+        "report_generated": "report",
     }
     latest: Dict[str, str] = {}
     for entry in assessment.pipeline_logs or []:
@@ -226,15 +227,11 @@ def _steps_from_pipeline_logs(assessment: Assessment) -> List[Dict[str, str]]:
             latest[step] = entry["status"]
     if assessment.status == AssessmentStatus.COMPLETED:
         for step in latest:
-            if step != "validation":  # Sandbox is never run
-                latest[step] = "completed"
+            latest[step] = "completed"
     steps = []
     for step in PIPELINE_STEPS:
         state = latest.get(step["id"])
-        if step["id"] == "validation":
-            # Sandbox validation is not implemented — always show as unavailable
-            status = "unavailable"
-        elif state in {"completed", "running", "failed"}:
+        if state in {"completed", "running", "failed"}:
             status = state
         else:
             status = "pending"
@@ -310,8 +307,15 @@ def run_contract(assessment: Assessment, repository: Optional[Repository] = None
         "logs": _logs_from_pipeline(assessment),
         "findings": [finding_contract(f) for f in (findings or [])],
     }
+    # Live pipeline telemetry — always derived from persisted backend state.
+    if assessment.progress_pct is not None:
+        contract["progress"] = assessment.progress_pct
+    if assessment.current_step:
+        contract["currentStage"] = assessment.current_step
     if assessment.error_message:
         contract["errorMessage"] = assessment.error_message
+    if assessment.error_code:
+        contract["errorCode"] = assessment.error_code
     architecture = _architecture_contract(assessment)
     if architecture:
         contract["architecture"] = architecture

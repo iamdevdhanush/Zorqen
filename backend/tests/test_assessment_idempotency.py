@@ -640,26 +640,33 @@ class TestProgressIntegrity:
             await db.commit()
             aid = a.id
 
-        for step, pct in (("index", 5), ("repository_indexed", 10),
-                          ("architecture_generated", 30), ("security_scan", 40),
-                          ("findings", 80), ("scoring", 90), ("completed", 100)):
+        for step, pct in (("index", 5), ("repository_indexed", 15),
+                          ("architecture_generated", 30), ("dependencies", 45),
+                          ("secrets", 60), ("security_scan", 75),
+                          ("ai_reasoning", 88), ("report_generated", 95),
+                          ("completed", 100)):
             await _update_assessment(aid, step, pct)
 
         async with AsyncSessionLocal() as db:
             a = await db.get(Assessment, aid)
             steps = [t["step"] for t in (a.timeline or [])]
             assert steps == ["index", "repository_indexed", "architecture_generated",
-                             "security_scan", "findings", "scoring", "completed"]
+                             "dependencies", "secrets", "security_scan",
+                             "ai_reasoning", "report_generated", "completed"]
             assert len(steps) == len(set(steps))
 
-    def test_orchestrator_has_no_duplicate_security_scan_step(self):
-        """The old duplicated `security_scan` write at 80% must be gone."""
+    def test_orchestrator_has_canonical_stage_sequence(self):
+        """The orchestrator must emit the 7 canonical stages + completed."""
         import pathlib
         orch = pathlib.Path(__file__).resolve().parent.parent / "agents" / "orchestrator.py"
         content = orch.read_text(encoding="utf-8")
+        for step in ("repository_indexed", "architecture_generated", "dependencies",
+                     "secrets", "security_scan", "ai_reasoning", "report_generated",
+                     "completed"):
+            assert f'"{step}"' in content, f"orchestrator missing stage {step}"
+        # The old duplicated security_scan write at 80% must be gone.
         assert '_update_assessment(assessment_id, "security_scan", 80' not in content
-        assert '_update_assessment(assessment_id, "findings", 80' in content
-        assert '_update_assessment(assessment_id, "scoring", 90' in content
+        assert '_update_assessment(assessment_id, "findings", 90' in content
 
     def test_orchestrator_has_duplicate_worker_guard(self):
         import pathlib

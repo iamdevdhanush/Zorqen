@@ -67,6 +67,7 @@ class Assessment(Base):
     current_step: Mapped[str] = mapped_column(String(100), nullable=True)
     progress_pct: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[str] = mapped_column(Text, nullable=True)
+    error_code: Mapped[str] = mapped_column(String(100), nullable=True)
 
     # Scores
     security_score: Mapped[float] = mapped_column(Float, nullable=True)

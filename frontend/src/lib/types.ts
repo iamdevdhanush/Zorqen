@@ -105,11 +105,39 @@ export interface AssessmentRun {
   startedAt?: string;
   duration?: string;
   score?: number;
+  progress?: number;
+  currentStage?: string;
+  currentFile?: string;
+  filesScanned?: number;
+  totalFiles?: number;
+  etaSeconds?: number;
+  errorCode?: string;
   errorMessage?: string;
   architecture?: AssessmentArchitecture;
   steps: StepState[];
   logs: LogLine[];
   findings: Finding[];
+}
+
+/** SSE progress event pushed by the backend assessment pipeline. */
+export interface ProgressEvent {
+  type: 'progress' | 'snapshot';
+  stage?: string;
+  progress?: number;
+  status?: 'running' | 'completed' | 'failed';
+  file?: string;
+  filesScanned?: number;
+  totalFiles?: number;
+  etaSeconds?: number;
+  message?: string;
+}
+
+/** Structured error contract from the backend (detail of an HTTP error). */
+export interface ApiErrorDetail {
+  success: false;
+  stage: string;
+  code: string;
+  message: string;
 }
 
 export interface RepoDetail {

@@ -4,13 +4,48 @@ ZORQEN Backend — Consistent error handling & response envelope
 from __future__ import annotations
 
 import time
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import structlog
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 log = structlog.get_logger()
+
+
+def structured_error(
+    *,
+    stage: str,
+    code: str,
+    message: str,
+    status_code: int = 400,
+    **extra: Any,
+) -> HTTPException:
+    """Build a structured error response for the pipeline API.
+
+    Every stage failure returns the same machine-readable contract instead
+    of a generic 503:
+
+        {
+          "success": false,
+          "stage": "repository_clone",
+          "code": "GITHUB_RATE_LIMIT",
+          "message": "GitHub API rate limit exceeded.",
+          ...
+        }
+
+    `detail` carries the whole envelope so clients can read either
+    `detail.code` / `detail.message` (structured) or fall back to the
+    default `detail` string.
+    """
+    payload: Dict[str, Any] = {
+        "success": False,
+        "stage": stage,
+        "code": code,
+        "message": message,
+    }
+    payload.update(extra)
+    return HTTPException(status_code=status_code, detail=payload)
 
 
 class AppError(Exception):

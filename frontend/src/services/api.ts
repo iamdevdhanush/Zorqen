@@ -69,6 +69,57 @@ export const getAssessment = (id: string) => api.get(`/assessments/${id}`);
 export const getAssessmentFindings = (id: string, filters?: object) =>
   api.get(`/assessments/${id}/findings`, { params: filters });
 export const listRepoAssessments = (repoId: string) => api.get(`/assessments/repository/${repoId}`);
+export const downloadAssessmentReport = (id: string) =>
+  api.get(`/assessments/${id}/report`, { responseType: 'blob' });
+
+/**
+ * Live pipeline progress via Server-Sent Events.
+ *
+ * EventSource cannot attach the Authorization header, so this uses a plain
+ * fetch with a streaming reader. Every `progress` event carries a terminal
+ * snapshot on completion/failure, and the backend pings every 15s to keep
+ * the connection alive.
+ */
+export async function subscribeToAssessmentEvents(
+  assessmentId: string,
+  onEvent: (event: import('../lib/types').ProgressEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const token = localStorage.getItem('zorqen_token');
+  const res = await fetch(`${BASE_URL}/assessments/${assessmentId}/events`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal,
+  });
+  if (!res.ok || !res.body) {
+    throw new Error(`SSE stream failed with status ${res.status}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let idx: number;
+      while ((idx = buffer.indexOf('\n\n')) !== -1) {
+        const raw = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        const dataLine = raw
+          .split('\n')
+          .find((line) => line.startsWith('data:'));
+        if (!dataLine) continue;
+        try {
+          onEvent(JSON.parse(dataLine.slice(5).trim()) as import('../lib/types').ProgressEvent);
+        } catch {
+          // Ignore malformed events; keep the stream alive.
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
 
 // ── Findings ────────────────────────────────────────────────────────────────
 export const getFinding = (id: string) => api.get(`/findings/${id}`);

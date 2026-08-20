@@ -24,11 +24,3 @@ os.environ.setdefault("GITHUB_REDIRECT_URI", "http://localhost:8000/api/auth/git
 os.environ.setdefault("GROQ_API_KEY", "")  # no LLM in tests
 os.environ.setdefault("CORS_ORIGINS", '["http://localhost:5173"]')
 os.environ.setdefault("ENCRYPTION_KEY", "AuH45lRRGEekjuOYo4JVSkms84ljujqW0u3Dc6DuuZw=")  # 32-byte base64 key
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Session-scoped event loop for async tests."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
