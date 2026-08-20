@@ -210,19 +210,32 @@ export function Dropdown({
     const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
     document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
   }, [open]);
 
   return (
-    <div ref={ref} className={`relative ${className}`}>
-      <button onClick={() => setOpen((o) => !o)} className="block w-full text-left" aria-haspopup="menu" aria-expanded={open}>
+    <div ref={ref} className={`relative inline-block ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="block w-full text-left outline-none cursor-pointer"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
         {trigger(open)}
       </button>
       {open && (
         <div
-          className="absolute top-[calc(100%+4px)] z-50 panel shadow-hard-lg"
-          style={{ ...(align === 'right' ? { right: 0 } : { left: 0 }), minWidth: 240, background: '#FFFFFF', borderRadius: 6 }}
+          className="absolute top-[calc(100%+8px)] z-50 bg-white border border-[#111111] rounded-xl shadow-hard-lg overflow-hidden animate-dropdown-in"
+          style={{ ...(align === 'right' ? { right: 0 } : { left: 0 }), minWidth: 260 }}
           onClick={(e) => e.stopPropagation()}
         >
           {children(() => setOpen(false))}

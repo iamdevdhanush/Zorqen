@@ -151,48 +151,48 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               )}
             >
               {(close) => (
-                <div className="p-3 w-[260px] space-y-3 font-sans" onClick={(e) => e.stopPropagation()}>
-                  {/* User Account Header — Clicking profile header opens settings, NEVER logs out */}
+                <div className="w-[270px] font-sans overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  {/* Profile Header (Avatar 36px, Name, Username) — Flush to top, clipped by container */}
                   <button
                     type="button"
                     onClick={() => {
                       close();
                       navigate('/settings');
                     }}
-                    className="w-full text-left flex items-center gap-2.5 pb-2.5 border-b border-[#111111] hover:opacity-80 transition-opacity"
+                    className="w-full text-left p-4 bg-[#FAFAFA] border-b border-[#111111] flex items-center gap-3 hover:bg-[#F2F2EB] transition-colors cursor-pointer outline-none"
                   >
                     {user?.github_avatar_url ? (
-                      <img src={user.github_avatar_url} alt="" className="w-8 h-8 rounded-full border border-[#111111] shrink-0" />
+                      <img src={user.github_avatar_url} alt="" className="w-9 h-9 rounded-full border border-[#111111] shrink-0 object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-[#111111] text-[#C5F82A] border border-[#111111] flex items-center justify-center font-extrabold text-[12px] shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-[#111111] text-[#C5F82A] border border-[#111111] flex items-center justify-center font-extrabold text-[13px] shrink-0 shadow-hard-sm">
                         {userInitials}
                       </div>
                     )}
-                    <div className="min-w-0 flex-1 leading-tight">
-                      <div className="font-extrabold text-[13px] text-[#111111] truncate">
+                    <div className="min-w-0 flex-1 leading-snug">
+                      <div className="font-extrabold text-[13.5px] text-[#111111] truncate">
                         {userName}
                       </div>
-                      <div className="mono text-[10.5px] font-semibold text-[#555555]">
+                      <div className="mono text-[11px] font-bold text-[#555555] truncate">
                         {userHandle}
                       </div>
                     </div>
                   </button>
 
-                  {/* Account Navigation Links */}
-                  <div className="space-y-1">
+                  {/* Navigation Options */}
+                  <div className="p-2 space-y-0.5 bg-white">
                     <button
                       type="button"
                       onClick={() => {
                         close();
                         navigate('/settings');
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#111111] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111] transition-all"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#111111] hover:bg-[#C5F82A] border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <UserCheck className="w-4 h-4 text-[#111111]" />
                         <span>Account Settings</span>
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#666666]" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[#111111]" />
                     </button>
 
                     <button
@@ -201,13 +201,13 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         close();
                         setMeetDevOpen(true);
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#111111] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111] transition-all"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#111111] hover:bg-[#C5F82A] border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <User className="w-4 h-4 text-[#111111]" />
                         <span>Meet the Developer</span>
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#666666]" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[#111111]" />
                     </button>
 
                     <a
@@ -215,25 +215,25 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => close()}
-                      className="flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#111111] hover:bg-[#FFDD00]/20 border border-transparent hover:border-[#111111] transition-all"
+                      className="flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#111111] hover:bg-[#FFDD00]/30 border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <Heart className="w-4 h-4 text-[#111111]" />
                         <span>Support ZORQEN</span>
                       </div>
-                      <span className="mono text-[9px] font-extrabold uppercase bg-[#FFDD00] text-[#111111] px-1.5 py-0.5 rounded border border-[#111111]">☕ COFFEE</span>
+                      <span className="mono text-[9px] font-extrabold uppercase bg-[#FFDD00] text-[#111111] px-1.5 py-0.5 rounded border border-[#111111] shadow-hard-sm">☕ COFFEE</span>
                     </a>
                   </div>
 
-                  {/* Explicit Sign Out Action — ONLY BUTTON THAT CALLS signOut() */}
-                  <div className="pt-2 border-t border-[#111111]">
+                  {/* Explicit Sign Out Action */}
+                  <div className="p-2 border-t border-[#111111] bg-[#FAFAFA]">
                     <button
                       type="button"
                       onClick={() => {
                         close();
                         signOut();
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#DC2626] bg-[#FEE2E2] border border-[#111111] hover:bg-[#FCA5A5] transition-all shadow-hard-sm cursor-pointer"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[12.5px] font-extrabold text-[#DC2626] bg-[#FEE2E2] border border-[#111111] hover:bg-[#FCA5A5] transition-all shadow-hard-sm cursor-pointer outline-none"
                     >
                       <span>Sign Out</span>
                       <LogOut className="w-3.5 h-3.5 stroke-[2.5]" />
