@@ -127,8 +127,13 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
         ...m,
         { role: 'assistant', content: data.answer, sources: (data.sources ?? []) as CopilotSource[] },
       ]);
-    } catch {
-      setMessages((m) => [...m, { role: 'assistant', content: ERROR_MESSAGE, sources: [] }]);
+    } catch (err) {
+      const detail = (err as { response?: { data?: { detail?: { message?: string; code?: string } } } })
+        ?.response?.data?.detail;
+      const msg =
+        detail?.message ||
+        (detail?.code ? `ASK ZORQEN error (${detail.code}). Please try again.` : ERROR_MESSAGE);
+      setMessages((m) => [...m, { role: 'assistant', content: msg, sources: [] }]);
     } finally {
       setLoading(false);
     }

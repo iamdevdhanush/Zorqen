@@ -1,9 +1,10 @@
 """ZORQEN — Copilot LLM client for the ASK ZORQEN investigation copilot.
 
 Provider-first strategy (server-side ONLY):
-  1. GROK_API_KEY set       → xAI Grok via https://api.x.ai/v1 (OpenAI-compatible)
-  2. GROQ_API_KEY set       → Groq via the shared agents.llm_client (settings.groq_model)
-  3. neither set            → GrokConfigurationError (GROK_CONFIGURATION_ERROR)
+  1. GEMINI_API_KEY set     → Google Gemini (google.generativeai)
+  2. GROK_API_KEY set       → xAI Grok via https://api.x.ai/v1 (OpenAI-compatible)
+  3. GROQ_API_KEY set       → Groq via the shared agents.llm_client (settings.groq_model)
+  4. none set               → GrokConfigurationError (GROK_CONFIGURATION_ERROR)
 
 API keys live only in the environment and are never exposed to the frontend or
 logs. Every failure maps to a safe, loggable category; transient failures use
@@ -38,6 +39,16 @@ except ImportError:  # pragma: no cover — groq SDK is a declared dependency
     PermissionDeniedError = Exception
     RateLimitError = Exception
 
+try:  # pragma: no cover — SDK availability varies by environment
+    from google.api_core import exceptions as google_api_exceptions
+    import google.generativeai as genai
+
+    GEMINI_SDK_AVAILABLE = True
+except ImportError:
+    google_api_exceptions = None
+    genai = None
+    GEMINI_SDK_AVAILABLE = False
+
 log = structlog.get_logger()
 
 
@@ -71,6 +82,7 @@ class GrokService:
 
     def __init__(self) -> None:
         self._client: Optional[httpx.AsyncClient] = None
+        self.last_provider: Optional[str] = None
 
     def _get_client(self) -> httpx.AsyncClient:
         if self._client is None:
@@ -95,8 +107,9 @@ class GrokService:
     ) -> str:
         """Return a grounded answer from the best configured copilot provider.
 
-        Priority: xAI Grok when GROK_API_KEY is set, otherwise Groq when
-        GROQ_API_KEY is set, otherwise GrokConfigurationError.
+        Priority: Google Gemini when GEMINI_API_KEY is set, otherwise xAI Grok
+        when GROK_API_KEY is set, otherwise Groq when GROQ_API_KEY is set,
+        otherwise GrokConfigurationError.
 
         Bounded retry: transient failures (timeout, transport, 5xx) are retried
         at most `_retries` times with a short backoff. Authentication (401/403),
@@ -107,7 +120,15 @@ class GrokService:
         Raises GrokConfigurationError or GrokAPIError on failure. Never leaks
         API keys or raw provider details to callers or logs.
         """
+        if settings.gemini_configured:
+            self.last_provider = "gemini"
+            return await self._chat_gemini(
+                messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
         if settings.grok_configured:
+            self.last_provider = "grok"
             return await self._chat_xai(
                 messages,
                 max_tokens=max_tokens,
@@ -115,6 +136,7 @@ class GrokService:
                 retries=_retries,
             )
         if settings.groq_configured:
+            self.last_provider = "groq"
             log.info("[GROK] using groq fallback", model=settings.groq_model)
             return await self._chat_groq(
                 messages,
@@ -122,7 +144,64 @@ class GrokService:
                 temperature=temperature,
                 retries=_retries,
             )
-        raise GrokConfigurationError("Neither GROK_API_KEY nor GROQ_API_KEY is configured")
+        raise GrokConfigurationError("Neither GEMINI_API_KEY, GROK_API_KEY nor GROQ_API_KEY is configured")
+
+    async def _chat_gemini(
+        self,
+        messages: List[Dict[str, str]],
+        *,
+        max_tokens: int,
+        temperature: float,
+    ) -> str:
+        """Call Google Gemini (generativelanguage API) and return the assistant text."""
+        if not GEMINI_SDK_AVAILABLE:
+            log.warning("[GROK] gemini sdk missing", provider="gemini")
+            raise GrokAPIError("Gemini SDK is not installed", code="GROK_API_ERROR")
+
+        system = next((m["content"] for m in messages if m["role"] == "system"), "")
+        transcript = "\n\n".join(
+            f"{m['role'].upper()}: {m['content']}" for m in messages if m["role"] != "system"
+        )
+
+        def _call() -> str:
+            genai.configure(api_key=settings.gemini_api_key)
+            model = genai.GenerativeModel(
+                settings.gemini_model,
+                system_instruction=system or None,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=max_tokens,
+                    temperature=temperature,
+                ),
+            )
+            resp = model.generate_content(transcript or "Hello")
+            return resp.text or ""
+
+        try:
+            text = await asyncio.to_thread(_call)
+        except (google_api_exceptions.PermissionDenied, google_api_exceptions.Unauthenticated):
+            log.warning("[GROK] gemini authentication rejected", provider="gemini")
+            raise GrokAPIError("Gemini authentication failed", status=401, code="GROK_AUTH_ERROR")
+        except google_api_exceptions.ResourceExhausted:
+            log.warning("[GROK] gemini rate limited", provider="gemini")
+            raise GrokAPIError("Gemini rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
+        except google_api_exceptions.NotFound:
+            log.warning("[GROK] gemini model unavailable", provider="gemini", model=settings.gemini_model)
+            raise GrokAPIError("Gemini model unavailable", status=404, code="GROK_API_ERROR")
+        except (google_api_exceptions.ServiceUnavailable, google_api_exceptions.InternalServerError):
+            log.warning("[GROK] gemini provider error", provider="gemini")
+            raise GrokAPIError("Gemini provider error", status=503, code="GROK_API_ERROR")
+        except (google_api_exceptions.DeadlineExceeded, google_api_exceptions.RetryError):
+            log.warning("[GROK] gemini request timed out", provider="gemini", timeout=settings.gemini_timeout_seconds)
+            raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
+        except Exception as e:  # noqa: BLE001
+            log.warning("[GROK] gemini unexpected error", provider="gemini", error_type=type(e).__name__)
+            raise GrokAPIError("Gemini API error")
+
+        if not isinstance(text, str) or not text.strip():
+            log.warning("[GROK] gemini empty response", provider="gemini")
+            raise GrokAPIError("Empty Gemini response")
+
+        return text
 
     async def _chat_xai(
         self,

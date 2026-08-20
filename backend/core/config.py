@@ -276,6 +276,12 @@ class Settings(BaseSettings):
     grok_api_base: str = "https://api.x.ai/v1"
     grok_timeout_seconds: int = 60
 
+    # Gemini (Google AI Studio) — ASK ZORQEN primary copilot provider.
+    # Takes priority over Grok/Groq when GEMINI_API_KEY is set.
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_timeout_seconds: int = 60
+
     # AI provider abstraction — "groq" | "gemini" | "openai" | "anthropic" | "mock"
     ai_provider: str = "groq"
     ai_enabled: bool = True
@@ -374,6 +380,10 @@ class Settings(BaseSettings):
     @property
     def grok_configured(self) -> bool:
         return bool(self.grok_api_key)
+
+    @property
+    def gemini_configured(self) -> bool:
+        return bool(self.gemini_api_key)
 
     @property
     def groq_model_deprecated(self) -> bool:

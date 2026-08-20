@@ -1381,30 +1381,61 @@ async def copilot_chat(
     retrieves the relevant Zorqen evidence, grounds the answer in it, and
     returns structured source references. Never exposes the API key or stacks.
     """
+    import time
+
+    t0 = time.perf_counter()
+    endpoint = "POST /api/copilot/chat"
     try:
-        return await investigate(db, current_user, req)
+        result = await investigate(db, current_user, req)
+        latency_ms = round((time.perf_counter() - t0) * 1000)
+        result["latency_ms"] = latency_ms
+        log.info(
+            "[COPILOT] chat_ok",
+            endpoint=endpoint,
+            latency_ms=latency_ms,
+            status=200,
+            provider=result.get("provider"),
+        )
+        return result
     except GrokAPIError as e:
+        latency_ms = round((time.perf_counter() - t0) * 1000)
         log.warning(
             "[COPILOT] grok_error",
-            error_code=getattr(e, "code", "GROK_API_ERROR"),
+            endpoint=endpoint,
+            latency_ms=latency_ms,
             status=e.status,
+            error_code=getattr(e, "code", "GROK_API_ERROR"),
         )
         raise structured_error(
             status_code=429 if e.status == 429 else 503,
             stage="copilot",
-            code="GROK_API_ERROR" if e.status != 429 else "GROK_RATE_LIMIT",
+            code="GROK_RATE_LIMIT" if e.status == 429 else getattr(e, "code", "GROK_API_ERROR"),
             message="ASK ZORQEN is temporarily unavailable. Please try again.",
         )
     except GrokConfigurationError:
-        log.warning("[COPILOT] grok_not_configured", error_code="GROK_CONFIGURATION_ERROR")
+        latency_ms = round((time.perf_counter() - t0) * 1000)
+        log.warning(
+            "[COPILOT] grok_not_configured",
+            endpoint=endpoint,
+            latency_ms=latency_ms,
+            status=503,
+            error_code="GROK_CONFIGURATION_ERROR",
+        )
         raise structured_error(
             status_code=503,
             stage="copilot",
             code="GROK_CONFIGURATION_ERROR",
-            message="ASK ZORQEN is not configured. Set GROK_API_KEY to enable it.",
+            message="ASK ZORQEN is not configured. Set GEMINI_API_KEY, GROK_API_KEY, or GROQ_API_KEY to enable it.",
         )
     except CopilotContextError:
-        log.warning("[COPILOT] context_error", error_code="ASSESSMENT_CONTEXT_ERROR")
+        latency_ms = round((time.perf_counter() - t0) * 1000)
+        log.warning(
+            "[COPILOT] context_error",
+            endpoint=endpoint,
+            latency_ms=latency_ms,
+            status=400,
+            error_code="ASSESSMENT_CONTEXT_ERROR",
+        )
         raise structured_error(
             status_code=400,
             stage="copilot",
@@ -1412,7 +1443,15 @@ async def copilot_chat(
             message="The referenced assessment context is missing or stale.",
         )
     except Exception as e:
-        log.warning("[COPILOT] unexpected_error", error_code="BACKEND_ERROR", error_type=type(e).__name__)
+        latency_ms = round((time.perf_counter() - t0) * 1000)
+        log.warning(
+            "[COPILOT] unexpected_error",
+            endpoint=endpoint,
+            latency_ms=latency_ms,
+            status=500,
+            error_code="BACKEND_ERROR",
+            error_type=type(e).__name__,
+        )
         raise structured_error(
             status_code=500,
             stage="copilot",

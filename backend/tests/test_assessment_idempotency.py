@@ -116,10 +116,31 @@ async def concurrency_db():
 async def _ensure_shared_schema():
     """Ensure the shared test DB (used by the orchestrator, which reads the
     global AsyncSessionLocal) has the full schema, including the
-    one-active-per-repository partial unique index."""
+    one-active-per-repository partial unique index.
+
+    create_all() does not stamp alembic_version, so later TestClient lifespans
+    would re-run `alembic upgrade head` against already-created tables and
+    crash with "table already exists". Stamp head so the health tests' app
+    startup is a no-op.
+    """
     from core.database import init_db
 
     await init_db()
+
+    from pathlib import Path
+    from alembic import command
+    from alembic.config import Config
+
+    backend_root = Path(__file__).resolve().parent.parent
+    cfg = Config(str(backend_root / "alembic.ini"))
+    cfg.set_main_option("script_location", str(backend_root / "alembic"))
+    cfg.set_main_option("prepend_sys_path", str(backend_root))
+    try:
+        # env.py uses asyncio.run(); run in a worker thread so it gets its own
+        # event loop instead of clashing with the test's running loop.
+        await asyncio.to_thread(command.stamp, cfg, "head")
+    except Exception:
+        pass  # stamping is best-effort; tables already exist via create_all
     yield
 
 

@@ -437,6 +437,24 @@ async def test_health_endpoint():
         assert "client_secret" not in resp_text
 
 
+@pytest.mark.asyncio
+async def test_health_ai_endpoint():
+    """Health/AI must report gemini + database connectivity for uptime monitors."""
+    from fastapi.testclient import TestClient
+    from main import app
+    with TestClient(app) as client:
+        resp = client.get("/api/health/ai")
+        assert resp.status_code in (200, 503)
+        data = resp.json()
+        assert data["status"] in ("healthy", "degraded")
+        assert data["gemini"] in ("connected", "fallback", "not_configured")
+        assert data["database"] in ("connected", "degraded")
+        # Must never leak keys
+        resp_text = resp.text
+        assert "api_key" not in resp_text
+        assert "api-key" not in resp_text
+
+
 # ── Mock-Scan Detection Tests ─────────────────────────────────────────────────
 
 class TestNoMockData:
@@ -1175,3 +1193,57 @@ class TestRunContractCommit:
         copilot = pathlib.Path(__file__).resolve().parent.parent / "services" / "copilot.py"
         copilot_content = copilot.read_text()
         assert 'or "main")[:7]' not in copilot_content
+
+
+# ── ASK ZORQEN Copilot Contract ───────────────────────────────────────────────
+
+class TestCopilotContract:
+    """Success shape, structured errors, and provider priority."""
+
+    def test_provider_priority_gemini_over_grok_over_groq(self):
+        """GEMINI_API_KEY must take priority, then GROK, then GROQ."""
+        import pathlib
+        grok = pathlib.Path(__file__).resolve().parent.parent / "services" / "grok.py"
+        content = grok.read_text(encoding="utf-8")
+        # Gemini checked before Grok; Grok checked before Groq
+        assert content.index("settings.gemini_configured") < content.index("settings.grok_configured")
+        assert content.index("settings.grok_configured") < content.index("settings.groq_configured")
+        assert "GROK_CONFIGURATION_ERROR" in content
+
+    def test_success_shape_includes_success_and_latency(self):
+        """investigate() must return success=True, answer, sources, latency_ms."""
+        import pathlib
+        copilot = pathlib.Path(__file__).resolve().parent.parent / "services" / "copilot.py"
+        content = copilot.read_text(encoding="utf-8")
+        assert '"success": True' in content
+        assert '"latency_ms": latency_ms' in content
+        assert '"sources": build_sources(zorqen_context)' in content
+
+    def test_copilot_errors_are_structured(self):
+        """Chat errors must use structured_error with code + stage."""
+        import pathlib
+        api = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api.read_text(encoding="utf-8")
+        assert "structured_error(" in content
+        assert 'code="GROK_CONFIGURATION_ERROR"' in content
+        assert 'code="ASSESSMENT_CONTEXT_ERROR"' in content
+        assert 'code="BACKEND_ERROR"' in content
+
+    def test_chat_request_logging_present(self):
+        """Every chat request must log endpoint + latency + status."""
+        import pathlib
+        api = pathlib.Path(__file__).resolve().parent.parent / "routers" / "api.py"
+        content = api.read_text(encoding="utf-8")
+        assert "[COPILOT] chat_ok" in content
+        assert "endpoint=endpoint" in content
+        assert "latency_ms=latency_ms" in content
+        assert "status=200" in content
+
+    def test_health_ai_endpoint_defined(self):
+        """main.py must expose /health/ai and /api/health/ai."""
+        import pathlib
+        main = pathlib.Path(__file__).resolve().parent.parent / "main.py"
+        content = main.read_text(encoding="utf-8")
+        assert '@app.get("/api/health/ai")' in content
+        assert '@app.get("/health/ai")' in content
+        assert '"gemini": gemini_status' in content

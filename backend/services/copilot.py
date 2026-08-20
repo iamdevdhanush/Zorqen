@@ -490,6 +490,9 @@ def build_sources(context: dict) -> list:
 # ── Investigation entry point ────────────────────────────────────────────────
 
 async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> dict:
+    import time
+
+    t0 = time.perf_counter()
     context = request.context or ChatContext()
     if not context.assessment_id and request.assessment_id:
         context.assessment_id = request.assessment_id
@@ -517,10 +520,14 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
 
     answer = await grok.chat(messages, max_tokens=1200, temperature=0.2)
     answer = sanitize_response(answer)
+    latency_ms = round((time.perf_counter() - t0) * 1000)
 
     return {
+        "success": True,
         "answer": answer,
         "response": answer,  # legacy alias for in-flight frontend/backend deploys
         "sources": build_sources(zorqen_context),
+        "latency_ms": latency_ms,
+        "provider": getattr(grok, "last_provider", None),
         "context_loaded": bool(zorqen_context.get("retrieved")),
     }
