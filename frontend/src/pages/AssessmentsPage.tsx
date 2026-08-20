@@ -15,17 +15,17 @@ export default function AssessmentsPage() {
   const run = currentAssessment ?? assessments[0];
 
   return (
-    <div className="max-w-[1240px] mx-auto space-y-10 fade-in py-2">
+    <div className="max-w-[1280px] mx-auto space-y-8 fade-in py-4">
       
       {/* Page Header */}
       <PageHeader
-        kicker="Pipeline workspace"
+        kicker="zorqen://pipeline/workspace"
         title="ASSESSMENTS"
         right={
           <button
             onClick={() => setModalOpen(true)}
             disabled={!currentRepo || isRunning}
-            className="btn btn-primary px-5 py-2.5 text-[13px]"
+            className="btn btn-primary px-6 h-[44px] text-[13px]"
           >
             <Play className="w-4 h-4" />
             Run Assessment{currentRepo ? ` · ${currentRepo.name}` : ''}
@@ -40,7 +40,7 @@ export default function AssessmentsPage() {
           onRetry={startAssessment}
         />
       ) : (
-        <div className="p-8 sm:p-12 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard">
+        <div className="panel p-12 text-center text-[#5E5E5E] mono text-[13px]">
           {currentRepo
             ? 'No assessments for this repository yet — run your first assessment to launch the Security Validation Console.'
             : 'No repository loaded — select a repository to run an assessment.'}
@@ -67,20 +67,20 @@ export default function AssessmentsPage() {
             <tbody>
               {assessments.map((a) => (
                 <tr key={a.id} onClick={() => navigate(`/assessments/${a.id.replace('#', '')}`)}>
-                  <td className="mono text-[11.5px] font-bold" style={{ color: 'var(--color-ink)' }}>{a.id}</td>
-                  <td className="mono text-[11.5px] text-[var(--color-ink-2)] font-semibold">{a.repo}</td>
-                  <td className="mono text-[11.5px] text-[var(--color-ink-3)]">@{a.commit?.slice(0, 7) ?? '—'}</td>
-                  <td className="mono text-[11px] text-[var(--color-ink-3)]">{a.startedAt ?? '—'}</td>
-                  <td className="mono text-[11px] text-[var(--color-ink-3)]">{a.duration ?? 'in progress'}</td>
-                  <td className="mono text-[11.5px] font-bold text-[#111111]">
+                  <td className="mono text-[12px] font-extrabold text-[#0A0A0A] py-4">{a.id}</td>
+                  <td className="mono text-[12px] text-[#0A0A0A] font-extrabold py-4">{a.repo}</td>
+                  <td className="mono text-[12px] text-[#5E5E5E] py-4">@{a.commit?.slice(0, 7) ?? '—'}</td>
+                  <td className="mono text-[11px] text-[#5E5E5E] py-4">{a.startedAt ?? '—'}</td>
+                  <td className="mono text-[11px] text-[#5E5E5E] py-4">{a.duration ?? 'in progress'}</td>
+                  <td className="mono text-[12px] font-extrabold text-[#0A0A0A] py-4">
                     {a.score ?? '—'}/100
                   </td>
-                  <td className="mono text-[11.5px] text-[var(--color-ink-2)] font-semibold">
+                  <td className="mono text-[12px] text-[#0A0A0A] font-extrabold py-4">
                     {a.findings.length}
                   </td>
-                  <td><RunStatus status={a.status} /></td>
-                  <td className="text-right">
-                    <ArrowRight className="w-3.5 h-3.5 inline text-[var(--color-ink-3)]" />
+                  <td className="py-4"><RunStatus status={a.status} /></td>
+                  <td className="text-right py-4">
+                    <ArrowRight className="w-4 h-4 inline text-[#0A0A0A]" />
                   </td>
                 </tr>
               ))}
@@ -89,8 +89,8 @@ export default function AssessmentsPage() {
         </div>
       </Panel>
 
-      <div className="text-[11px] text-[var(--color-ink-3)] px-1 mono font-medium">
-        Assessment pipeline: INDEX → ARCHITECTURE → DEPENDENCIES → STATIC ANALYSIS → SECRETS → AI REASONING → SANDBOX VALIDATION
+      <div className="text-[11px] text-[#5E5E5E] px-1 mono font-bold uppercase tracking-[0.18em]">
+        Pipeline Sequence: INDEX → ARCHITECTURE → DEPENDENCIES → STATIC ANALYSIS → SECRETS → AI REASONING → SANDBOX VALIDATION
       </div>
 
       {modalOpen && <AssessmentModal onClose={() => setModalOpen(false)} />}
