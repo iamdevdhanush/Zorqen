@@ -16,6 +16,8 @@ import {
 import { AnimatedNumber, SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
 import { useWorkspace, useFindings, useAssessmentActive } from '../store/WorkspaceContext';
 
+import GithubIcon from '../components/GithubIcon';
+
 export default function OverviewPage() {
   const {
     currentRepo,
@@ -44,10 +46,43 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <button onClick={connectGithub} className="btn btn-primary px-6 h-[48px] text-[14px]">
-            Connect GitHub Account
-          </button>
+        {/* Inline GitHub Connection Metadata Row */}
+        <div className="pt-6 border-t-2 border-[#111111]/15">
+          <div
+            onClick={connectGithub}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
+            className="group relative inline-flex items-center justify-between gap-4 max-w-[620px] w-full py-2.5 px-1 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[6px]"
+          >
+            {/* Left metadata items */}
+            <div className="flex items-center gap-3 min-w-0 flex-wrap sm:flex-nowrap">
+              {/* GitHub icon - turns lime on hover */}
+              <GithubIcon className="w-5 h-5 text-[#111111] group-hover:text-[#C8FF2E] transition-colors duration-150 shrink-0" />
+
+              {/* Small status dot - pulses on hover */}
+              <span className="w-2 h-2 rounded-full bg-[#DC2626] group-hover:scale-125 group-hover:animate-ping transition-all duration-150 shrink-0" />
+
+              {/* Status label */}
+              <span className="font-extrabold text-[13.5px] text-[#0A0A0A] tracking-tight shrink-0">
+                GitHub Not Connected
+              </span>
+
+              {/* Separator dot */}
+              <span className="text-[#5E5E5E] font-bold text-[14px] shrink-0">•</span>
+
+              {/* Monospace command */}
+              <span className="font-mono text-[12.5px] font-bold text-[#5E5E5E] group-hover:text-[#0A0A0A] transition-colors duration-150 truncate">
+                github connect --oauth
+              </span>
+            </div>
+
+            {/* Right-aligned external arrow that slides 3px on hover */}
+            <ArrowRight className="w-4 h-4 text-[#111111] group-hover:translate-x-[3px] group-hover:text-[#0A0A0A] transition-transform duration-150 shrink-0 ml-2" />
+
+            {/* Animated Underline: grows left -> right on hover */}
+            <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#C8FF2E] group-hover:w-full transition-all duration-200 ease-out" />
+          </div>
         </div>
 
         <div className="pt-8 border-t-2 border-[#111111] space-y-4">

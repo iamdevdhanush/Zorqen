@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ShieldCheck, X } from 'lucide-react';
+import { ArrowRight, ShieldCheck, X } from 'lucide-react';
 import GithubIcon from './GithubIcon';
 import { useWorkspace } from '../store/WorkspaceContext';
 
@@ -46,10 +46,24 @@ export default function ConnectGithubModal() {
           <button
             ref={primaryRef}
             onClick={proceedGithubAuth}
-            className="btn btn-accent w-full justify-center py-2.5 text-[13px]"
+            className="group relative flex items-center justify-between gap-3.5 h-[52px] px-4 w-full rounded-[16px] bg-[#111111] text-white border-2 border-[#111111] border-b-4 hover:border-b-[6px] border-b-[#C8FF2E] shadow-hard-sm hover:-translate-y-[2px] transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF2E]"
           >
-            <GithubIcon className="w-4 h-4" />
-            Continue with GitHub
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#222222] border border-[#333333] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-150">
+                <GithubIcon className="w-5 h-5 text-white" />
+              </div>
+
+              <div className="text-left leading-tight min-w-0">
+                <div className="font-extrabold text-[14px] text-white tracking-tight flex items-center gap-1.5">
+                  Connect with GitHub
+                </div>
+                <div className="text-[11px] font-medium text-zinc-400 truncate">
+                  Authorize repository access via GitHub OAuth.
+                </div>
+              </div>
+            </div>
+
+            <ArrowRight className="w-4 h-4 text-[#C8FF2E] shrink-0 group-hover:translate-x-[4px] transition-transform duration-150 ml-2" />
           </button>
 
           <div className="p-4 rounded-md border border-[#111111] bg-[#FAFAFA] shadow-hard-sm space-y-1">
