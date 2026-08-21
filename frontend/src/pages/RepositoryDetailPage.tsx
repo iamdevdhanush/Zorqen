@@ -12,7 +12,7 @@ import { getRepoDetail } from '../services/api';
 import api from '../services/api';
 import type { RepoDetail, RepoMeta } from '../lib/types';
 
-/** Read and validate the JWT from localStorage without importing the context. */
+/** Read and validate JWT from localStorage */
 function localTokenValid(): boolean {
   const token = localStorage.getItem('zorqen_token');
   if (!token) return false;
@@ -27,21 +27,24 @@ function localTokenValid(): boolean {
   }
 }
 
-/** IDE Explorer Skeleton Loading Tree */
+/** IDE Explorer Contextual Skeleton Loading Tree */
 function SkeletonTree() {
   return (
-    <div className="p-4 space-y-3 font-mono text-[12px]">
+    <div className="p-5 space-y-3.5 font-mono text-[12px] bg-white">
+      <div className="text-[11px] font-bold text-[#5E5E5E] uppercase tracking-wider mb-2">
+        Indexing repository files & AST call graph…
+      </div>
       {[
-        { indent: 0, width: 'w-28', isDir: true },
-        { indent: 4, width: 'w-36', isDir: false },
-        { indent: 4, width: 'w-48', isDir: false },
         { indent: 0, width: 'w-32', isDir: true },
+        { indent: 4, width: 'w-44', isDir: false },
+        { indent: 4, width: 'w-56', isDir: false },
+        { indent: 0, width: 'w-36', isDir: true },
+        { indent: 4, width: 'w-48', isDir: false },
         { indent: 4, width: 'w-40', isDir: false },
-        { indent: 4, width: 'w-32', isDir: false },
       ].map((item, idx) => (
         <div key={idx} className="flex items-center gap-2.5 animate-pulse" style={{ paddingLeft: `${item.indent * 3}px` }}>
-          <div className={`w-3.5 h-3.5 rounded bg-[#111111]/15 ${item.isDir ? 'bg-[#C8FF2E]/60' : ''}`} />
-          <div className={`h-3 bg-[#111111]/15 rounded ${item.width}`} />
+          <div className={`w-4 h-4 rounded bg-[#111111]/15 ${item.isDir ? 'bg-[#C8FF2E]' : ''}`} />
+          <div className={`h-3.5 bg-[#111111]/15 rounded ${item.width}`} />
         </div>
       ))}
     </div>
@@ -122,8 +125,8 @@ export default function RepositoryDetailPage() {
   if (!currentRepo) {
     const isAuthErr = !localTokenValid();
     return (
-      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 py-10 space-y-6 fade-in">
-        <div className="flex items-center gap-2 text-[12.5px] text-[#6B6B6B] font-medium">
+      <div className="max-w-[1440px] mx-auto py-10 space-y-6 fade-in">
+        <div className="flex items-center gap-2 text-[13px] text-[#5E5E5E] font-medium">
           <Link to="/repos" className="hover:text-[#0A0A0A] transition-colors">Repositories</Link>
           <span>/</span>
           <span className="mono text-[#0A0A0A] font-bold">{repoId}</span>
@@ -156,61 +159,59 @@ export default function RepositoryDetailPage() {
   const arch = currentAssessment?.architecture;
 
   return (
-    <div className="max-w-[1360px] mx-auto px-5 sm:px-8 py-6 space-y-8 fade-in">
+    <div className="max-w-[1440px] mx-auto space-y-8 fade-in">
       
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-[12.5px] font-medium text-[#6B6B6B]">
+      <div className="flex items-center gap-2 text-[13px] font-medium text-[#5E5E5E]">
         <Link to="/repos" className="hover:text-[#0A0A0A] transition-colors">Repositories</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-[#6B6B6B]/60" />
-        <span className="text-[#6B6B6B]">{repo.owner}</span>
-        <ChevronRight className="w-3.5 h-3.5 text-[#6B6B6B]/60" />
+        <ChevronRight className="w-3.5 h-3.5 text-[#5E5E5E]" />
+        <span className="text-[#5E5E5E]">{repo.owner}</span>
+        <ChevronRight className="w-3.5 h-3.5 text-[#5E5E5E]" />
         <span className="mono text-[#0A0A0A] font-bold">{repo.name}</span>
       </div>
 
-      {/* ── 1. ABOVE-THE-FOLD RESTRUCTURED HERO ─────────────────────────────── */}
-      <div className="bg-white border-2 border-[#111111] rounded-[20px] p-5 sm:p-7 shadow-hard space-y-6">
+      {/* Hero Header */}
+      <div className="bg-white border-2 border-[#111111] rounded-[20px] p-6 sm:p-8 shadow-hard space-y-6">
         
-        {/* 1. Repository Name */}
+        {/* Repository Name & Protocol */}
         <div className="space-y-2">
           <div className="protocol-tag">zorqen://repository/{repo.owner}/{repo.name}</div>
-          <h1 className="text-2xl sm:text-[36px] font-extrabold text-[#0A0A0A] tracking-tight truncate">
+          <h1 className="text-[32px] sm:text-[44px] font-[900] text-[#0A0A0A] tracking-tight truncate">
             {repo.owner}/{repo.name}
           </h1>
 
-          {/* 2. Metadata (PRIVATE • Python) */}
+          {/* Metadata Badges */}
           <div className="flex items-center gap-2 text-[13px] font-bold text-[#0A0A0A] flex-wrap">
             <span className="mono bg-[#FAFAFA] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] uppercase text-[11px]">
               {repo.private ? 'PRIVATE' : 'PUBLIC'}
             </span>
-            <span className="text-[#6B6B6B]">•</span>
+            <span className="text-[#5E5E5E]">•</span>
             <span className="mono bg-[#FAFAFA] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] text-[11px]">
               {repo.language || 'Codebase'}
             </span>
           </div>
         </div>
 
-        {/* 3. Security Status Card */}
+        {/* Security Status Experience */}
         <div className="space-y-2">
-          <div className="mono text-[11px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">
-            Security Status
-          </div>
+          <div className="text-caption">Security Status</div>
           <AssessmentStateCard run={currentAssessment} />
         </div>
 
-        {/* 4. Primary CTA Button (Full-width on mobile) */}
+        {/* Primary CTA Button (52px desktop / 48px mobile) */}
         <div className="space-y-3 pt-2">
           <button
             onClick={startAssessment}
             disabled={running}
-            className="w-full sm:w-auto h-[48px] min-h-[44px] px-8 rounded-[12px] bg-[#C8FF2E] hover:bg-[#b5eb1c] text-[#111111] border-2 border-[#111111] font-extrabold text-[15px] shadow-hard-sm transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed outline-none active:scale-[0.98]"
+            className="btn btn-accent w-full sm:w-auto h-[48px] md:h-[52px] px-8 text-[15px] font-extrabold shadow-hard flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px]"
           >
             <Play className="w-5 h-5 fill-[#111111] text-[#111111]" />
             <span>{running ? 'Assessment Running…' : 'Run Assessment'}</span>
             <ArrowRight className="w-5 h-5 text-[#111111]" />
           </button>
 
-          {/* 5. Latest Snapshot */}
-          <div className="mono text-[12px] text-[#6B6B6B] font-medium flex items-center gap-2 flex-wrap tabular-nums">
+          {/* Latest Snapshot */}
+          <div className="mono text-[12px] text-[#5E5E5E] font-medium flex items-center gap-2 flex-wrap tabular-nums">
             <span className="font-bold text-[#0A0A0A]">Latest Snapshot:</span>
             <span className="bg-[#FAFAFA] border border-[#111111]/20 px-2 py-0.5 rounded text-[#0A0A0A] font-bold">
               {detail?.defaultBranch ?? repo.defaultBranch}
@@ -224,91 +225,91 @@ export default function RepositoryDetailPage() {
 
       </div>
 
-      {/* ── 2. SECURITY POSTURE SUMMARY ─────────────────────────────────────── */}
+      {/* Security Posture Summary Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
-          <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Security Score</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
-            {lastScore ?? '94'}<span className="text-[12px] text-[#6B6B6B] font-bold">/100</span>
+        <div className="panel space-y-1">
+          <div className="text-caption text-[10px]">Security Score</div>
+          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
+            {lastScore ?? '94'}<span className="text-[12px] text-[#5E5E5E] font-bold">/100</span>
           </div>
-          <div className="text-[11px] font-semibold text-[#0A0A0A]">
+          <div className="text-[11.5px] font-semibold text-[#0A0A0A]">
             {riskBand ?? 'LOW RISK'}
           </div>
         </div>
 
-        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
-          <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Files Indexed</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+        <div className="panel space-y-1">
+          <div className="text-caption text-[10px]">Files Indexed</div>
+          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
             {detail ? detail.fileCount : '153'}
           </div>
-          <div className="text-[11px] font-medium text-[#6B6B6B]">
+          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
             All nodes mapped
           </div>
         </div>
 
-        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
-          <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Dependencies</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+        <div className="panel space-y-1">
+          <div className="text-caption text-[10px]">Dependencies</div>
+          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
             {arch?.dependencies ?? 28}
           </div>
-          <div className="text-[11px] font-medium text-[#6B6B6B]">
+          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
             0 vulnerabilities
           </div>
         </div>
 
-        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
-          <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Secrets</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+        <div className="panel space-y-1">
+          <div className="text-caption text-[10px]">Secrets</div>
+          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
             {arch?.secrets ?? 0}
           </div>
-          <div className="text-[11px] font-medium text-[#0A0A0A]">
+          <div className="text-[11.5px] font-medium text-[#0A0A0A]">
             Clean baseline
           </div>
         </div>
 
-        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
-          <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Endpoints</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+        <div className="panel space-y-1">
+          <div className="text-caption text-[10px]">Endpoints</div>
+          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
             {arch?.routes ?? 42}
           </div>
-          <div className="text-[11px] font-medium text-[#6B6B6B]">
+          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
             Static routes
           </div>
         </div>
 
-        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
-          <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Last Scan</div>
-          <div className="mono text-[16px] font-extrabold text-[#0A0A0A] mt-1 truncate">
+        <div className="panel space-y-1">
+          <div className="text-caption text-[10px]">Last Scan</div>
+          <div className="mono text-[17px] font-extrabold text-[#0A0A0A] mt-1 truncate">
             Live
           </div>
-          <div className="text-[11px] font-medium text-[#6B6B6B]">
+          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
             Snapshot HEAD
           </div>
         </div>
       </div>
 
-      {/* ── 3. AI-REASONED ATTACK MAP (Progressive Disclosure) ─────────────── */}
+      {/* AI-Reasoned Attack Map */}
       <AttackMapModule architecture={arch} />
 
-      {/* ── 4. SIMPLIFIED DETECTED TECH STACK ──────────────────────────────── */}
+      {/* Simplified Tech Stack */}
       <TechStackSection
         primaryLanguage={arch?.primaryLanguage || repo.language}
         frameworks={arch?.frameworks}
         dependenciesCount={arch?.dependencies}
       />
 
-      {/* ── 5. REPOSITORY TREE EXPLORER & FINDINGS ──────────────────────────── */}
+      {/* Repository Tree Explorer & Findings Table */}
       <div className="grid grid-cols-12 gap-6 items-start">
         <div className="col-span-12 lg:col-span-8 space-y-6">
           
           {/* Repository Tree Explorer */}
-          <div className="bg-white border border-[#111111]/15 rounded-[16px] overflow-hidden shadow-subtle">
-            <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#111111]/10 flex items-center justify-between">
+          <div className="bg-white border-2 border-[#111111] rounded-[16px] overflow-hidden shadow-hard-sm">
+            <div className="px-5 py-3.5 bg-[#FAFAFA] border-b-2 border-[#111111] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FolderTree className="w-4 h-4 text-[#111111]" />
-                <span className="font-extrabold text-[13px] text-[#0A0A0A]">Repository Explorer</span>
+                <span className="font-extrabold text-[14px] text-[#0A0A0A]">Repository Explorer</span>
               </div>
-              <span className="mono text-[10.5px] font-semibold text-[#6B6B6B]">
+              <span className="mono text-[11px] font-semibold text-[#5E5E5E]">
                 {detail ? `${detail.fileCount} files · HEAD` : 'Indexing tree…'}
               </span>
             </div>
@@ -336,30 +337,30 @@ export default function RepositoryDetailPage() {
           </div>
 
           {/* Files with Findings Table */}
-          <div className="bg-white border border-[#111111]/15 rounded-[16px] overflow-hidden shadow-subtle">
-            <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#111111]/10 flex items-center justify-between">
+          <div className="bg-white border-2 border-[#111111] rounded-[16px] overflow-hidden shadow-hard-sm">
+            <div className="px-5 py-3.5 bg-[#FAFAFA] border-b-2 border-[#111111] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#111111]" />
-                <span className="font-extrabold text-[13px] text-[#0A0A0A]">Files with Findings</span>
+                <span className="font-extrabold text-[14px] text-[#0A0A0A]">Files with Findings</span>
               </div>
-              <span className="mono text-[10.5px] font-semibold text-[#6B6B6B] tabular-nums">
+              <span className="mono text-[11px] font-semibold text-[#5E5E5E] tabular-nums">
                 {findings.length} registered
               </span>
             </div>
 
             {findings.length === 0 ? (
-              <div className="px-4 py-6 text-[13px] text-[#6B6B6B] font-medium mono">
+              <div className="p-6 text-[13.5px] text-[#5E5E5E] font-medium mono">
                 Operational baseline: 0 unhandled findings registered for this repository snapshot.
               </div>
             ) : (
               <div className="overflow-x-auto scroll-thin">
-                <table className="w-full text-left border-collapse text-[12.5px]">
+                <table className="w-full text-left border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b border-[#111111]/10 bg-[#FAFAFA] mono text-[10px] text-[#6B6B6B] uppercase font-bold tracking-[0.1em]">
-                      <th className="py-2.5 px-4">File Path</th>
-                      <th className="py-2.5 px-4">Severity</th>
-                      <th className="py-2.5 px-4">Rule / CWE</th>
-                      <th className="py-2.5 px-4 text-right">Status</th>
+                    <tr className="border-b-2 border-[#111111] bg-[#FAFAFA] mono text-[10.5px] text-[#5E5E5E] uppercase font-bold tracking-[0.1em]">
+                      <th className="py-3 px-5">File Path</th>
+                      <th className="py-3 px-5">Severity</th>
+                      <th className="py-3 px-5">Rule / CWE</th>
+                      <th className="py-3 px-5 text-right">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#111111]/10 font-medium">
@@ -369,16 +370,16 @@ export default function RepositoryDetailPage() {
                         onClick={() => navigate(`/findings/${f.id}`)}
                         className="hover:bg-[#FAFAFA] transition-all cursor-pointer group"
                       >
-                        <td className="py-3 px-4 mono text-[11px] text-[#6B6B6B] font-medium truncate max-w-[280px]">
+                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#5E5E5E] font-medium truncate max-w-[280px]">
                           <strong className="text-[#0A0A0A] font-bold">{f.file_path}</strong>:{f.line_number}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-5">
                           <SevBadge sev={f.severity} />
                         </td>
-                        <td className="py-3 px-4 mono text-[11px] text-[#6B6B6B]">
+                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#5E5E5E]">
                           {f.cwe_id}
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3.5 px-5 text-right">
                           <StatusBadge s={f.status} />
                         </td>
                       </tr>
@@ -392,17 +393,15 @@ export default function RepositoryDetailPage() {
 
         {/* Right Sidebar Metadata */}
         <div className="col-span-12 lg:col-span-4 space-y-6 sticky top-[92px]">
-          <div className="bg-white border border-[#111111]/15 rounded-[16px] p-5 space-y-5 shadow-subtle">
+          <div className="bg-white border-2 border-[#111111] rounded-[16px] p-5 space-y-5 shadow-hard-sm">
             <div className="space-y-2">
-              <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">
-                POSTURE SUMMARY
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-[10px] bg-[#FAFAFA] border border-[#111111]/10">
+              <div className="text-caption">POSTURE SUMMARY</div>
+              <div className="flex items-center justify-between p-3.5 rounded-[12px] bg-[#FAFAFA] border-2 border-[#111111]/20">
                 <div>
-                  <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
-                    {lastScore ?? '94'}<span className="text-[12px] text-[#6B6B6B] font-bold">/100</span>
+                  <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
+                    {lastScore ?? '94'}<span className="text-[12px] text-[#5E5E5E] font-bold">/100</span>
                   </div>
-                  <div className="mono text-[10.5px] font-semibold text-[#6B6B6B]">Validation Score</div>
+                  <div className="mono text-[11px] font-semibold text-[#5E5E5E]">Validation Score</div>
                 </div>
                 {riskBand && (
                   <span className={`chip text-[10px] uppercase font-bold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
@@ -412,23 +411,21 @@ export default function RepositoryDetailPage() {
               </div>
             </div>
 
-            <div className="h-[1px] bg-[#111111]/10 w-full" />
+            <div className="h-[2px] bg-[#111111]/15 w-full" />
 
             <div className="space-y-2">
-              <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">
-                QUICK ACTIONS
-              </div>
+              <div className="text-caption">QUICK ACTIONS</div>
               <div className="space-y-2">
                 <button
                   onClick={startAssessment}
                   disabled={running}
-                  className="btn btn-accent btn-sm w-full justify-center text-[13px] font-extrabold min-h-[44px]"
+                  className="btn btn-accent w-full justify-center text-[13.5px] font-extrabold h-[48px] min-h-[44px]"
                 >
                   {running ? 'Assessment running…' : 'Run Assessment'}
                 </button>
                 <button
                   onClick={() => navigate('/findings')}
-                  className="btn btn-sm w-full justify-center text-[13px] font-bold min-h-[44px]"
+                  className="btn btn-secondary w-full justify-center text-[13.5px] font-bold h-[48px] min-h-[44px]"
                 >
                   View Findings ({findings.length})
                 </button>

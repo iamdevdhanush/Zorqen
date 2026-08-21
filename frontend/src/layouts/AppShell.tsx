@@ -59,9 +59,9 @@ function AppShellInner() {
       {/* Top Header Navigation */}
       <TopNav onOpenCmd={handleOpenCmd} />
 
-      {/* Main Page Area with Safe Area Bottom Padding when Scanning */}
+      {/* Main Page Area Aligned to 1440px Grid (Desktop: 32px, Tablet: 24px, Mobile: 20px) */}
       <main
-        className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-4 sm:py-8 transition-all"
+        className="flex-1 max-w-[1440px] w-full mx-auto px-5 sm:px-6 md:px-8 py-6 sm:py-8 transition-all"
         style={{
           paddingBottom: isScanning ? 'calc(56px + env(safe-area-inset-bottom))' : undefined,
         }}
@@ -77,15 +77,15 @@ function AppShellInner() {
         />
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-[#111111]/10 px-4 sm:px-6 py-3.5 mt-auto bg-[#ECEBE6]">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[12px] text-[#6B6B6B]">
+      {/* Footer Aligned to 1440px Grid */}
+      <footer className="border-t-2 border-[#111111]/15 px-5 sm:px-6 md:px-8 py-4 mt-auto bg-[#ECEBE6]">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[13px] text-[#5E5E5E]">
           <div className="flex items-center gap-2 flex-wrap font-medium">
             <span className="font-extrabold text-[#0A0A0A]">ZORQEN</span>
             <span className="text-[#111111]/30">•</span>
             <span>Autonomous Security Validation Platform</span>
           </div>
-          <div className="mono text-[11px] font-semibold text-[#6B6B6B]">
+          <div className="mono text-[11.5px] font-semibold text-[#5E5E5E]">
             Isolated sandbox execution · Read-only repository access
           </div>
         </div>

@@ -35,7 +35,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
 
   return (
     <>
-      {/* ── 1. STICKY DOCK BAR (Live Operational Feedback) ────────────────── */}
+      {/* ── STICKY BOTTOM DOCK (Strict 56px Height) ────────────────────────── */}
       <div
         className="fixed bottom-0 left-0 right-0 z-30 bg-[#111111] text-white border-t-2 border-[#111111] shadow-hard-lg cursor-pointer transition-all hover:bg-black"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -44,8 +44,8 @@ export const BottomOperationDock = memo(function BottomOperationDock({
         tabIndex={0}
         aria-label="Open live security operation console"
       >
-        <div className="max-w-[1400px] mx-auto h-[56px] px-4 sm:px-6 flex items-center justify-between gap-3 min-h-[44px]">
-          {/* Left: Live Status & Counters */}
+        <div className="max-w-[1440px] mx-auto h-[56px] px-4 sm:px-6 md:px-8 flex items-center justify-between gap-3 min-h-[44px]">
+          {/* Left: Status & Timers */}
           <div className="flex items-center gap-3 min-w-0">
             {isCompleted ? (
               <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8FF2E] px-2.5 py-1 rounded-[6px] border border-white shrink-0 flex items-center gap-1.5">
@@ -76,7 +76,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
             )}
           </div>
 
-          {/* Right: Target Repo & Expand Action */}
+          {/* Right: Target Repo & Expand Trigger */}
           <div className="flex items-center gap-3 shrink-0">
             <span className="mono text-[11px] text-zinc-300 font-bold max-w-[120px] sm:max-w-[200px] truncate">
               {repoName || run.repo}
@@ -88,12 +88,12 @@ export const BottomOperationDock = memo(function BottomOperationDock({
         </div>
       </div>
 
-      {/* ── 2. EXPANDED OPERATION CONSOLE MODAL OVERLAY ───────────────────────── */}
+      {/* ── EXPANDED OPERATION CONSOLE MODAL OVERLAY ───────────────────────── */}
       {expanded && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-[#0A0A0A]/80 backdrop-blur-sm fade-in">
           {/* Modal Container */}
           <div
-            className="relative z-10 w-full max-w-[1400px] mx-auto h-[92vh] max-h-[92vh] overflow-y-auto bg-[#ECEBE6] border-t-2 border-[#111111] rounded-t-[24px] shadow-hard-lg p-4 sm:p-6 space-y-6 slide-up"
+            className="relative z-10 w-full max-w-[1440px] mx-auto h-[92vh] max-h-[92vh] overflow-y-auto bg-[#ECEBE6] border-t-2 border-[#111111] rounded-t-[24px] shadow-hard-lg p-4 sm:p-6 space-y-6 slide-up"
             style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }}
           >
             {/* Sticky Header Bar */}
@@ -121,7 +121,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
               </button>
             </div>
 
-            {/* Embedded Security Operation Console Component */}
+            {/* Embedded Security Operation Console */}
             <AssessmentOperationConsole run={run} />
 
             {/* Sticky Footer */}

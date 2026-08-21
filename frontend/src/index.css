@@ -2,9 +2,9 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ZORQEN — Security Operations Console (Linear × GitHub × Stripe × Vercel UX)
-   Palette: Background (#ECEBE6), Primary Text (#0A0A0A), Muted Text (#5E5E5E),
-   Accent (#C8FF2E), Border (#111111), Hard Shadows.
+   ZORQEN — SaaS Production Design Tokens & System Scale
+   Identity: Off-white (#ECEBE6), Black (#111111), Neon Lime (#C8FF2E)
+   Linear Precision × GitHub Information Density × Vercel Spacing Discipline
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
@@ -14,11 +14,11 @@
   --color-hover: #F2F2EB;       /* Warm hover fill */
   --color-active: #EAEAE2;      /* Active selection fill */
   --color-line: #111111;        /* Strong 2px dark border */
-  --color-line-subtle: #111111; /* Dark divider */
+  --color-line-subtle: rgba(17, 17, 17, 0.15); /* Subtile border */
   --color-ink: #0A0A0A;         /* Primary text */
   --color-ink-2: #333333;       /* Body text */
   --color-ink-3: #5E5E5E;       /* Muted secondary text */
-  --color-accent: #C8FF2E;      /* Primary Acid / Neon Lime Accent */
+  --color-accent: #C8FF2E;      /* Primary Neon Lime Accent */
   --color-accent-hover: #B7F01E;
   --color-critical: #DC2626;    /* Red */
   --color-high: #EA580C;        /* Orange */
@@ -45,10 +45,6 @@ body {
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
-  image-rendering: auto;
 }
 
 svg {
@@ -68,56 +64,106 @@ svg {
 
 .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
 
-/* ── Numeric Tabular Numerals Utility ───────────────────────────────────── */
+/* ── Tabular Numerals ─────────────────────────────────────────────────── */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Three-Level Border System ─────────────────────────────────────────── */
-.border-level-primary {
-  border: 2px solid #111111;
+/* ── Typography Scale Classes ─────────────────────────────────────────── */
+.text-hero {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  color: #0A0A0A;
 }
-.border-level-secondary {
-  border: 1px solid rgba(17, 17, 17, 0.15);
+@media (min-width: 640px) {
+  .text-hero { font-size: 48px; }
 }
-.border-level-nested {
-  border-top: 1px solid rgba(17, 17, 17, 0.1);
+@media (min-width: 1024px) {
+  .text-hero { font-size: 72px; }
 }
 
-/* ── Elevation & Shadow System ─────────────────────────────────────────── */
+.text-section {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: #0A0A0A;
+}
+@media (min-width: 1024px) {
+  .text-section { font-size: 40px; }
+}
+
+.text-card-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: #0A0A0A;
+}
+@media (min-width: 640px) {
+  .text-card-title { font-size: 24px; }
+}
+
+.text-body {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #333333;
+}
+@media (min-width: 1024px) {
+  .text-body { font-size: 18px; }
+}
+
+.text-caption {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5E5E5E;
+}
+
+/* ── Elevation & Shadow Tokens ─────────────────────────────────────────── */
 .shadow-hard {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
+  box-shadow: 3px 3px 0px #111111;
 }
 .shadow-hard-sm {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 2px 2px 0px #111111;
 }
 .shadow-hard-lg {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 5px 5px 0px #111111;
 }
 .shadow-hard-lime {
   box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C8FF2E;
 }
 
-/* ── Card Hierarchy & Elevation (Linear / Vercel Security Console) ─────── */
+/* ── Standard Card System (120ms Spring Lift) ─────────────────────────── */
 .panel, .card-primary {
   background-color: var(--color-panel);
-  border: 1px solid rgba(17, 17, 17, 0.15);
+  border: 2px solid rgba(17, 17, 17, 0.2);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 180ms cubic-bezier(.22,1,.36,1), border-color 180ms ease, box-shadow 180ms ease;
+  box-shadow: 2px 2px 0px #111111;
+  transition: transform 120ms cubic-bezier(.22,1,.36,1), border-color 120ms ease, box-shadow 120ms ease;
+}
+
+@media (min-width: 640px) {
+  .panel, .card-primary { padding: 24px; }
 }
 
 .panel:hover, .card-primary:hover {
-  border-color: rgba(17, 17, 17, 0.3);
+  border-color: #111111;
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: 4px 4px 0px #111111;
 }
 
 .panel-subtle, .card-secondary {
   background-color: var(--color-panel);
-  border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 12px;
+  border: 1.5px solid rgba(17, 17, 17, 0.15);
+  border-radius: 14px;
   padding: 16px;
-  transition: border-color 150ms ease;
+  transition: border-color 120ms ease;
 }
 
 .panel-head {
@@ -125,17 +171,17 @@ svg {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 18px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.1);
+  padding: 14px 20px;
+  border-bottom: 2px solid #111111;
   background-color: #FAFAFA;
-  border-radius: 15px 15px 0 0;
+  border-radius: 14px 14px 0 0;
   min-height: 44px;
 }
 
 .panel-head-title {
   font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--color-ink);
   display: flex;
@@ -146,43 +192,47 @@ svg {
 .panel-body { padding: 20px; }
 .panel-body-flush { padding: 0; }
 
-@media (max-width: 640px) {
-  .panel, .card-primary { padding: 16px; border-radius: 14px; }
-  .panel-head { padding: 10px 14px; }
-}
-
-/* ── ZORQEN Button System (140ms Press Scale 0.98) ────────────────────── */
+/* ── Standardized Button System (52px Desktop / 48px Mobile) ──────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-family: var(--font-sans);
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1;
-  height: 44px;
+  height: 48px;
   min-height: 44px;
-  padding: 0 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(17, 17, 17, 0.2);
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 2px solid #111111;
   background-color: #FFFFFF;
   color: var(--color-ink);
   cursor: pointer;
   user-select: none;
-  transition: transform 140ms cubic-bezier(.22,1,.36,1), background-color 140ms ease, border-color 140ms ease;
+  box-shadow: 3px 3px 0px #111111;
+  transition: transform 120ms cubic-bezier(.22,1,.36,1), background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
   outline: none;
+}
+
+@media (min-width: 768px) {
+  .btn {
+    height: 52px;
+  }
 }
 
 .btn:hover {
   background-color: #FAFAFA;
   border-color: #111111;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #111111;
 }
 
 .btn:active {
   transform: scale(0.98) translateY(0px);
-  transition-duration: 100ms;
+  box-shadow: 1px 1px 0px #111111;
+  transition-duration: 80ms;
 }
 
 .btn:focus-visible {
@@ -195,137 +245,130 @@ svg {
   pointer-events: none;
 }
 
-/* Primary CTA: Neon Lime Background, Black Bold Text (Level Primary) */
+/* Primary CTA: Neon Lime Background */
 .btn-primary, .btn-accent {
   background-color: #C8FF2E;
   color: #111111;
   border: 2px solid #111111;
   font-weight: 800;
+  box-shadow: 3px 3px 0px #111111;
 }
 
 .btn-primary:hover, .btn-accent:hover {
   background-color: #b5eb1c;
   border-color: #111111;
   color: #111111;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #111111;
 }
 
-/* Secondary CTA: White background with 1px border */
+/* Secondary CTA: White Background */
 .btn-secondary {
   background-color: #FFFFFF;
   color: #0A0A0A;
-  border: 1px solid rgba(17, 17, 17, 0.2);
-  font-weight: 700;
+  border: 2px solid #111111;
+  font-weight: 800;
+  box-shadow: 3px 3px 0px #111111;
 }
 
 .btn-secondary:hover {
   background-color: #FAFAFA;
   border-color: #111111;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #111111;
 }
 
 /* Ghost Button: Borderless */
 .btn-ghost {
   background-color: transparent;
   color: #0A0A0A;
-  border: 1px solid transparent;
-  font-weight: 600;
+  border: 2px solid transparent;
+  font-weight: 700;
+  box-shadow: none;
 }
 
 .btn-ghost:hover {
   background-color: rgba(17, 17, 17, 0.05);
   border-color: transparent;
+  transform: none;
 }
 
-/* Destructive Button: Soft Red */
-.btn-destructive {
-  background-color: #FEE2E2;
-  color: #DC2626;
-  border: 1px solid rgba(220, 38, 38, 0.3);
-  font-weight: 700;
+.btn-sm {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 0px #111111;
 }
 
-.btn-destructive:hover {
-  background-color: #FCA5A5;
-  color: #991B1B;
+.btn-xs {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  box-shadow: 2px 2px 0px #111111;
 }
 
-/* Hero Subtitle Visibility */
-.hero-subtitle {
-  color: #1F1F1F !important;
-  opacity: 1 !important;
-  font-weight: 500;
-  line-height: 1.45;
-  background: none !important;
-  -webkit-text-fill-color: currentColor !important;
-}
-
-.hero-highlight {
-  display: inline;
-  background: #C7F11D;
-  color: #111111;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 700;
-}
-
-/* ── Micro-Chips & Badges (8px Radius & 1px Border) ───────────────────── */
+/* ── Micro-Chips & Badges ────────────────────────────────────────────── */
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 3px 10px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: var(--font-mono);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   line-height: 1.4;
-  border: 1px solid rgba(17, 17, 17, 0.2);
+  border: 1.5px solid #111111;
   background: #FFFFFF;
   color: var(--color-ink);
 }
 
 .chip.ok {
   background: #C8FF2E;
-  border: 1.5px solid #111111;
+  border-color: #111111;
   color: #111111;
 }
 
 .chip.warn {
   background: #FEF3C7;
-  border-color: rgba(180, 83, 9, 0.3);
+  border-color: #111111;
   color: #B45309;
 }
 
 .chip.bad {
   background: #FEE2E2;
-  border-color: rgba(220, 38, 38, 0.3);
+  border-color: #111111;
   color: #DC2626;
 }
 
 .chip.sev-critical {
   background: #FEE2E2;
-  border-color: rgba(220, 38, 38, 0.3);
+  border-color: #111111;
   color: #DC2626;
   font-weight: 800;
 }
 
 .chip.sev-high {
   background: #FFEDD5;
-  border-color: rgba(194, 65, 12, 0.3);
+  border-color: #111111;
   color: #C2410C;
   font-weight: 800;
 }
 
 .chip.sev-medium {
   background: #FEF3C7;
-  border-color: rgba(180, 83, 9, 0.3);
+  border-color: #111111;
   color: #B45309;
   font-weight: 800;
 }
 
 .chip.sev-low {
   background: #DBEAFE;
-  border-color: rgba(29, 78, 216, 0.3);
+  border-color: #111111;
   color: #1D4ED8;
   font-weight: 800;
 }
@@ -334,17 +377,18 @@ svg {
 .protocol-tag {
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-ink);
   background: #C8FF2E;
   border: 1.5px solid #111111;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 3px 10px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  box-shadow: 2px 2px 0px #111111;
 }
 .protocol-tag::before {
   content: '';
@@ -359,14 +403,15 @@ svg {
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  height: 44px;
+  height: 48px;
   padding: 0 16px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(17, 17, 17, 0.2);
+  border-radius: 12px;
+  border: 2px solid #111111;
   background: #FFFFFF;
   color: var(--color-ink);
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  box-shadow: 2px 2px 0px #111111;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .input:focus, .select:focus {
@@ -378,19 +423,20 @@ svg {
 
 /* ── Interactive Cards Micro-Interactions ──────────────────────────────── */
 .interactive-card {
-  transition: transform 180ms cubic-bezier(.22,1,.36,1),
-              box-shadow 180ms ease,
-              border-color 180ms ease;
+  transition: transform 120ms cubic-bezier(.22,1,.36,1),
+              box-shadow 120ms ease,
+              border-color 120ms ease;
 }
 .interactive-card:hover {
   transform: translateY(-2px) scale(1.005);
   border-color: #111111;
+  box-shadow: 4px 4px 0px #111111;
 }
 .interactive-card:active {
   transform: translateY(0px) scale(0.99);
 }
 
-/* ── Command Palette & Backdrop Blur Overlays ──────────────────────────── */
+/* ── Command Palette & Backdrop Overlays ───────────────────────────────── */
 .cmd-backdrop, .modal-backdrop {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(10, 10, 10, 0.7);
@@ -398,21 +444,21 @@ svg {
   -webkit-backdrop-filter: blur(8px);
   display: flex; align-items: flex-start; justify-content: center;
   padding-top: 12vh;
-  padding-left: 16px; padding-right: 16px;
+  padding-left: 20px; padding-right: 20px;
 }
 
 .modal-backdrop {
   align-items: center;
-  padding-top: 16px;
+  padding-top: 20px;
 }
 
 .cmd-box, .modal-box {
-  width: 100%; max-width: 580px;
+  width: 100%; max-width: 600px;
   background: #FFFFFF;
   border: 2px solid #111111;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
-  animation: slide-in-down 180ms cubic-bezier(.22,1,.36,1);
+  box-shadow: 5px 5px 0px #111111;
+  animation: slide-in-down 120ms cubic-bezier(.22,1,.36,1);
   overflow: hidden;
 }
 
@@ -422,7 +468,7 @@ kbd {
   font-size: 11px;
   color: var(--color-ink);
   background: #C8FF2E;
-  border: 1px solid #111111;
+  border: 1.5px solid #111111;
   border-radius: 6px;
   padding: 2px 6px;
   font-weight: 800;

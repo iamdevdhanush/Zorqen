@@ -21,7 +21,6 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
 
   if (!isOpen) return null;
 
-  // Derived live identity fields with fallbacks
   const displayName = profile?.name || user?.github_name || 'Dhanush D. Prabhu';
   const displayHandle = user?.github_login ? `@${user.github_login}` : '@iamdevdhanush';
   const avatarUrl = profile?.avatar_url || user?.github_avatar_url || 'https://github.com/iamdevdhanush.png';
@@ -60,11 +59,11 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
         className="w-full max-w-[480px] max-h-[90vh] bg-white border-2 border-[#111111] rounded-[18px] shadow-hard-lg flex flex-col overflow-hidden slide-up"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Sticky Modal Header */}
+        {/* Sticky Header Bar */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white border-b-2 border-[#111111] shrink-0">
           <div className="flex items-center gap-2">
             <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#111111] bg-[#C8FF2E] px-2.5 py-0.5 rounded-[6px] border border-[#111111]">
-              MEET THE DEVELOPER
+              DEVELOPER PROFILE
             </span>
           </div>
           <button
@@ -76,8 +75,8 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
           </button>
         </div>
 
-        {/* Scrollable Content Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto scroll-thin flex-1">
+        {/* Scrollable Content */}
+        <div className="p-5 space-y-4 overflow-y-auto scroll-thin flex-1">
           {/* Profile Identity Header */}
           <div className="flex items-center gap-3.5">
             <img
@@ -89,7 +88,7 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
               <h2 id="meet-dev-title" className="text-lg sm:text-xl font-extrabold text-[#0A0A0A] tracking-tight leading-none truncate">
                 {displayName}
               </h2>
-              <div className="mono text-[12px] font-bold text-[#6B6B6B]">
+              <div className="mono text-[12px] font-bold text-[#5E5E5E]">
                 {displayHandle}
               </div>
               <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#C8FF2E] border border-[#111111] mt-0.5">
@@ -101,47 +100,47 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
             </div>
           </div>
 
-          {/* Stats Row */}
-          <div className="p-3 rounded-[12px] bg-[#FAFAFA] border border-[#111111]/15 grid grid-cols-3 divide-x divide-[#111111]/10 text-center">
+          {/* Compact Stats Grid */}
+          <div className="p-3.5 rounded-[12px] bg-[#FAFAFA] border-2 border-[#111111]/15 grid grid-cols-3 divide-x divide-[#111111]/10 text-center">
             <div>
-              <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Builder Score</div>
+              <div className="mono text-[9px] font-bold text-[#5E5E5E] uppercase tracking-[0.14em]">Builder Score</div>
               <div className="mono text-[17px] font-extrabold text-[#0A0A0A] mt-0.5 tabular-nums">94</div>
             </div>
             <div>
-              <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Repositories</div>
+              <div className="mono text-[9px] font-bold text-[#5E5E5E] uppercase tracking-[0.14em]">Repositories</div>
               <div className="mono text-[17px] font-extrabold text-[#0A0A0A] mt-0.5 tabular-nums">59</div>
             </div>
             <div>
-              <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Scans</div>
+              <div className="mono text-[9px] font-bold text-[#5E5E5E] uppercase tracking-[0.14em]">Scans</div>
               <div className="mono text-[17px] font-extrabold text-[#0A0A0A] mt-0.5 tabular-nums">143</div>
             </div>
           </div>
 
-          {/* Currently Building Status Card */}
-          <div className="p-3.5 rounded-[12px] bg-white border border-[#111111]/15 space-y-2">
+          {/* Current Projects */}
+          <div className="p-4 rounded-[12px] bg-white border-2 border-[#111111]/15 space-y-2.5">
             <div className="flex items-center justify-between border-b border-[#111111]/10 pb-2">
               <div className="flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5 text-[#0A0A0A]" />
-                <span className="font-extrabold text-[12.5px] text-[#0A0A0A]">Current Projects</span>
+                <Activity className="w-4 h-4 text-[#0A0A0A]" />
+                <span className="font-extrabold text-[13px] text-[#0A0A0A]">Current Projects</span>
               </div>
               <span className="mono text-[9.5px] font-bold text-[#111111] bg-[#C8FF2E] px-2 py-0.5 rounded border border-[#111111] uppercase tracking-wider">
                 LIVE
               </span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {currentlyBuildingItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.name}
-                    className="flex items-center justify-between p-2 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/10 text-[12px]"
+                    className="flex items-center justify-between p-2.5 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/10 text-[12.5px]"
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className="w-3.5 h-3.5 text-[#0A0A0A] shrink-0" />
+                      <Icon className="w-4 h-4 text-[#0A0A0A] shrink-0" />
                       <span className="font-extrabold text-[#0A0A0A]">{item.name}</span>
                     </div>
-                    <span className={`mono text-[9.5px] font-bold px-1.5 py-0.5 rounded border border-[#111111]/20 ${item.statusClass}`}>
+                    <span className={`mono text-[9.5px] font-bold px-2 py-0.5 rounded border border-[#111111]/20 ${item.statusClass}`}>
                       {item.status}
                     </span>
                   </div>
@@ -151,8 +150,8 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
           </div>
 
           {/* Contribution Heatmap */}
-          <div className="p-3 rounded-[12px] bg-white border border-[#111111]/15 space-y-2">
-            <div className="mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#6B6B6B]">
+          <div className="p-3.5 rounded-[12px] bg-white border-2 border-[#111111]/15 space-y-2">
+            <div className="text-caption text-[9.5px]">
               CONTRIBUTION ACTIVITY
             </div>
             <div className="overflow-x-auto scroll-thin">
@@ -167,23 +166,23 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
           </div>
         </div>
 
-        {/* Sticky Modal Footer */}
-        <div className="sticky bottom-0 z-10 p-4 bg-[#FAFAFA] border-t-2 border-[#111111] space-y-2">
+        {/* Sticky Footer: Equal-width Social Buttons */}
+        <div className="sticky bottom-0 z-10 p-4 bg-[#FAFAFA] border-t-2 border-[#111111] space-y-2.5">
           <div className="grid grid-cols-3 gap-2">
             <a
               href={profileUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 h-[40px] px-2 rounded-[8px] border-2 border-[#111111] bg-[#111111] text-white hover:bg-black text-[12px] font-bold text-center outline-none no-underline transition-all min-h-[44px]"
+              className="btn btn-primary h-[44px] min-h-[44px] text-[12.5px] px-2 w-full justify-center shadow-hard-sm no-underline"
             >
-              <GithubIcon className="w-4 h-4 text-[#C8FF2E]" />
+              <GithubIcon className="w-4 h-4 text-[#111111]" />
               <span>GitHub</span>
             </a>
             <a
               href="https://linkedin.com/in/iamdevdhanush"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 h-[40px] px-2 rounded-[8px] border border-[#111111]/20 bg-white hover:bg-[#FAFAFA] text-[12px] font-bold text-[#0A0A0A] text-center outline-none no-underline transition-all min-h-[44px]"
+              className="btn btn-secondary h-[44px] min-h-[44px] text-[12.5px] px-2 w-full justify-center shadow-hard-sm no-underline"
             >
               <svg className="w-4 h-4 fill-current text-[#0A0A0A]" viewBox="0 0 24 24">
                 <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
@@ -194,7 +193,7 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
               href="https://dhanushdprabhu.com"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 h-[40px] px-2 rounded-[8px] border border-[#111111]/20 bg-white hover:bg-[#FAFAFA] text-[12px] font-bold text-[#0A0A0A] text-center outline-none no-underline transition-all min-h-[44px]"
+              className="btn btn-secondary h-[44px] min-h-[44px] text-[12.5px] px-2 w-full justify-center shadow-hard-sm no-underline"
             >
               <Globe className="w-4 h-4 text-[#0A0A0A]" />
               <span>Portfolio</span>
@@ -206,11 +205,11 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
             target="_blank"
             rel="noreferrer"
             onClick={() => onOpenSupport?.()}
-            className="w-full flex items-center justify-between px-3 h-[40px] rounded-[8px] border border-[#111111]/20 bg-white hover:bg-[#FAFAFA] text-[12px] font-bold text-[#0A0A0A] outline-none no-underline transition-all min-h-[44px]"
+            className="w-full flex items-center justify-between px-4 h-[44px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-white hover:bg-[#FAFAFA] text-[13px] font-extrabold text-[#0A0A0A] shadow-hard-sm no-underline transition-all"
           >
             <div className="flex items-center gap-2">
               <Heart className="w-4 h-4 text-[#0A0A0A] fill-[#0A0A0A]" />
-              <span>Support ZORQEN</span>
+              <span>Support ZORQEN Platform</span>
             </div>
             <ExternalLink className="w-4 h-4 text-[#0A0A0A]" />
           </a>
