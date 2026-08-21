@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Send, Terminal, X } from 'lucide-react';
+import { Send, Terminal, X } from 'lucide-react';
 import { useWorkspaceData, useFinding } from '../store/WorkspaceContext';
 import { copilotChat, type CopilotChatContext, type CopilotSource } from '../services/api';
 import type { Finding } from '../lib/types';
@@ -143,111 +143,106 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
 
   return (
     <div
-      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-hard-lg bg-white border-l border-[#111111] slide-right w-full max-w-full sm:w-[420px] sm:max-w-[420px]"
+      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-hard-lg bg-[#111111] text-[#ECEBE6] border-l border-[#222222] slide-right w-full sm:w-[420px] sm:max-w-[420px]"
     >
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3.5 border-b border-[#111111] bg-[#FAFAFA]">
+      <header className="flex items-center justify-between px-4 py-3.5 border-b border-[#222222] bg-[#161616]">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded bg-[#111111] text-white flex items-center justify-center">
-            <Terminal className="w-4 h-4 text-[#C5F82A]" />
+          <div className="w-6 h-6 rounded bg-[#222222] border border-[#333333] flex items-center justify-center text-[#C8FF2E]">
+            <Terminal className="w-3.5 h-3.5" />
           </div>
           <div>
-            <div className="font-extrabold text-[13px] text-[#111111] leading-none">ASK ZORQEN</div>
-            <div className="mono text-[9px] text-[#4A4A4A] font-extrabold mt-0.5">INVESTIGATION CONSOLE</div>
+            <div className="font-extrabold text-[13px] text-white leading-none">
+              Ask ZORQEN
+            </div>
+            <div className="mono text-[10px] text-[#A0A0A0] font-semibold mt-0.5">
+              Repository: <strong className="text-[#C8FF2E]">{currentRepo?.name || 'Zorqen'}</strong>
+            </div>
           </div>
         </div>
-        <button onClick={onClose} className="btn btn-ghost btn-xs" aria-label="Close">
+        <button onClick={onClose} className="p-1 text-zinc-400 hover:text-white transition-colors" aria-label="Close">
           <X className="w-4 h-4" />
         </button>
       </header>
 
       {finding && (
-        <div className="px-4 py-2 border-b border-[#111111] mono text-[10.5px] font-bold bg-[#C5F82A] text-[#111111]">
+        <div className="px-4 py-2 border-b border-[#222222] mono text-[10.5px] font-bold bg-[#C8FF2E] text-[#111111]">
           TARGET: {finding.id} • {finding.title}
         </div>
       )}
 
-      {/* Messages Feed */}
-      <div className="flex-1 overflow-y-auto scroll-thin p-4 space-y-3 bg-[#F7F7F2]">
+      {/* Messages Terminal Output Feed */}
+      <div className="flex-1 overflow-y-auto scroll-thin p-4 space-y-3 font-mono text-[12px] bg-[#0B0B0B]">
         {messages.map((m, i) => (
-          <div key={i} className={`flex gap-2 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            {m.role === 'assistant' && (
-              <div className="w-6 h-6 rounded bg-[#111111] text-white flex items-center justify-center shrink-0">
-                <Bot className="w-3.5 h-3.5 text-[#C5F82A]" />
+          <div key={i} className="space-y-1.5 border-b border-[#1A1A1A] pb-3">
+            <div className="flex items-center gap-2 text-[10.5px] font-bold">
+              <span className={m.role === 'user' ? 'text-zinc-400' : 'text-[#C8FF2E]'}>
+                {m.role === 'user' ? '$ user_query' : '● zorqen_agent'}
+              </span>
+            </div>
+            <div className="leading-relaxed text-[#ECEBE6] whitespace-pre-wrap pl-2 border-l border-[#222222]">
+              {m.content}
+            </div>
+            {m.role === 'assistant' && m.sources && m.sources.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1 pl-2">
+                {m.sources.map((s, j) => (
+                  <button
+                    key={j}
+                    onClick={() => openSource(s)}
+                    title={s.title ?? s.name ?? s.file}
+                    className="mono text-[9.5px] font-bold px-2 py-0.5 rounded border border-[#333333] bg-[#161616] text-[#C8FF2E] hover:border-[#C8FF2E] transition-colors"
+                  >
+                    {sourceLabel(s)}
+                  </button>
+                ))}
               </div>
             )}
-            <div
-              className={`text-[12.5px] leading-relaxed p-3.5 rounded-lg border shadow-hard-sm whitespace-pre-wrap ${
-                m.role === 'assistant'
-                  ? 'bg-white border-[#111111] text-[#111111] font-semibold'
-                  : 'bg-[#111111] border-[#111111] text-white font-bold'
-              }`}
-              style={{ maxWidth: '85%' }}
-            >
-              <div>{m.content}</div>
-              {m.role === 'assistant' && m.sources && m.sources.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2.5">
-                  {m.sources.map((s, j) => (
-                    <button
-                      key={j}
-                      onClick={() => openSource(s)}
-                      title={s.title ?? s.name ?? s.file}
-                      className="mono text-[9.5px] font-bold px-2 py-0.5 rounded border border-[#111111] bg-[#F7F7F2] hover:bg-[#C5F82A] transition-colors text-[#111111]"
-                    >
-                      {sourceLabel(s)}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         ))}
+
         {loading && (
-          <div className="flex gap-2">
-            <div className="w-6 h-6 rounded bg-[#111111] text-white flex items-center justify-center shrink-0">
-              <Bot className="w-3.5 h-3.5 text-[#C5F82A] animate-pulse" />
-            </div>
-            <div className="text-[12px] p-3 rounded-lg border border-[#111111] bg-white text-[#333333] font-extrabold">
-              Reasoning against repository evidence…
-            </div>
+          <div className="flex items-center gap-2 text-[#C8FF2E] mono text-[11.5px] pt-1">
+            <span className="w-1.5 h-3.5 bg-[#C8FF2E] animate-pulse inline-block" />
+            <span>Parsing main.py &amp; reasoning against repository evidence…</span>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
       {messages.length <= 1 && (
-        <div className="p-3 border-t border-[#111111] bg-white space-y-1.5">
-          <div className="mono text-[9.5px] text-[#4A4A4A] uppercase font-extrabold mb-1">CONTEXTUAL INVESTIGATION QUESTIONS</div>
+        <div className="p-3 border-t border-[#222222] bg-[#161616] space-y-1.5">
+          <div className="mono text-[9.5px] text-zinc-400 uppercase font-bold mb-1">RECOMMENDED INVESTIGATIONS</div>
           {questions.map((q) => (
             <button
               key={q}
               onClick={() => send(q)}
-              className="block w-full text-left text-[12px] font-bold px-3 py-1.5 rounded-md border border-[#111111] bg-[#FAFAFA] hover:bg-[#C5F82A] transition-colors text-[#111111] shadow-hard-sm"
+              className="block w-full text-left text-[12px] font-mono px-3 py-1.5 rounded border border-[#262626] bg-[#111111] hover:border-[#C8FF2E] text-zinc-200 transition-colors"
             >
-              {q}
+              &gt; {q}
             </button>
           ))}
         </div>
       )}
 
-      {/* Input */}
-      <footer className="p-4 border-t border-[#111111] bg-white space-y-2">
+      {/* Terminal Input */}
+      <footer className="p-3.5 border-t border-[#222222] bg-[#161616] space-y-2">
         <div className="flex gap-2">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
-            placeholder="Ask investigation question…"
-            className="input flex-1 bg-white text-[12.5px] font-medium"
+            placeholder="Type investigation query…"
+            className="w-full h-[38px] px-3 bg-[#0B0B0B] border border-[#262626] rounded text-[#ECEBE6] text-[12.5px] font-mono outline-none focus:border-[#C8FF2E]"
             disabled={loading}
           />
-          <button onClick={() => send()} disabled={!input.trim() || loading} className="btn btn-accent px-3 py-1.5">
+          <button
+            onClick={() => send()}
+            disabled={!input.trim() || loading}
+            className="px-3 h-[38px] rounded bg-[#C8FF2E] text-[#111111] font-bold text-[12px] hover:bg-[#b5eb1c] transition-colors shrink-0"
+          >
             <Send className="w-4 h-4" />
           </button>
         </div>
-        <p className="mono text-[9.5px] font-extrabold text-[#4A4A4A] text-center">
-          Grounded in assessed repository evidence • Never scans production
-        </p>
       </footer>
     </div>
   );

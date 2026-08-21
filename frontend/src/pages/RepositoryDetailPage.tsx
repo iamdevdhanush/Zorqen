@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { Play, RefreshCw } from 'lucide-react';
 import { BackLink, EmptyState, PageHeader, Panel, SevBadge } from '../components/ui';
 import RepositoryTree from '../components/RepositoryTree';
 import { useWorkspace, useFindings, useAssessmentActive } from '../store/WorkspaceContext';
@@ -166,7 +166,7 @@ export default function RepositoryDetailPage() {
         }
       />
 
-      <div className="grid lg:grid-cols-[1fr_260px] gap-3 items-start">
+      <div className="grid lg:grid-cols-[1fr_280px] gap-4 items-start">
         {/* Repository tree */}
         <Panel
           title={`Repository tree · ${repo.name}`}
@@ -178,10 +178,19 @@ export default function RepositoryDetailPage() {
           flush
         >
           {detailLoading ? (
-            <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">Loading repository tree from GitHub…</div>
+            <div className="p-8 text-center text-[#5E5E5E] mono text-[13px]">Loading repository tree from GitHub…</div>
           ) : detailError ? (
-            <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">
-              Could not load repository tree — {detailError}
+            <div className="p-8 text-center text-[#5E5E5E] space-y-3">
+              <div className="mono text-[13px] font-extrabold text-[#0A0A0A]">
+                Repository tree unavailable. Refresh metadata or reconnect GitHub.
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="btn btn-sm btn-ghost gap-2 border border-[#111111] bg-white inline-flex"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-[#111111]" />
+                <span>Refresh Metadata</span>
+              </button>
             </div>
           ) : detail && detail.treePaths.length > 0 ? (
             <RepositoryTree
@@ -191,70 +200,75 @@ export default function RepositoryDetailPage() {
               findings={findings}
             />
           ) : (
-            <div className="p-6 text-center text-[var(--color-ink-3)] mono text-[12px]">
+            <div className="p-8 text-center text-[#5E5E5E] mono text-[13px]">
               {detail ? 'No files found in this repository tree.' : 'Run an assessment to populate the repository tree.'}
             </div>
           )}
         </Panel>
 
-        {/* Stack metadata */}
-        <div className="space-y-3">
-          <Panel title="LANGUAGE" flush>
-            <div className="px-3 py-1.5">
+        {/* Unified Stacked Sidebar Panel */}
+        <div className="panel p-5 space-y-5">
+          {/* Section 1: Language */}
+          <div className="space-y-2">
+            <div className="mono text-[10px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.14em]">LANGUAGE</div>
+            <div className="space-y-1.5">
               {detailLoading ? (
-                <div className="text-[11px] text-[var(--color-ink-3)] mono py-1">Loading…</div>
+                <div className="text-[11px] text-[#5E5E5E] mono">Loading…</div>
               ) : topLanguages.length === 0 ? (
-                <div className="text-[11px] text-[var(--color-ink-3)] mono py-1">No language data</div>
+                <div className="text-[11px] text-[#5E5E5E] mono">No language data</div>
               ) : (
                 topLanguages.map(([lang, bytes]) => {
                   const w = langTotal > 0 ? Math.max(2, Math.round((bytes / langTotal) * 100)) : 2;
                   return (
-                    <div key={lang} className="py-1">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-[var(--color-ink-2)]">{lang}</span>
-                        <span className="mono text-[var(--color-ink)]">{w}%</span>
+                    <div key={lang} className="space-y-1">
+                      <div className="flex items-center justify-between text-[11.5px] font-bold text-[#0A0A0A]">
+                        <span>{lang}</span>
+                        <span className="mono">{w}%</span>
                       </div>
-                      <div className="thin-bar mt-[3px]">
-                        <div style={{ width: `${w}%`, background: 'var(--color-accent)' }} />
+                      <div className="h-1.5 bg-[#FAFAFA] rounded-full overflow-hidden border border-[#111111]">
+                        <div className="h-full bg-[#C8FF2E]" style={{ width: `${w}%` }} />
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
-          </Panel>
+          </div>
 
-          <Panel title="REPOSITORY" flush>
-            <div className="px-3 py-1.5">
+          <div className="h-[1.5px] bg-[#111111]/15 w-full" />
+
+          {/* Section 2: Repository Info */}
+          <div className="space-y-2">
+            <div className="mono text-[10px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.14em]">REPOSITORY INFO</div>
+            <div className="space-y-1 text-[12px]">
               {[
-                ['default branch', detail?.defaultBranch ?? '—'],
-                ['head commit', detail?.headCommit ? detail.headCommit.slice(0, 7) : repo.commit?.slice(0, 7) ?? '—'],
-                ['files', detail ? String(detail.fileCount) : '—'],
-                ['visibility', repo.private ? 'PRIVATE' : 'PUBLIC'],
+                ['DEFAULT BRANCH', detail?.defaultBranch ?? '—'],
+                ['HEAD COMMIT', detail?.headCommit ? detail.headCommit.slice(0, 7) : repo.commit?.slice(0, 7) ?? '—'],
+                ['FILES', detail ? String(detail.fileCount) : '—'],
+                ['VISIBILITY', repo.private ? 'PRIVATE' : 'PUBLIC'],
               ].map(([k, v]) => (
-                <div key={k} className="flex items-center justify-between py-[2px] border-b border-[var(--color-line)] last:border-0">
-                  <span className="text-[9.5px] uppercase tracking-[0.06em] text-[var(--color-ink-3)] font-medium">{k}</span>
-                  <span className="mono text-[10.5px] text-[var(--color-ink)]">{v}</span>
+                <div key={k} className="flex items-center justify-between py-1 border-b border-[#111111]/10 last:border-0">
+                  <span className="mono text-[9.5px] uppercase tracking-[0.06em] text-[#5E5E5E] font-bold">{k}</span>
+                  <span className="mono text-[11px] font-extrabold text-[#0A0A0A]">{v}</span>
                 </div>
               ))}
             </div>
-          </Panel>
+          </div>
 
-          <Panel title="Next actions" flush>
-            <div className="p-2 space-y-1">
-              <button onClick={startAssessment} disabled={running} className="btn btn-sm w-full justify-center">
+          <div className="h-[1.5px] bg-[#111111]/15 w-full" />
+
+          {/* Section 3: Next Action */}
+          <div className="space-y-2">
+            <div className="mono text-[10px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.14em]">NEXT ACTION</div>
+            <div className="space-y-2">
+              <button onClick={startAssessment} disabled={running} className="btn btn-accent btn-sm w-full justify-center text-[12px] font-extrabold">
                 {running ? 'Assessment running…' : 'Run Assessment'}
               </button>
-              <button onClick={() => navigate('/findings')} className="btn btn-sm w-full justify-center">
+              <button onClick={() => navigate('/findings')} className="btn btn-sm w-full justify-center text-[12px] font-bold">
                 Findings ({findings.length})
               </button>
-              {findings.length > 0 && (
-                <button onClick={() => navigate(`/findings/${findings[0].id}`)} className="btn btn-sm w-full justify-center">
-                  Open {findings[0].id}
-                </button>
-              )}
             </div>
-          </Panel>
+          </div>
         </div>
       </div>
 

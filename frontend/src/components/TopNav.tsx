@@ -42,7 +42,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white border-b-2 border-[#111111] h-[64px] sm:h-[72px] px-4 sm:px-6 flex items-center">
+      <header className="sticky top-0 z-40 bg-white border-b-3 border-[#111111] h-[76px] px-4 sm:px-6 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto flex items-center justify-between gap-4 sm:gap-6">
           
           {/* Brand Logo & Navigation */}
@@ -56,17 +56,17 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             </NavLink>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1 lg:gap-2 ml-2" aria-label="Main Navigation">
+            <nav className="hidden md:flex items-center gap-2 lg:gap-3 ml-4" aria-label="Main Navigation">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `relative px-3.5 lg:px-4 h-[44px] flex items-center justify-center text-[14px] transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[8px] select-none ${
+                    `relative px-4 h-[44px] flex items-center justify-center text-[14.5px] transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[8px] select-none ${
                       isActive
                         ? 'text-[#111111] font-bold'
-                        : 'text-[#5A5A5A] font-medium hover:text-[#111111] hover:-translate-y-[1px]'
+                        : 'text-[#5E5E5E] font-semibold hover:text-[#111111] hover:-translate-y-[1px]'
                     }`
                   }
                 >
@@ -76,7 +76,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       {isActive && (
                         <motion.div
                           layoutId="topNavActiveUnderline"
-                          className="absolute bottom-[4px] w-[calc(100%+14px)] left-1/2 -translate-x-1/2 h-[5px] bg-[#111111] rounded-full"
+                          className="absolute bottom-[2px] w-[calc(100%+12px)] left-1/2 -translate-x-1/2 h-[4px] bg-[#111111] rounded-full"
                           transition={{
                             type: 'spring',
                             stiffness: 420,

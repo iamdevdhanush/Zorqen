@@ -40,10 +40,25 @@ export default function AssessmentsPage() {
           onRetry={startAssessment}
         />
       ) : (
-        <div className="panel p-12 text-center text-[#5E5E5E] mono text-[13px]">
-          {currentRepo
-            ? 'No assessments for this repository yet — run your first assessment to launch the Security Validation Console.'
-            : 'No repository loaded — select a repository to run an assessment.'}
+        <div className="panel p-12 text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-[#FAFAFA] border-2 border-[#111111] shadow-hard-sm flex items-center justify-center mx-auto text-[#111111]">
+            <Play className="w-6 h-6 ml-0.5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-extrabold text-[#0A0A0A] tracking-tight">
+              Select a repository to begin a validation operation.
+            </h3>
+            <p className="text-[13.5px] text-[#5E5E5E] font-medium max-w-[480px] mx-auto">
+              Authorized repositories can be scanned for security posture, threat vectors, and verified patches.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/repos')}
+            className="btn btn-accent px-6 h-[44px] text-[13.5px] font-extrabold gap-2 inline-flex"
+          >
+            <span>Open Repositories</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       )}
 

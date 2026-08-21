@@ -26,6 +26,8 @@ export default function OverviewPage() {
     currentAssessment,
     startAssessment,
     connectGithub,
+    githubConnected,
+    user,
   } = useWorkspace();
   const findings = useFindings();
   const running = useAssessmentActive();
@@ -34,72 +36,67 @@ export default function OverviewPage() {
   /* ── Empty State ─────────────────────────────────────────── */
   if (!currentRepo) {
     return (
-      <div className="max-w-[920px] mx-auto py-12 sm:py-20 px-4 fade-in space-y-8">
+      <div className="max-w-[980px] mx-auto py-12 sm:py-20 px-4 fade-in space-y-10">
         <div className="space-y-4">
           <div className="protocol-tag">zorqen://platform/overview</div>
-          <h1 className="text-4xl sm:text-[64px] font-[900] text-[#0A0A0A] tracking-tighter leading-none">
-            SECURITY VALIDATION <br />
-            <span className="text-[#5E5E5E] font-bold">FOR AI-BUILT SOFTWARE.</span>
+          <h1 className="text-4xl sm:text-[56px] lg:text-[72px] font-extrabold text-[#0A0A0A] tracking-tight leading-[1.05]">
+            Security Validation <br />
+            <span className="text-[#6B6B6B] font-semibold">for AI-built software.</span>
           </h1>
-          <p className="text-base sm:text-[18px] text-[#333333] max-w-[620px] leading-relaxed font-medium">
+          <p className="text-base sm:text-[18px] text-[#333333] max-w-[640px] leading-relaxed font-medium">
             Autonomous security validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
           </p>
         </div>
 
-        {/* Inline GitHub Connection Metadata Row */}
-        <div className="pt-6 border-t-2 border-[#111111]/15">
-          <div
-            onClick={connectGithub}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-            className="group relative inline-flex items-center justify-between gap-4 max-w-[620px] w-full py-2.5 px-1 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[6px]"
-          >
-            {/* Left metadata items */}
-            <div className="flex items-center gap-3 min-w-0 flex-wrap sm:flex-nowrap">
-              {/* GitHub icon - turns lime on hover */}
-              <GithubIcon className="w-5 h-5 text-[#111111] group-hover:text-[#C8FF2E] transition-colors duration-150 shrink-0" />
-
-              {/* Small status dot - pulses on hover */}
-              <span className="w-2 h-2 rounded-full bg-[#DC2626] group-hover:scale-125 group-hover:animate-ping transition-all duration-150 shrink-0" />
-
-              {/* Status label */}
-              <span className="font-extrabold text-[13.5px] text-[#0A0A0A] tracking-tight shrink-0">
-                GitHub Not Connected
+        {/* Minimal Aligned Workspace Metadata Line (No Background Box) */}
+        <div
+          onClick={connectGithub}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
+          className="group flex items-center justify-between gap-4 py-2 cursor-pointer select-none border-b border-[#111111]/15 hover:border-[#111111] transition-colors"
+        >
+          <div className="flex items-center gap-3 text-[13.5px] font-medium text-[#333333]">
+            <GithubIcon className="w-4 h-4 text-[#111111]" />
+            <span className="mono text-[11px] font-bold uppercase tracking-[0.14em] text-[#6B6B6B]">
+              GitHub Workspace
+            </span>
+            <span className="text-[#111111]/30">•</span>
+            {githubConnected ? (
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#C8FF2E] border border-[#111111] animate-pulse" />
+                <span>Connected <strong className="text-[#0A0A0A]">@{user?.github_login || 'iamdevdhanush'}</strong></span>
               </span>
+            ) : (
+              <span>Not connected — OAuth required</span>
+            )}
+          </div>
 
-              {/* Separator dot */}
-              <span className="text-[#5E5E5E] font-bold text-[14px] shrink-0">•</span>
-
-              {/* Monospace command */}
-              <span className="font-mono text-[12.5px] font-bold text-[#5E5E5E] group-hover:text-[#0A0A0A] transition-colors duration-150 truncate">
-                github connect --oauth
-              </span>
-            </div>
-
-            {/* Right-aligned external arrow that slides 3px on hover */}
-            <ArrowRight className="w-4 h-4 text-[#111111] group-hover:translate-x-[3px] group-hover:text-[#0A0A0A] transition-transform duration-150 shrink-0 ml-2" />
-
-            {/* Animated Underline: grows left -> right on hover */}
-            <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#C8FF2E] group-hover:w-full transition-all duration-200 ease-out" />
+          <div className="flex items-center gap-1 text-[13px] font-bold text-[#0A0A0A] group-hover:translate-x-1 transition-transform">
+            <span>{githubConnected ? 'Ready for validation' : 'Connect workspace'}</span>
+            <ArrowRight className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="pt-8 border-t-2 border-[#111111] space-y-4">
-          <div className="mono text-[11px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">
-            AUTOMATED SECURITY WORKFLOW
+        {/* Workflow Grid */}
+        <div className="space-y-4 pt-4">
+          <div className="mono text-[11px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">
+            WORKFLOW PIPELINE
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              ['01 DETECT', 'Static analysis & dependency audit', 'Reads source, maps architecture and flags syntax patterns.'],
-              ['02 REASON', 'AI threat path correlation', 'Correlates vulnerabilities with entry points and confidence.'],
-              ['03 VALIDATE', 'Sandbox runtime reproduction', 'Executes probes in isolated containers to confirm exploitability.'],
-              ['04 REMEDIATE', 'Minimal patch generation', 'Produces localized before/after code diff proposals.'],
-            ].map(([num, title, desc]) => (
-              <div key={num} className="card-secondary space-y-1.5">
-                <div className="mono text-[10px] text-[#111111] font-extrabold bg-[#C8FF2E] px-2 py-0.5 rounded-[6px] border border-[#111111] inline-block">{num}</div>
-                <div className="font-extrabold text-[14px] text-[#0A0A0A]">{title}</div>
-                <div className="text-[13px] text-[#5E5E5E] leading-relaxed">{desc}</div>
+              ['01', 'Static Analysis', 'Maps architecture & flags patterns', '153 files · 42 endpoints'],
+              ['02', 'AI Reasoning', 'Correlates exploit pathways', 'High confidence scoring'],
+              ['03', 'Sandbox Probes', 'Executes containerized probes', 'Isolated runtime test'],
+              ['04', 'Remediation', 'Generates validated code diffs', 'Automated patch PRs'],
+            ].map(([num, title, desc, meta]) => (
+              <div key={num} className="p-4 rounded-[12px] bg-white border border-[#111111]/15 hover:border-[#111111] transition-all space-y-2 relative group overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-transparent group-hover:bg-[#C8FF2E] transition-colors" />
+                <div className="mono text-[11px] font-extrabold text-[#0A0A0A]">{num}</div>
+                <div className="font-extrabold text-[14.5px] text-[#0A0A0A]">{title}</div>
+                <div className="text-[13px] text-[#6B6B6B] font-medium leading-snug">{desc}</div>
+                <div className="h-[1px] bg-[#111111]/10 my-2" />
+                <div className="mono text-[10.5px] text-[#6B6B6B] font-semibold">{meta}</div>
               </div>
             ))}
           </div>

@@ -89,14 +89,15 @@ function AppShellInner() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-[var(--color-line)] bg-white px-4 sm:px-6 py-3 sm:py-4 mt-auto">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11.5px] text-[var(--color-ink-3)]">
-          <div className="flex items-center gap-2 flex-wrap font-sans">
-            <span className="font-extrabold text-[var(--color-ink)]">ZORQEN</span>
-            <span>— findings &amp; scores reflect assessed commit snapshots only</span>
+      <footer className="border-t border-[#111111]/10 px-4 sm:px-6 py-3.5 mt-auto bg-[#ECEBE6]">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[12px] text-[#6B6B6B]">
+          <div className="flex items-center gap-2 flex-wrap font-medium">
+            <span className="font-extrabold text-[#0A0A0A]">ZORQEN</span>
+            <span className="text-[#111111]/30">•</span>
+            <span>Autonomous Security Validation Platform</span>
           </div>
-          <div className="mono text-[10.5px] font-semibold">
-            scans run in isolated sandboxes • never against production
+          <div className="mono text-[11px] font-semibold text-[#6B6B6B]">
+            Isolated sandbox execution · Read-only repository access
           </div>
         </div>
       </footer>
