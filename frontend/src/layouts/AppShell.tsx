@@ -7,6 +7,7 @@ import CommandPalette from '../components/CommandPalette';
 import ConnectGithubModal from '../components/ConnectGithubModal';
 import { ToastProvider } from '../components/ToastProvider';
 import ZorqenStartupScreen from '../components/ZorqenStartupScreen';
+import BottomOperationDock from '../components/BottomOperationDock';
 import { useWorkspaceData, useWorkspaceUI } from '../store/WorkspaceContext';
 
 function AppShellInner() {
@@ -40,7 +41,7 @@ function AppShellInner() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  const runningStep = currentAssessment?.steps.find((s) => s.status === 'running');
+  const isScanning = currentAssessment?.status === 'RUNNING' || currentAssessment?.status === 'IDLE';
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)]">
@@ -58,34 +59,22 @@ function AppShellInner() {
       {/* Top Header Navigation */}
       <TopNav onOpenCmd={handleOpenCmd} />
 
-      {/* Main Page Area */}
-      <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      {/* Main Page Area with Safe Area Bottom Padding when Scanning */}
+      <main
+        className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-4 sm:py-8 transition-all"
+        style={{
+          paddingBottom: isScanning ? 'calc(56px + env(safe-area-inset-bottom))' : undefined,
+        }}
+      >
         <Outlet />
       </main>
 
-      {/* Live Security Operation Strip — Active Execution Indicator */}
-      {currentAssessment?.status === 'RUNNING' && (
-        <div
-          className="sticky bottom-0 z-30 border-t-2 border-[#111111] px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 bg-[#111111] text-white shadow-hard-lg"
-        >
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-white animate-pulse">
-              ● LIVE OPERATION
-            </span>
-            <span className="mono text-[12px] font-extrabold text-white">
-              {currentAssessment.id}
-            </span>
-            <span className="mono text-[12px] text-zinc-400">•</span>
-            <span className="mono text-[12px] font-extrabold text-[#C5F82A]">
-              {runningStep?.label?.toUpperCase() ?? 'SECURITY SCAN RUNNING'}
-            </span>
-          </div>
-          <div className="mono text-[11px] text-zinc-300 font-extrabold flex items-center gap-3">
-            <span>{currentAssessment.logs.length} EVENTS LOGGED</span>
-            <span>•</span>
-            <span className="text-[#C5F82A]">{currentRepo?.name}</span>
-          </div>
-        </div>
+      {/* Compact Bottom Live Security Operation Dock */}
+      {isScanning && currentAssessment && (
+        <BottomOperationDock
+          run={currentAssessment}
+          repoName={currentRepo?.name}
+        />
       )}
 
       {/* Footer */}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Loader2, AlertCircle, Terminal } from 'lucide-react';
 import type { FindingStatus, Severity, ValidationState } from '../lib/types';
 
 /* ── Severity helpers ──────────────────────────────────────────────────── */
@@ -31,7 +31,7 @@ export function SevTick({ sev }: { sev: Severity }) {
 }
 
 export function ConfidenceText({ pct }: { pct: number }) {
-  return <span className="mono font-semibold text-[#111111]">{pct}%</span>;
+  return <span className="mono font-semibold text-[#111111] tabular-nums">{pct}%</span>;
 }
 
 export function ValidationBadge({ v }: { v: ValidationState }) {
@@ -48,6 +48,64 @@ export function StatusBadge({ s }: { s: FindingStatus }) {
     s === 'OPEN' ? 'bad' :
     s === 'DISMISSED' ? 'info' : 'warn';
   return <span className={`chip ${tone}`}>{s.replace('_', ' ')}</span>;
+}
+
+/* ── Intelligent Semantic Status Badges (Requirement 10) ────────────────── */
+export type SemanticState =
+  | 'Verified'
+  | 'Scanning'
+  | 'Needs Review'
+  | 'Sandbox Ready'
+  | 'Read-only'
+  | 'Protected';
+
+export function SemanticBadge({ state }: { state: SemanticState }) {
+  switch (state) {
+    case 'Verified':
+      return (
+        <span className="chip ok font-bold inline-flex items-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5 text-[#111111]" />
+          Verified
+        </span>
+      );
+    case 'Scanning':
+      return (
+        <span className="chip ok font-bold inline-flex items-center gap-1.5 animate-pulse">
+          <Loader2 className="w-3.5 h-3.5 text-[#111111] animate-spin" />
+          Scanning
+        </span>
+      );
+    case 'Needs Review':
+      return (
+        <span className="chip warn font-bold inline-flex items-center gap-1.5">
+          <AlertCircle className="w-3.5 h-3.5 text-[#B45309]" />
+          Needs Review
+        </span>
+      );
+    case 'Sandbox Ready':
+      return (
+        <span className="chip font-bold inline-flex items-center gap-1.5 bg-[#FAFAFA]">
+          <Terminal className="w-3.5 h-3.5 text-[#111111]" />
+          Sandbox Ready
+        </span>
+      );
+    case 'Read-only':
+      return (
+        <span className="chip font-bold inline-flex items-center gap-1.5 bg-[#FAFAFA]">
+          <Lock className="w-3.5 h-3.5 text-[#5E5E5E]" />
+          Read-only
+        </span>
+      );
+    case 'Protected':
+      return (
+        <span className="chip font-bold inline-flex items-center gap-1.5 bg-[#FAFAFA]">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#111111]" />
+          Protected
+        </span>
+      );
+    default:
+      return <span className="chip font-bold">{state}</span>;
+  }
 }
 
 export function AcidTag({ text }: { text: string }) {
@@ -92,7 +150,7 @@ export function KV({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) 
   return (
     <div className="flex items-baseline justify-between gap-3 py-1 border-b border-[#DCDCD5] last:border-0">
       <span className="text-[11px] uppercase tracking-[0.06em] text-[#4A4A4A] font-extrabold">{k}</span>
-      <span className={`text-[12.5px] text-[#111111] ${mono ? 'mono text-[12px] font-semibold' : ''}`}>{v}</span>
+      <span className={`text-[12.5px] text-[#111111] ${mono ? 'mono text-[12px] font-semibold tabular-nums' : ''}`}>{v}</span>
     </div>
   );
 }
@@ -131,16 +189,16 @@ export function EmptyState({ text }: { text: string }) {
 export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED' | 'FAILED' }) {
   if (status === 'RUNNING') {
     return (
-      <span className="chip ok inline-flex items-center gap-1.5 font-bold">
-        <span className="pulse-dot" />
+      <span className="chip ok inline-flex items-center gap-1.5 font-bold animate-pulse">
+        <span className="w-2 h-2 rounded-full bg-[#111111]" />
         ANALYSIS RUNNING
       </span>
     );
   }
   if (status === 'COMPLETED') {
     return (
-      <span className="chip inline-flex items-center gap-1.5 font-bold">
-        <span className="w-[7px] h-[7px] rounded-full bg-[#111111]" />
+      <span className="chip ok inline-flex items-center gap-1.5 font-bold">
+        <CheckCircle2 className="w-3.5 h-3.5 text-[#111111]" />
         COMPLETED
       </span>
     );
@@ -148,7 +206,7 @@ export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED'
   if (status === 'FAILED') {
     return (
       <span className="chip sev-critical inline-flex items-center gap-1.5 font-bold">
-        <span className="w-[7px] h-[7px] rounded-full bg-[#DC2626]" />
+        <span className="w-2 h-2 rounded-full bg-[#DC2626]" />
         FAILED
       </span>
     );
@@ -189,7 +247,7 @@ export function TechnicalMeta({ label, value }: { label: string; value: ReactNod
   );
 }
 
-/* ── Dropdown (popover anchored to a trigger) ──────────────────────────── */
+/* ── Dropdown ──────────────────────────────────────────────────────────── */
 
 export function Dropdown({
   trigger,
@@ -279,5 +337,5 @@ export function AnimatedNumber({ value, duration = 400 }: { value: number; durat
     return () => cancelAnimationFrame(raf);
   }, [value, duration]);
 
-  return <span>{display}</span>;
+  return <span className="tabular-nums font-mono">{display}</span>;
 }

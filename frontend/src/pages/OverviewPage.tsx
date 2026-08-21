@@ -1,22 +1,17 @@
 import { useNavigate } from 'react-router-dom';
 import {
+  Activity,
   ArrowRight,
-  Database,
-  FileCode,
-  FolderTree,
   GitBranch,
-  Key,
-  Lock,
   Play,
   ShieldAlert,
-  ShieldCheck,
-  Terminal,
-  Zap,
 } from 'lucide-react';
 import { AnimatedNumber, SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
 import { useWorkspace, useFindings, useAssessmentActive } from '../store/WorkspaceContext';
-
 import GithubIcon from '../components/GithubIcon';
+import ZorqenChecksSection from '../components/ZorqenChecksSection';
+import AttackMapModule from '../components/AttackMapModule';
+import TechStackSection from '../components/TechStackSection';
 
 export default function OverviewPage() {
   const {
@@ -33,41 +28,40 @@ export default function OverviewPage() {
   const running = useAssessmentActive();
   const navigate = useNavigate();
 
+  const activityFeedItems = [
+    { time: '2m ago', event: 'Assessment pipeline initialized on main', type: 'info' },
+    { time: '1m ago', event: '153 codebase files indexed & mapped to AST', type: 'info' },
+    { time: '45s ago', event: '42 static HTTP routes & endpoints extracted', type: 'info' },
+    { time: '12s ago', event: 'Isolated sandbox container environment ready', type: 'success' },
+  ];
+
   /* ── Empty State ─────────────────────────────────────────── */
   if (!currentRepo) {
     return (
-      <div className="max-w-[1360px] mx-auto px-6 sm:px-10 pt-[56px] pb-16 fade-in">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-10 pt-10 pb-16 fade-in space-y-12">
         
-        {/* Platform Badge */}
-        <div>
+        {/* Platform Title */}
+        <div className="space-y-4">
           <div className="protocol-tag">zorqen://platform/overview</div>
+          <h1 className="text-4xl sm:text-[68px] lg:text-[80px] font-[900] text-[#0A0A0A] tracking-tighter leading-[1.04]">
+            Security Validation <br />
+            <span className="text-[#6B6B6B] font-semibold">for AI-built software.</span>
+          </h1>
+          <p className="hero-subtitle text-[20px] sm:text-[26px] text-[#1F1F1F] font-medium leading-[1.4] max-w-[800px]">
+            Autonomous security validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
+          </p>
         </div>
 
-        {/* H1 Headline */}
-        <h1 className="text-5xl sm:text-[72px] lg:text-[88px] font-extrabold text-[#0A0A0A] tracking-tight leading-[1.02] mt-[18px]">
-          Security Validation <br />
-          <span className="text-[#6B6B6B] font-semibold">for AI-built software.</span>
-        </h1>
-
-        {/* Subtitle */}
-        <p className="hero-subtitle text-[24px] sm:text-[28px] lg:text-[30px] text-[#1F1F1F] opacity-100 font-medium leading-[1.4] max-w-[800px] mt-[28px]">
-          Autonomous security validation and vulnerability remediation for{' '}
-          <span className="hero-highlight whitespace-nowrap">
-            repositories you control.
-          </span>{' '}
-          Find it. Fix it. Prove it.
-        </p>
-
-        {/* Workspace Action Row */}
+        {/* Workspace Action Banner */}
         <div
           onClick={connectGithub}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-          className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 rounded-[14px] bg-white border border-[#111111]/20 hover:border-[#111111] transition-all cursor-pointer select-none mt-[40px] shadow-subtle"
+          className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard hover:scale-[1.005] transition-all cursor-pointer select-none"
         >
           <div className="flex items-center gap-3 text-[14px] font-medium text-[#0A0A0A]">
-            <GithubIcon className="w-[16px] h-[16px] text-[#111111] shrink-0" />
+            <GithubIcon className="w-5 h-5 text-[#111111] shrink-0" />
             <span className="font-extrabold text-[#0A0A0A]">GitHub Workspace</span>
             <span className="text-[#111111]/30">•</span>
             {githubConnected ? (
@@ -80,38 +74,15 @@ export default function OverviewPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 text-[13.5px] font-extrabold text-[#0A0A0A] group-hover:translate-x-1 transition-transform">
+          <div className="flex items-center gap-2 text-[14px] font-extrabold text-[#0A0A0A] group-hover:translate-x-1 transition-transform">
             <span>{githubConnected ? 'Ready for validation' : 'Connect Workspace'}</span>
             <ArrowRight className="w-4 h-4 text-[#0A0A0A]" />
           </div>
         </div>
 
-        {/* Workflow Grid */}
-        <div className="mt-[56px] space-y-4">
-          <div className="mono text-[12px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">
-            WORKFLOW PIPELINE
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              ['01', 'Static Analysis', 'Maps architecture & flags patterns', '153 files · 42 endpoints'],
-              ['02', 'AI Reasoning', 'Correlates exploit pathways', 'High confidence scoring'],
-              ['03', 'Sandbox Probes', 'Executes containerized probes', 'Isolated runtime test'],
-              ['04', 'Remediation', 'Generates validated code diffs', 'Automated patch PRs'],
-            ].map(([num, title, desc, meta]) => (
-              <div
-                key={num}
-                className="p-[28px] rounded-[18px] bg-white border border-[#111111]/15 hover:border-[#111111] hover:-translate-y-[4px] transition-all duration-180 ease-out space-y-3 relative group overflow-hidden shadow-subtle"
-              >
-                <div className="absolute top-0 left-0 w-full h-[3px] bg-transparent group-hover:bg-[#C8FF2E] transition-colors" />
-                <div className="mono text-[12px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">{num}</div>
-                <div className="text-[28px] font-extrabold text-[#0A0A0A] tracking-tight leading-tight">{title}</div>
-                <div className="text-[15px] text-[#6B6B6B] font-medium leading-relaxed">{desc}</div>
-                <div className="h-[1px] bg-[#111111]/10 my-3" />
-                <div className="mono text-[12px] text-[#6B6B6B] font-semibold">{meta}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* What ZORQEN Checks Component */}
+        <ZorqenChecksSection />
+
       </div>
     );
   }
@@ -127,19 +98,18 @@ export default function OverviewPage() {
   const biggestFinding = findings.find((f) => f.severity === 'critical') || findings[0];
   const score = currentAssessment?.score;
   const arch = currentAssessment?.architecture;
-  const frameworks = arch?.frameworks ?? [];
   const riskBand = score == null ? null : score >= 80 ? 'LOW RISK' : score >= 60 ? 'MODERATE RISK' : 'HIGH RISK';
   const criticalHigh = counts.critical + counts.high;
 
   return (
-    <div className="max-w-[1280px] mx-auto space-y-8 fade-in py-4">
+    <div className="max-w-[1280px] mx-auto space-y-8 fade-in py-4 px-1 sm:px-0">
       
-      {/* ── 1. LARGE EDITORIAL HERO SECTION ─────────────────────── */}
+      {/* ── 1. HERO SECTION ───────────────────────────── */}
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="protocol-tag">zorqen://repository/security-posture</div>
-            <h1 className="text-4xl sm:text-[64px] font-[900] text-[#0A0A0A] tracking-tighter leading-none mt-2">
+            <h1 className="text-3xl sm:text-[56px] font-[900] text-[#0A0A0A] tracking-tighter leading-none mt-1">
               SECURITY VALIDATION <br />
               <span className="text-[#5E5E5E] font-bold">FOR AI-BUILT SOFTWARE.</span>
             </h1>
@@ -149,7 +119,7 @@ export default function OverviewPage() {
             <button
               onClick={startAssessment}
               disabled={running}
-              className="btn btn-accent px-6 h-[48px] text-[14px]"
+              className="btn btn-accent px-6 h-[48px] text-[14px] font-extrabold shadow-hard-sm min-h-[44px]"
             >
               <Play className="w-4 h-4 fill-current" />
               {running ? 'Pipeline Running…' : 'Run Assessment'}
@@ -159,7 +129,7 @@ export default function OverviewPage() {
 
         <div className="h-[2px] bg-[#111111] w-full" />
 
-        {/* Repository Header Target Card */}
+        {/* Repository Target Card */}
         <div className="panel flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-1.5 min-w-0">
             <div className="mono text-[11px] font-extrabold tracking-[0.18em] text-[#5E5E5E] uppercase">
@@ -176,224 +146,129 @@ export default function OverviewPage() {
 
           <div className="flex flex-wrap items-center gap-3 text-[12px]">
             <div className="mono text-[11px] font-bold text-[#0A0A0A] bg-[#FAFAFA] px-3 py-1.5 rounded-[8px] border border-[#111111] shadow-hard-sm">
-              {arch?.primaryLanguage ? `${arch.primaryLanguage} • ${arch.dependencies} DEPS` : 'NO ASSESSMENT YET'}
+              {arch?.primaryLanguage ? `${arch.primaryLanguage} • ${arch.dependencies} DEPS` : 'READY TO SCAN'}
             </div>
             <div className="flex items-center gap-2 mono text-[11px] font-extrabold text-[#111111] bg-[#C8FF2E] px-3 py-1.5 rounded-[8px] border border-[#111111] shadow-hard-sm">
               <GitBranch className="w-4 h-4 text-[#111111]" />
               <span>{branch}</span>
-              <span className="text-[#111111]">@{commit.slice(0, 7)}</span>
+              <span className="text-[#111111] font-mono tabular-nums">@{commit.slice(0, 7)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 2. SECURITY SCORE: Split into Two Visual Columns ─────── */}
-      <div className="panel grid lg:grid-cols-[320px_1fr] gap-8 items-center">
-        
-        {/* Left Column: Huge Score */}
-        <div className="border-b lg:border-b-0 lg:border-r-2 border-[#111111] pb-6 lg:pb-0 pr-0 lg:pr-8 flex flex-col justify-center">
-          <div className="mono text-[11px] font-extrabold tracking-[0.18em] text-[#5E5E5E] uppercase mb-1">
-            SECURITY POSTURE SCORE
-          </div>
-          <div className="flex items-baseline gap-2">
-            {score != null ? (
-              <>
-                <span className="text-5xl sm:text-[64px] font-[900] text-[#0A0A0A] tracking-tighter leading-none">
-                  <AnimatedNumber value={score} />
-                </span>
-                <span className="text-2xl sm:text-[34px] font-bold text-[#5E5E5E]">/100</span>
-              </>
-            ) : (
-              <span className="text-4xl sm:text-[64px] font-[900] text-[#5E5E5E] tracking-tighter leading-none">
-                —
-              </span>
-            )}
-          </div>
-          <div className="mt-4">
-            {riskBand ? (
-              <span className={`chip text-[11px] px-3 py-1 uppercase font-extrabold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
-                {riskBand}
-              </span>
-            ) : (
-              <span className="chip text-[11px] px-3 py-1 uppercase font-extrabold">NO ASSESSMENT YET</span>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column: Severity Counts & Explanation */}
-        <div className="space-y-5">
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 text-[13px] font-bold">
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-[8px] bg-[#FEE2E2] text-[#DC2626] border border-[#111111] shadow-hard-sm">
-              <span className="font-mono font-bold text-[16px]">{counts.critical}</span> CRITICAL
+      {/* ── 2. SECURITY SCORE & RECENT ACTIVITY STREAM ───────────────── */}
+      <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+        {/* Score & Severity breakdown */}
+        <div className="col-span-12 lg:col-span-8 panel grid lg:grid-cols-[280px_1fr] gap-6 items-center">
+          <div className="border-b lg:border-b-0 lg:border-r-2 border-[#111111] pb-6 lg:pb-0 pr-0 lg:pr-6 flex flex-col justify-center">
+            <div className="mono text-[11px] font-extrabold tracking-[0.18em] text-[#5E5E5E] uppercase mb-1">
+              SECURITY SCORE
             </div>
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-[8px] bg-[#FFEDD5] text-[#C2410C] border border-[#111111] shadow-hard-sm">
-              <span className="font-mono font-bold text-[16px]">{counts.high}</span> HIGH
-            </div>
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-[8px] bg-[#FEF3C7] text-[#B45309] border border-[#111111] shadow-hard-sm">
-              <span className="font-mono font-bold text-[16px]">{counts.medium}</span> MEDIUM
-            </div>
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-[8px] bg-[#DBEAFE] text-[#1D4ED8] border border-[#111111] shadow-hard-sm">
-              <span className="font-mono font-bold text-[16px]">{counts.low}</span> LOW
-            </div>
-          </div>
-
-          <div className="text-lg sm:text-[24px] font-extrabold text-[#0A0A0A] tracking-tight leading-snug">
-            {criticalHigh > 0
-              ? `“${criticalHigh} critical & high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.”`
-              : findings.length > 0
-                ? '“No critical or high findings — remaining issues are lower priority.”'
-                : '“No findings yet — run an assessment to scan this repository.”'}
-          </div>
-          <div className="text-[14px] text-[#5E5E5E] font-medium leading-relaxed">
-            Scan scope encompasses HTTP routes, database ORM queries, environment credentials, and dependency lockfiles across {findings.length} total findings.
-          </div>
-        </div>
-      </div>
-
-      {/* ── 3. AI-REASONED ATTACK MAP (Hero Feature) ────────────── */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <FolderTree className="w-6 h-6 text-[#0A0A0A]" />
-            <h2 className="text-[24px] font-extrabold text-[#0A0A0A] tracking-tight">AI-REASONED ATTACK MAP</h2>
-          </div>
-
-          {arch ? (
-            <div className="flex items-center gap-2.5 mono text-[11px] font-bold text-[#0A0A0A] bg-[#FAFAFA] px-4 py-2 rounded-[8px] border border-[#111111] shadow-hard-sm flex-wrap">
-              <span>{arch.files} FILES</span>
-              <span>•</span>
-              <span>{arch.routes} ROUTES</span>
-              <span>•</span>
-              <span>{arch.inputs} INPUTS</span>
-              <span>•</span>
-              <span>{arch.sinks} SINKS</span>
-              <span>•</span>
-              <span>{arch.flows.length} FLOWS</span>
-              <span>•</span>
-              <span className={arch.secrets > 0 ? 'text-[#DC2626] font-extrabold' : ''}>{arch.secrets} SECRETS</span>
-            </div>
-          ) : (
-            <span className="mono text-[11px] font-bold text-[#5E5E5E] bg-[#FAFAFA] px-3.5 py-2 rounded-[8px] border border-[#111111] shadow-hard-sm">
-              NO ASSESSMENT YET — RUN AN ASSESSMENT TO BUILD THE ATTACK MAP
-            </span>
-          )}
-        </div>
-
-        {arch ? (
-          <div className="panel space-y-6">
-            <div className="grid md:grid-cols-2 gap-6 items-start">
-              {arch.topRoutes.length > 0 ? (
-                /* Interactive Route Rows */
-                <div className="mono text-[12px] leading-relaxed space-y-2 bg-[#FAFAFA] p-5 rounded-[12px] border-1.5 border-[#111111] shadow-hard-sm overflow-x-auto scroll-thin">
-                  <div className="text-[#0A0A0A] font-extrabold text-[13px] mb-3 uppercase tracking-[0.18em]">HTTP ROUTES</div>
-                  {arch.topRoutes.map((r) => (
-                    <div
-                      key={`${r.method}${r.endpoint}${r.file_path}${r.line_number}`}
-                      className="interactive-card flex items-center justify-between gap-3 px-3 py-2 rounded-[8px] border border-[#111111] bg-white hover:bg-[#F2F2EB] cursor-pointer min-w-max"
-                    >
-                      <span className="text-[#0A0A0A] font-bold">
-                        <span className="text-[#C2410C]">{r.method}</span> {r.endpoint}
-                      </span>
-                      <span className="text-[11px] text-[#5E5E5E] truncate max-w-[160px]">{r.file_path}:{r.line_number}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="mono text-[12px] leading-relaxed bg-[#FAFAFA] p-5 rounded-[12px] border-1.5 border-[#111111] shadow-hard-sm">
-                  <div className="text-[#0A0A0A] font-extrabold mb-2 uppercase tracking-[0.18em]">HTTP ROUTES</div>
-                  <div className="text-[#5E5E5E]">No HTTP routes detected in scanned files.</div>
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div className="card-secondary space-y-3">
-                  <div className="mono text-[11px] font-extrabold text-[#111111] uppercase tracking-[0.18em] bg-[#C8FF2E] px-2.5 py-0.5 rounded-[6px] border border-[#111111] inline-block">
-                    PRIMARY LANGUAGE
-                  </div>
-                  <div className="font-extrabold text-[16px] text-[#0A0A0A] mono leading-tight break-all">
-                    {arch.primaryLanguage}
-                  </div>
-                  
-                  {/* Tech stack chips */}
-                  {frameworks.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {frameworks.map((fw) => (
-                        <span key={fw} className="chip font-bold text-[10.5px] bg-[#FAFAFA]">
-                          {fw}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="text-[13px] text-[#5E5E5E] leading-relaxed font-medium">
-                    {arch.summary || `Stack: ${frameworks.join(', ') || 'unknown'} · ${arch.dependencies} dependencies detected.`}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-[12px] border-1.5 border-[#111111] bg-white text-[13px] font-semibold flex-wrap gap-2">
-                  <span className="text-[#5E5E5E]">Sandbox Probe Status</span>
-                  <span className="mono font-bold text-[#0A0A0A] flex items-center gap-2">
-                    <span className="pulse-dot" /> Static validation only — sandbox execution pending
+            <div className="flex items-baseline gap-2">
+              {score != null ? (
+                <>
+                  <span className="text-5xl sm:text-[60px] font-[900] text-[#0A0A0A] tracking-tighter leading-none tabular-nums">
+                    <AnimatedNumber value={score} />
                   </span>
-                </div>
+                  <span className="text-2xl sm:text-[30px] font-bold text-[#5E5E5E]">/100</span>
+                </>
+              ) : (
+                <span className="text-4xl sm:text-[60px] font-[900] text-[#5E5E5E] tracking-tighter leading-none">
+                  —
+                </span>
+              )}
+            </div>
+            <div className="mt-4">
+              {riskBand ? (
+                <span className={`chip text-[11px] px-3 py-1 uppercase font-extrabold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
+                  {riskBand}
+                </span>
+              ) : (
+                <span className="chip text-[11px] px-3 py-1 uppercase font-extrabold">NOT STARTED</span>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 text-[13px] font-bold">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEE2E2] text-[#DC2626] border border-[#111111] shadow-hard-sm">
+                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.critical}</span> CRITICAL
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FFEDD5] text-[#C2410C] border border-[#111111] shadow-hard-sm">
+                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.high}</span> HIGH
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEF3C7] text-[#B45309] border border-[#111111] shadow-hard-sm">
+                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.medium}</span> MEDIUM
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#DBEAFE] text-[#1D4ED8] border border-[#111111] shadow-hard-sm">
+                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.low}</span> LOW
               </div>
             </div>
+
+            <div className="text-base sm:text-[20px] font-extrabold text-[#0A0A0A] tracking-tight leading-snug">
+              {criticalHigh > 0
+                ? `“${criticalHigh} critical & high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.”`
+                : findings.length > 0
+                  ? '“No critical or high findings — remaining issues are lower priority.”'
+                  : '“No findings yet — run an assessment to scan this repository.”'}
+            </div>
           </div>
-        ) : (
-          <div className="panel p-12 text-center text-[#5E5E5E] mono text-[14px]">
-            Run an assessment to analyze routes, inputs, sinks, and secrets for this repository.
+        </div>
+
+        {/* Live Activity Stream (Requirement 11) */}
+        <div className="col-span-12 lg:col-span-4 panel space-y-3 flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#111111]/15 pb-2">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#111111]" />
+              <span className="mono text-[11px] font-extrabold uppercase tracking-wider text-[#0A0A0A]">
+                LIVE ACTIVITY FEED
+              </span>
+            </div>
+            <span className="mono text-[10px] font-bold text-[#111111] bg-[#C8FF2E] px-2 py-0.5 rounded border border-[#111111]">
+              SOC LIVE
+            </span>
           </div>
-        )}
+
+          <div className="space-y-2.5 text-[12px]">
+            {activityFeedItems.map((item, idx) => (
+              <div key={idx} className="flex items-start gap-2.5">
+                <span className="mono text-[10.5px] font-bold text-[#6B6B6B] shrink-0 tabular-nums pt-0.5">
+                  {item.time}
+                </span>
+                <span className="font-semibold text-[#0A0A0A] leading-snug">
+                  {item.event}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* ── 3. AI-REASONED ATTACK MAP ─── */}
+      <AttackMapModule architecture={arch} />
 
       {/* ── 4. WHAT ZORQEN CHECKS ───────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-[#0A0A0A]" />
-          <h2 className="text-[24px] font-extrabold text-[#0A0A0A] tracking-tight">WHAT ZORQEN CHECKS</h2>
-        </div>
+      <ZorqenChecksSection />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {([
-            [Key, 'Secret Exposure', 'Scans environment configs, committed tokens, and hardcoded API credentials across repo history.'],
-            [Lock, 'Broken Access Control', 'Maps authorization boundaries across endpoints to prevent unauthorized object reads.'],
-            [Database, 'Injection Paths', 'Traces unsanitized user inputs into database queries, sub-processes, and dangerous sinks.'],
-            [FileCode, 'Data Leakage', 'Audits request interceptors and logger output for unredacted PII or auth headers.'],
-            [Zap, 'AI Security Drift', 'Flags insecure code patterns commonly introduced by automated AI code generators.'],
-            [Terminal, 'Sandbox Verification', 'Executes automated exploit probes in ephemeral container sandboxes to prove impact.'],
-          ] as const).map(([IconComponent, title, desc], idx) => {
-            const Icon = IconComponent as any;
-            const numStr = `0${idx + 1}`;
-            return (
-              <div
-                key={idx}
-                className="panel space-y-4 interactive-card"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-[10px] bg-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center text-[#111111]">
-                    <Icon className="w-5 h-5" strokeWidth={2.2} />
-                  </div>
-                  <span className="mono text-[13px] font-extrabold text-[#0A0A0A] bg-[#FAFAFA] px-2.5 py-0.5 rounded-[6px] border border-[#111111]">{numStr}</span>
-                </div>
-                <h3 className="font-extrabold text-[18px] text-[#0A0A0A] tracking-tight">{title}</h3>
-                <p className="text-[14px] text-[#5E5E5E] leading-relaxed font-medium">{desc}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* ── 5. DETECTED TECH STACK ────────────────────────────── */}
+      <TechStackSection
+        primaryLanguage={arch?.primaryLanguage}
+        frameworks={arch?.frameworks}
+        dependenciesCount={arch?.dependencies}
+      />
 
-      {/* ── 5. BIGGEST SECURITY FINDING SECTION ─────────────────── */}
+      {/* ── 6. BIGGEST SECURITY FINDING ─────────────────── */}
       {biggestFinding && (
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h2 className="text-[24px] font-extrabold text-[#0A0A0A] tracking-tight flex items-center gap-3">
+            <h2 className="text-[22px] sm:text-[24px] font-extrabold text-[#0A0A0A] tracking-tight flex items-center gap-3">
               <ShieldAlert className="w-6 h-6 text-red-600 shrink-0" />
               BIGGEST SECURITY FINDING
             </h2>
             <button
               onClick={() => navigate(`/findings/${biggestFinding.id}`)}
-              className="text-[13px] font-extrabold text-[#0A0A0A] hover:underline flex items-center gap-1"
+              className="text-[13px] font-extrabold text-[#0A0A0A] hover:underline flex items-center gap-1 min-h-[44px]"
             >
               Investigate finding <ArrowRight className="w-4 h-4" />
             </button>
@@ -403,13 +278,13 @@ export default function OverviewPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <SevBadge sev={biggestFinding.severity} />
-                <h3 className="text-2xl font-extrabold text-[#0A0A0A] tracking-tight break-words">
+                <h3 className="text-xl sm:text-2xl font-extrabold text-[#0A0A0A] tracking-tight break-words">
                   {biggestFinding.title.toUpperCase()}
                 </h3>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="chip mono font-bold">{biggestFinding.cwe_id}</span>
-                <span className="chip ok font-bold">{biggestFinding.confidence_pct}% CONFIDENCE</span>
+                <span className="chip ok font-bold tabular-nums">{biggestFinding.confidence_pct}% CONFIDENCE</span>
                 <ValidationBadge v={biggestFinding.validation} />
                 <StatusBadge s={biggestFinding.status} />
               </div>
@@ -422,7 +297,7 @@ export default function OverviewPage() {
               </div>
               <div className="min-w-0">
                 <span className="text-[#5E5E5E] font-bold">LOCATION: </span>
-                <span className="mono font-bold text-[#0A0A0A] break-all">{biggestFinding.file_path}:{biggestFinding.line_number}</span>
+                <span className="mono font-bold text-[#0A0A0A] break-all tabular-nums">{biggestFinding.file_path}:{biggestFinding.line_number}</span>
               </div>
             </div>
 
@@ -433,7 +308,7 @@ export default function OverviewPage() {
 
               <button
                 onClick={() => navigate(`/findings/${biggestFinding.id}`)}
-                className="btn btn-accent px-5 text-[13px]"
+                className="btn btn-accent px-5 text-[13px] font-extrabold min-h-[44px]"
               >
                 Inspect Threat Flow →
               </button>

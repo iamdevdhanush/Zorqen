@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bot, ChevronDown, ChevronRight, ExternalLink, Heart, LogOut, Menu, Search, User, UserCheck, X } from 'lucide-react';
+import { Bot, ChevronRight, ExternalLink, Heart, LogOut, Menu, Search, User, UserCheck, X } from 'lucide-react';
 import GithubIcon from './GithubIcon';
 import ZorqenLogoMark from './ZorqenLogoMark';
 import { Dropdown } from './ui';
@@ -42,20 +42,20 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white border-b-3 border-[#111111] h-[76px] px-4 sm:px-6 flex items-center">
-        <div className="max-w-[1360px] w-full mx-auto px-6 sm:px-10 flex items-center justify-between gap-4 sm:gap-6">
+      <header className="sticky top-0 z-40 bg-white border-b-2 border-[#111111] h-[72px] md:h-[76px] px-4 sm:px-6 flex items-center">
+        <div className="max-w-[1360px] w-full mx-auto flex items-center justify-between gap-3 sm:gap-6">
           
-          {/* Brand Logo & Navigation */}
-          <div className="flex items-center gap-6 lg:gap-8 min-w-0">
+          {/* Brand Logo & Navigation (Left) */}
+          <div className="flex items-center gap-6 lg:gap-8 min-w-0 shrink-0">
             <NavLink
               to="/"
               onClick={closeMobileMenu}
-              className="flex items-center gap-3 group shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[12px]"
+              className="flex items-center gap-2.5 group shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[12px]"
             >
               <ZorqenLogoMark size="md" showText={true} />
             </NavLink>
 
-            {/* Desktop Navigation Links */}
+            {/* Desktop Navigation Links (>= md) */}
             <nav className="hidden md:flex items-center gap-2 lg:gap-3 ml-4" aria-label="Main Navigation">
               {navItems.map((item) => (
                 <NavLink
@@ -92,26 +92,15 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             </nav>
           </div>
 
-          {/* Right Action Tools — Single Account Entry (No duplicate green pill) */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-            
-            {/* Mobile Compact Search Trigger (< lg) */}
-            <button
-              onClick={() => { closeMobileMenu(); onOpenCmd(); }}
-              className="flex lg:hidden items-center justify-center h-[40px] min-w-[40px] px-2 rounded-[12px] border-2 border-[#111111] bg-[#FAFAFA] shadow-hard-sm text-[#0A0A0A] hover:bg-white transition-all active:translate-y-0.5"
-              title="Search"
-              aria-label="Open Search"
-            >
-              <Search className="w-4 h-4" />
-            </button>
-
-            {/* Desktop Compact Search Trigger (>= lg) */}
+          {/* Right Actions for Desktop (>= md) */}
+          <div className="hidden md:flex items-center gap-2.5 sm:gap-3 shrink-0">
+            {/* Desktop Search Trigger */}
             <button
               onClick={onOpenCmd}
-              className="hidden lg:flex items-center gap-2 h-[40px] px-3.5 rounded-[12px] border-2 border-[#111111] bg-[#FAFAFA] shadow-hard-sm text-[13px] font-bold text-[#0A0A0A] hover:bg-white transition-all"
+              className="flex items-center gap-2 h-[40px] px-3.5 rounded-[12px] border-2 border-[#111111] bg-[#FAFAFA] shadow-hard-sm text-[13px] font-bold text-[#0A0A0A] hover:bg-white transition-all min-h-[44px]"
               title="Open Command Palette"
             >
-              <Search className="w-3.5 h-3.5 shrink-0 text-[#0A0A0A]" />
+              <Search className="w-4 h-4 shrink-0 text-[#0A0A0A]" />
               <span>Search</span>
               <kbd className="ml-1 leading-none text-[10px]">{IS_MAC ? '⌘K' : 'Ctrl K'}</kbd>
             </button>
@@ -119,23 +108,22 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             {/* Ask ZORQEN Copilot Button */}
             <button
               onClick={() => { closeMobileMenu(); setCopilotOpen(!copilotOpen); }}
-              className={`flex items-center gap-2 h-[40px] px-3.5 rounded-[12px] text-[13px] font-extrabold border-2 border-[#111111] transition-all ${
+              className={`flex items-center gap-2 h-[40px] min-h-[44px] px-3.5 rounded-[12px] text-[13px] font-extrabold border-2 border-[#111111] transition-all ${
                 copilotOpen
                   ? 'bg-[#111111] text-white shadow-hard-lime'
                   : 'bg-white text-[#0A0A0A] shadow-hard-sm hover:bg-[#C8FF2E]'
               }`}
             >
               <Bot className={`w-4 h-4 shrink-0 ${copilotOpen ? 'text-[#C8FF2E]' : 'text-[#0A0A0A]'}`} />
-              <span className="hidden sm:inline">Ask ZORQEN</span>
-              <span className="sm:hidden">Ask</span>
+              <span>Ask ZORQEN</span>
             </button>
 
-            {/* SINGLE Account Dropdown Entry (Far Right) */}
+            {/* Desktop Account Dropdown */}
             <Dropdown
               align="right"
               trigger={(open) => (
                 <div
-                  className={`flex items-center gap-2 px-3 h-[40px] rounded-[10px] border border-[#111111]/20 transition-all cursor-pointer select-none ${
+                  className={`flex items-center gap-2 px-3 h-[40px] min-h-[44px] rounded-[10px] border border-[#111111]/20 transition-all cursor-pointer select-none ${
                     open ? 'bg-[#C8FF2E] text-[#0A0A0A] border-[#111111]' : 'bg-white text-[#0A0A0A] hover:border-[#111111]'
                   }`}
                   title="Account Menu"
@@ -148,17 +136,14 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       <GithubIcon className="w-3.5 h-3.5 text-[#C8FF2E]" />
                     </div>
                   )}
-                  <span className="hidden sm:inline text-[13px] font-bold max-w-[130px] truncate">
+                  <span className="text-[13px] font-bold max-w-[130px] truncate">
                     {displayName}
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-[#0A0A0A] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
                 </div>
               )}
             >
               {(close) => (
                 <div className="w-[320px] font-sans overflow-hidden bg-white border border-[#111111]/15 rounded-[16px] shadow-hard-lg" onClick={(e) => e.stopPropagation()}>
-                  
-                  {/* Section 1: Identity */}
                   <div className="p-4 bg-[#FAFAFA] border-b border-[#D9D9D9] space-y-3">
                     <div className="flex items-center gap-3">
                       {avatarUrl ? (
@@ -175,39 +160,17 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         <div className="mono text-[11.5px] font-bold text-[#6B6B6B] truncate">
                           {displayHandle}
                         </div>
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#C8FF2E] border border-[#111111] mt-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#111111] animate-pulse" />
-                          <span className="mono text-[9px] font-extrabold text-[#111111] uppercase tracking-wider">
-                            VERIFIED BUILDER
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Section 2: Workspace Metrics */}
-                  <div className="p-3 bg-white border-b border-[#D9D9D9] grid grid-cols-2 gap-2 text-center">
-                    <div className="p-2 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/10">
-                      <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Repositories</div>
-                      <div className="mono text-[14px] font-extrabold text-[#0A0A0A] mt-0.5">59 connected</div>
-                    </div>
-                    <div className="p-2 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/10">
-                      <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Recent Scans</div>
-                      <div className="mono text-[14px] font-extrabold text-[#0A0A0A] mt-0.5">143 validated</div>
-                    </div>
-                  </div>
-
-                  {/* Section 3: Quick Actions */}
                   <div className="p-2 space-y-1 bg-white border-b border-[#D9D9D9]">
-                    <div className="mono text-[9.5px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em] px-2 py-1">
-                      QUICK ACTIONS
-                    </div>
                     <a
                       href={profileUrl}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => close()}
-                      className="flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none no-underline"
+                      className="flex items-center justify-between px-3 py-2.5 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all min-h-[44px]"
                     >
                       <div className="flex items-center gap-2.5">
                         <GithubIcon className="w-4 h-4 text-[#0A0A0A]" />
@@ -218,11 +181,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        close();
-                        navigate('/settings');
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none"
+                      onClick={() => { close(); navigate('/settings'); }}
+                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all min-h-[44px]"
                     >
                       <div className="flex items-center gap-2.5">
                         <UserCheck className="w-4 h-4 text-[#0A0A0A]" />
@@ -230,47 +190,14 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 text-[#6B6B6B]" />
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        close();
-                        setMeetDevOpen(true);
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <User className="w-4 h-4 text-[#0A0A0A]" />
-                        <span>Meet the Developer</span>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#6B6B6B]" />
-                    </button>
-
-                    <a
-                      href="https://buymeacoffee.com/dhanushdprabhu"
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => close()}
-                      className="flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none no-underline"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Heart className="w-4 h-4 text-[#0A0A0A]" />
-                        <span>Support ZORQEN</span>
-                      </div>
-                      <ExternalLink className="w-3.5 h-3.5 text-[#6B6B6B]" />
-                    </a>
                   </div>
 
-                  {/* Section 4: Danger Zone / Session */}
                   <div className="p-2 bg-[#FAFAFA]">
                     {githubConnected ? (
                       <button
                         type="button"
-                        onClick={() => {
-                          close();
-                          signOut();
-                        }}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FCA5A5] border border-[#DC2626]/20 transition-all outline-none"
+                        onClick={() => { close(); signOut(); }}
+                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-[8px] text-[12.5px] font-bold text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FCA5A5] border border-[#DC2626]/20 transition-all min-h-[44px]"
                       >
                         <span>Sign Out</span>
                         <LogOut className="w-4 h-4" />
@@ -278,11 +205,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => {
-                          close();
-                          setGithubModalOpen(true);
-                        }}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-[12.5px] font-extrabold text-[#0A0A0A] bg-[#C8FF2E] border border-[#111111] hover:bg-[#b5eb1c] transition-all outline-none"
+                        onClick={() => { close(); setGithubModalOpen(true); }}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-[8px] text-[12.5px] font-extrabold text-[#0A0A0A] bg-[#C8FF2E] border border-[#111111] hover:bg-[#b5eb1c] transition-all min-h-[44px]"
                       >
                         <GithubIcon className="w-4 h-4 text-[#0A0A0A]" />
                         <span>Connect GitHub Account</span>
@@ -292,21 +216,34 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                 </div>
               )}
             </Dropdown>
+          </div>
 
-            {/* Mobile Hamburger Toggle (< md) */}
+          {/* Mobile Right Controls (< md): ONLY [ Search ] [ Menu ] */}
+          <div className="flex md:hidden items-center gap-2 shrink-0">
+            {/* 1. Search Trigger (44x44px min touch target) */}
+            <button
+              onClick={onOpenCmd}
+              className="flex items-center justify-center h-[44px] w-[44px] min-w-[44px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-[#FAFAFA] text-[#0A0A0A] hover:bg-white transition-all active:translate-y-0.5"
+              title="Search"
+              aria-label="Open Search"
+            >
+              <Search className="w-5 h-5 text-[#0A0A0A]" />
+            </button>
+
+            {/* 2. Menu Toggle Button (44x44px min touch target) */}
             <button
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="flex md:hidden items-center justify-center h-[40px] min-w-[40px] p-2 rounded-[12px] border-2 border-[#111111] bg-white shadow-hard-sm text-[#0A0A0A] hover:bg-[#FAFAFA] transition-all active:translate-y-0.5"
+              className="flex items-center justify-center h-[44px] w-[44px] min-w-[44px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-[#C8FF2E] text-[#0A0A0A] shadow-hard-sm transition-all active:translate-y-0.5"
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-6 h-6 stroke-[2.5]" /> : <Menu className="w-6 h-6 stroke-[2.5]" />}
             </button>
-
           </div>
+
         </div>
 
-        {/* Mobile Bottom Sheet Drawer (< md) */}
+        {/* Mobile Slide-out Drawer (< md) */}
         {mobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
             {/* Backdrop Overlay */}
@@ -315,62 +252,55 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               onClick={closeMobileMenu}
             />
 
-            {/* Bottom Sheet Modal Container (Height 65vh+) */}
-            <div className="relative z-10 w-full min-h-[65vh] max-h-[85vh] overflow-y-auto bg-[#ECEBE6] border-t-2 border-[#111111] rounded-t-[24px] shadow-hard-lg p-6 space-y-5 slide-up">
+            {/* Slide-out Bottom Sheet Drawer Container */}
+            <div className="relative z-10 w-full min-h-[70vh] max-h-[90vh] overflow-y-auto bg-[#ECEBE6] border-t-2 border-[#111111] rounded-t-[24px] shadow-hard-lg p-5 space-y-4 slide-up">
               {/* Drag Handle */}
               <div className="w-12 h-1.5 bg-[#111111]/40 rounded-full mx-auto" />
 
               {/* Close Header */}
               <div className="flex items-center justify-between pb-2 border-b-2 border-[#111111]/20">
                 <span className="mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0A0A0A] bg-[#C8FF2E] px-2.5 py-0.5 rounded-[6px] border border-[#111111]">
-                  ACCOUNT & NAVIGATION
+                  NAVIGATION & PROFILE
                 </span>
                 <button
                   onClick={closeMobileMenu}
-                  className="p-1 rounded-[8px] text-[#0A0A0A] hover:bg-[#EAEAE2] border-2 border-transparent hover:border-[#111111]"
+                  className="flex items-center justify-center w-[44px] h-[44px] min-w-[44px] min-h-[44px] rounded-[8px] text-[#0A0A0A] hover:bg-[#EAEAE2] border-2 border-transparent hover:border-[#111111]"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Real GitHub Identity Card (Large Avatar 72px) */}
-              <div className="flex flex-col items-center text-center space-y-3 p-5 rounded-[18px] bg-white border-2 border-[#111111] shadow-hard-sm">
+              {/* Identity / Profile Card */}
+              <div className="flex items-center gap-3 p-4 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard-sm">
                 {profileLoading ? (
-                  <div className="w-[72px] h-[72px] rounded-full bg-[#EAEAE2] animate-pulse border-2 border-[#111111]" />
+                  <div className="w-12 h-12 rounded-full bg-[#EAEAE2] animate-pulse border-2 border-[#111111]" />
                 ) : avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-[72px] h-[72px] rounded-full border-2 border-[#111111] shadow-hard-sm object-cover" />
+                  <img src={avatarUrl} alt="" className="w-12 h-12 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                 ) : (
-                  <div className="w-[72px] h-[72px] rounded-full bg-[#111111] text-[#C8FF2E] border-2 border-[#111111] shadow-hard-sm flex items-center justify-center">
-                    <GithubIcon className="w-9 h-9 text-[#C8FF2E]" />
+                  <div className="w-12 h-12 rounded-full bg-[#111111] text-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center shrink-0">
+                    <GithubIcon className="w-6 h-6 text-[#C8FF2E]" />
                   </div>
                 )}
 
-                <div className="space-y-0.5">
-                  <h2 className="text-xl font-extrabold text-[#0A0A0A] tracking-tight">{displayName}</h2>
-                  <div className="mono text-[12px] font-bold text-[#5E5E5E]">{displayHandle}</div>
-                  {profile?.bio && <p className="text-[12.5px] text-[#5E5E5E] italic font-medium pt-1">{profile.bio}</p>}
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-[16px] font-extrabold text-[#0A0A0A] truncate leading-snug">{displayName}</h2>
+                  <div className="mono text-[12px] font-bold text-[#5E5E5E] truncate">{displayHandle}</div>
                 </div>
 
-                {/* Mobile GitHub Stats Grid */}
-                <div className="w-full grid grid-cols-3 gap-2 pt-3 border-t-2 border-[#111111]/15 text-center">
-                  <div>
-                    <div className="mono text-[9px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">Public Repos</div>
-                    <div className="mono text-[15px] font-bold text-[#0A0A0A]">{profileLoading ? '…' : profile?.public_repos ?? 0}</div>
-                  </div>
-                  <div>
-                    <div className="mono text-[9px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">Followers</div>
-                    <div className="mono text-[15px] font-bold text-[#0A0A0A]">{profileLoading ? '…' : profile?.followers ?? 0}</div>
-                  </div>
-                  <div>
-                    <div className="mono text-[9px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">Following</div>
-                    <div className="mono text-[15px] font-bold text-[#0A0A0A]">{profileLoading ? '…' : profile?.following ?? 0}</div>
-                  </div>
-                </div>
+                <a
+                  href={profileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={closeMobileMenu}
+                  className="mono text-[11px] font-bold text-[#0A0A0A] bg-[#FAFAFA] px-2.5 py-1 rounded-[8px] border border-[#111111] shrink-0"
+                >
+                  Profile
+                </a>
               </div>
 
-              {/* Primary Navigation items */}
-              <nav className="flex flex-col gap-2" aria-label="Mobile Navigation">
+              {/* Navigation items (Overview, Repositories, Assessments, Findings) */}
+              <nav className="flex flex-col gap-2" aria-label="Mobile Navigation Drawer">
                 {navItems.map((item) => (
                   <NavLink
                     key={item.to}
@@ -378,57 +308,61 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                     end={item.end}
                     onClick={closeMobileMenu}
                     className={({ isActive }) =>
-                      `px-4 h-[44px] rounded-[12px] text-[14px] font-extrabold transition-all flex items-center justify-between ${
+                      `px-4 h-[48px] min-h-[44px] rounded-[12px] text-[15px] font-extrabold transition-all flex items-center justify-between ${
                         isActive
                           ? 'bg-[#C8FF2E] text-[#111111] border-2 border-[#111111] shadow-hard-sm'
-                          : 'text-[#5E5E5E] hover:bg-black/5 border-2 border-transparent'
+                          : 'bg-white text-[#0A0A0A] border-2 border-[#111111]/15 hover:border-[#111111]'
                       }`
                     }
                   >
                     <span>{item.label}</span>
-                    <ChevronRight className="w-4 h-4 text-[#5E5E5E]" />
+                    <ChevronRight className="w-5 h-5 text-[#0A0A0A]" />
                   </NavLink>
                 ))}
               </nav>
 
-              {/* Actions list */}
-              <div className="pt-3 border-t-2 border-[#111111] flex flex-col gap-2">
-                <a
-                  href={profileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={closeMobileMenu}
-                  className="flex items-center justify-between px-4 h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[13px] font-extrabold text-[#0A0A0A] shadow-hard-sm no-underline"
+              {/* Action Buttons: Ask ZORQEN, Settings, Meet Dev, Support, Sign Out */}
+              <div className="pt-2 border-t-2 border-[#111111]/20 flex flex-col gap-2">
+                {/* Ask ZORQEN Drawer Action */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMobileMenu();
+                    setCopilotOpen(!copilotOpen);
+                  }}
+                  className={`flex items-center justify-between px-4 h-[48px] min-h-[44px] rounded-[12px] border-2 border-[#111111] text-[14px] font-extrabold shadow-hard-sm transition-all ${
+                    copilotOpen ? 'bg-[#111111] text-white' : 'bg-white text-[#0A0A0A] hover:bg-[#C8FF2E]'
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <GithubIcon className="w-4 h-4 text-[#0A0A0A]" />
-                    <span>GitHub Profile</span>
+                  <div className="flex items-center gap-3">
+                    <Bot className={`w-5 h-5 ${copilotOpen ? 'text-[#C8FF2E]' : 'text-[#0A0A0A]'}`} />
+                    <span>Ask ZORQEN</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-[#0A0A0A]" />
-                </a>
+                  <ChevronRight className="w-5 h-5" />
+                </button>
 
                 <button
                   type="button"
                   onClick={() => { closeMobileMenu(); navigate('/settings'); }}
-                  className="flex items-center justify-between px-4 h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[13px] font-extrabold text-[#0A0A0A] shadow-hard-sm"
+                  className="flex items-center justify-between px-4 h-[48px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[14px] font-extrabold text-[#0A0A0A] shadow-hard-sm"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <UserCheck className="w-4 h-4 text-[#0A0A0A]" />
-                    <span>Account Settings</span>
+                  <div className="flex items-center gap-3">
+                    <UserCheck className="w-5 h-5 text-[#0A0A0A]" />
+                    <span>Settings</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#0A0A0A]" />
+                  <ChevronRight className="w-5 h-5 text-[#0A0A0A]" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => { closeMobileMenu(); setMeetDevOpen(true); }}
-                  className="flex items-center justify-between px-4 h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[13px] font-extrabold text-[#0A0A0A] shadow-hard-sm"
+                  className="flex items-center justify-between px-4 h-[48px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[14px] font-extrabold text-[#0A0A0A] shadow-hard-sm"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <User className="w-4 h-4 text-[#0A0A0A]" />
+                  <div className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-[#0A0A0A]" />
                     <span>Meet the Developer</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#0A0A0A]" />
+                  <ChevronRight className="w-5 h-5 text-[#0A0A0A]" />
                 </button>
 
                 <a
@@ -436,22 +370,22 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                   target="_blank"
                   rel="noreferrer"
                   onClick={closeMobileMenu}
-                  className="flex items-center justify-between px-4 h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[13px] font-extrabold text-[#0A0A0A] shadow-hard-sm no-underline"
+                  className="flex items-center justify-between px-4 h-[48px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-white text-[14px] font-extrabold text-[#0A0A0A] shadow-hard-sm no-underline"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Heart className="w-4 h-4 text-[#0A0A0A]" />
+                  <div className="flex items-center gap-3">
+                    <Heart className="w-5 h-5 text-[#0A0A0A]" />
                     <span>Support ZORQEN</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-[#0A0A0A]" />
+                  <ExternalLink className="w-5 h-5 text-[#0A0A0A]" />
                 </a>
 
                 {user && (
                   <button
                     type="button"
                     onClick={() => { closeMobileMenu(); signOut(); }}
-                    className="flex items-center justify-center gap-2 px-4 h-[44px] rounded-[12px] border-2 border-[#111111] bg-[#FEE2E2] text-[#DC2626] text-[13px] font-extrabold shadow-hard-sm active:translate-y-0.5 mt-2 cursor-pointer"
+                    className="flex items-center justify-center gap-2 px-4 h-[48px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-[#FEE2E2] text-[#DC2626] text-[14px] font-extrabold shadow-hard-sm active:translate-y-0.5 mt-2 cursor-pointer"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-5 h-5" />
                     <span>Sign Out</span>
                   </button>
                 )}

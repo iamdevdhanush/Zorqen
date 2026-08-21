@@ -18,40 +18,40 @@ export default function ConnectGithubModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111111]/60 backdrop-blur-md fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A0A0A]/70 backdrop-blur-sm fade-in"
       onClick={(e) => { if (e.target === e.currentTarget) setGithubModalOpen(false); }}
       role="dialog"
       aria-modal="true"
       aria-label="Connect GitHub"
     >
-      <div className="w-full max-w-[420px] bg-white border border-[#111111]/15 rounded-[12px] shadow-hard-lg overflow-hidden slide-up">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 pb-4 border-b border-[#111111]/10 bg-white">
+      <div className="w-full max-w-[440px] bg-white border-2 border-[#111111] rounded-[18px] shadow-hard-lg overflow-hidden slide-up">
+        {/* Sticky Modal Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b-2 border-[#111111] bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/15 flex items-center justify-center text-[#111111] shrink-0">
-              <GithubIcon className="w-4.5 h-4.5 text-[#111111]" />
+            <div className="w-10 h-10 rounded-[10px] bg-[#111111] text-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
+              <GithubIcon className="w-5 h-5 text-[#C8FF2E]" />
             </div>
             <div>
-              <div className="mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-[#6B6B6B]">
+              <div className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#6B6B6B]">
                 AUTHORIZATION
               </div>
-              <h2 className="text-[18px] font-extrabold text-[#0A0A0A] tracking-tight leading-none mt-0.5">
+              <h2 className="text-[20px] font-extrabold text-[#0A0A0A] tracking-tight leading-none mt-0.5">
                 Connect GitHub
               </h2>
             </div>
           </div>
           <button
             onClick={() => setGithubModalOpen(false)}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#6B6B6B] hover:text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none"
-            aria-label="Close"
+            className="flex items-center justify-center w-[40px] h-[40px] rounded-[10px] text-[#0A0A0A] hover:bg-[#FAFAFA] border-2 border-transparent hover:border-[#111111] transition-all outline-none"
+            aria-label="Close dialog"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-4">
-          <p className="text-[13.5px] text-[#6B6B6B] font-medium leading-relaxed">
+        <div className="p-5 sm:p-6 space-y-4">
+          <p className="text-[14px] text-[#5E5E5E] font-medium leading-relaxed">
             Authorize ZORQEN to inspect repositories you choose for security posture and threat validation.
           </p>
 
@@ -59,48 +59,46 @@ export default function ConnectGithubModal() {
           <button
             ref={primaryRef}
             onClick={proceedGithubAuth}
-            className="w-full h-[44px] px-4 rounded-[8px] bg-white border border-[#111111]/20 hover:border-[#111111] text-[#0A0A0A] font-bold text-[14px] flex items-center justify-between transition-all duration-150 group cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111111] hover:-translate-y-[1px]"
+            className="w-full h-[48px] px-4 rounded-[12px] bg-[#C8FF2E] hover:bg-[#b5eb1c] border-2 border-[#111111] text-[#111111] font-extrabold text-[15px] flex items-center justify-between transition-all duration-140 group cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111111] shadow-hard-sm active:scale-[0.98]"
           >
             <div className="flex items-center gap-2.5">
-              <GithubIcon className="w-4 h-4 text-[#111111]" />
+              <GithubIcon className="w-5 h-5 text-[#111111]" />
               <span>Continue with GitHub</span>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#0A0A0A] group-hover:translate-x-[4px] transition-transform duration-150" />
+            <ArrowRight className="w-5 h-5 text-[#111111] group-hover:translate-x-1 transition-transform duration-140" />
           </button>
 
-          <div className="h-[1px] bg-[#111111]/10 my-4" />
+          <div className="border-t border-[#111111]/10 my-4" />
 
-          {/* Compact Permissions Checklist */}
-          <div className="space-y-2.5 text-[12.5px] text-[#333333] font-medium">
-            <div className="mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#6B6B6B]">
+          {/* Permissions Checklist */}
+          <div className="space-y-2 text-[13px] text-[#333333] font-medium">
+            <div className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#6B6B6B]">
               PERMISSIONS GRANTED
             </div>
-            <div className="space-y-2 pt-0.5">
+            <div className="space-y-2 pt-1">
               <div className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-[#111111] shrink-0" />
+                <Check className="w-4 h-4 text-[#111111] shrink-0 stroke-[3]" />
                 <span>Read-only repository access</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-[#111111] shrink-0" />
+                <Check className="w-4 h-4 text-[#111111] shrink-0 stroke-[3]" />
                 <span>Commit metadata &amp; branch structure</span>
               </div>
-              <div className="flex items-center gap-2.5 font-semibold text-[#0A0A0A]">
-                <span className="w-2 h-2 rounded-full bg-[#C8FF2E] border border-[#111111] shrink-0 ml-1 mr-0.5" />
+              <div className="flex items-center gap-2.5 font-bold text-[#0A0A0A]">
+                <span className="w-2 h-2 rounded-full bg-[#C8FF2E] border border-[#111111] shrink-0" />
                 <span>No code mutation without explicit pull request</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="h-[1px] bg-[#111111]/10 my-4" />
-
-          {/* Muted Trust Signals */}
-          <div className="text-[11.5px] text-[#6B6B6B] font-medium flex items-center justify-center gap-2 flex-wrap">
-            <span>✓ OAuth handled by GitHub</span>
-            <span>•</span>
-            <span>No write permissions</span>
-            <span>•</span>
-            <span>Disconnect anytime</span>
-          </div>
+        {/* Sticky Modal Footer */}
+        <div className="p-4 bg-[#FAFAFA] border-t-2 border-[#111111] text-[11.5px] text-[#6B6B6B] font-medium flex items-center justify-center gap-2 flex-wrap">
+          <span>✓ OAuth handled by GitHub</span>
+          <span>•</span>
+          <span>No write permissions</span>
+          <span>•</span>
+          <span>Disconnect anytime</span>
         </div>
       </div>
     </div>

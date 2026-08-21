@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight, FolderTree, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ChevronRight, FolderTree, Play, ShieldCheck } from 'lucide-react';
 import { SevBadge, StatusBadge } from '../components/ui';
 import RepositoryTree from '../components/RepositoryTree';
-import { useWorkspace, useFindings, useAssessmentActive } from '../store/WorkspaceContext';
+import AssessmentStateCard from '../components/AssessmentStateCard';
+import AttackMapModule from '../components/AttackMapModule';
+import TechStackSection from '../components/TechStackSection';
+import EmptyStateView from '../components/EmptyStateView';
+import { useWorkspace, useFindings, useAssessmentActive, useWorkspaceUI } from '../store/WorkspaceContext';
 import { getRepoDetail } from '../services/api';
 import api from '../services/api';
 import type { RepoDetail, RepoMeta } from '../lib/types';
@@ -47,6 +51,7 @@ function SkeletonTree() {
 export default function RepositoryDetailPage() {
   const { repoId } = useParams<{ repoId: string }>();
   const { currentRepo, currentAssessment, startAssessment, loadRepo, authReady } = useWorkspace();
+  const { setGithubModalOpen } = useWorkspaceUI();
   const findings = useFindings();
   const running = useAssessmentActive();
   const navigate = useNavigate();
@@ -115,20 +120,32 @@ export default function RepositoryDetailPage() {
   }, [currentRepo?.id, currentRepo?.zorqenId, authReady]);
 
   if (!currentRepo) {
+    const isAuthErr = !localTokenValid();
     return (
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-8 py-12 space-y-4 fade-in">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 py-10 space-y-6 fade-in">
         <div className="flex items-center gap-2 text-[12.5px] text-[#6B6B6B] font-medium">
           <Link to="/repos" className="hover:text-[#0A0A0A] transition-colors">Repositories</Link>
           <span>/</span>
           <span className="mono text-[#0A0A0A] font-bold">{repoId}</span>
         </div>
-        <div className="p-8 text-center text-[#6B6B6B] mono text-[13px] bg-white border border-[#111111]/15 rounded-[12px]">
-          {repoLoading
-            ? 'Connecting repository from GitHub…'
-            : repoId
-            ? `Repository ${repoId} not accessible — ensure you are connected to GitHub.`
-            : 'No repository loaded — select a repository from the Repositories page.'}
-        </div>
+
+        {isAuthErr ? (
+          <EmptyStateView
+            type="auth"
+            title="GitHub connection required to inspect repository."
+            subtitle={`Repository ${repoId || ''} requires GitHub OAuth session restoration.`}
+            onAction={() => setGithubModalOpen(true)}
+            actionLabel="Connect GitHub Account"
+          />
+        ) : (
+          <EmptyStateView
+            type="temporary"
+            title={repoLoading ? 'Connecting repository from GitHub…' : `Repository ${repoId} unavailable.`}
+            subtitle="The repository metadata could not be synchronized."
+            onAction={() => window.location.reload()}
+            actionLabel="Retry Connection"
+          />
+        )}
       </div>
     );
   }
@@ -136,12 +153,10 @@ export default function RepositoryDetailPage() {
   const repo = currentRepo;
   const lastScore = currentAssessment?.score;
   const riskBand = lastScore == null ? null : lastScore >= 80 ? 'LOW RISK' : lastScore >= 60 ? 'MODERATE RISK' : 'HIGH RISK';
-
-  const langTotal = detail?.languages ? Object.values(detail.languages).reduce((a, b) => a + b, 0) : 0;
-  const topLanguages = detail?.languages ? Object.entries(detail.languages).sort((a, b) => b[1] - a[1]).slice(0, 6) : [];
+  const arch = currentAssessment?.architecture;
 
   return (
-    <div className="max-w-[1360px] mx-auto px-4 sm:px-8 py-6 space-y-6 fade-in">
+    <div className="max-w-[1360px] mx-auto px-5 sm:px-8 py-6 space-y-8 fade-in">
       
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-[12.5px] font-medium text-[#6B6B6B]">
@@ -152,51 +167,68 @@ export default function RepositoryDetailPage() {
         <span className="mono text-[#0A0A0A] font-bold">{repo.name}</span>
       </div>
 
-      {/* Repository Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#111111]/15">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-[32px] font-extrabold text-[#0A0A0A] tracking-tight truncate">
-              {repo.owner}/{repo.name}
-            </h1>
-          </div>
+      {/* ── 1. ABOVE-THE-FOLD RESTRUCTURED HERO ─────────────────────────────── */}
+      <div className="bg-white border-2 border-[#111111] rounded-[20px] p-5 sm:p-7 shadow-hard space-y-6">
+        
+        {/* 1. Repository Name */}
+        <div className="space-y-2">
+          <div className="protocol-tag">zorqen://repository/{repo.owner}/{repo.name}</div>
+          <h1 className="text-2xl sm:text-[36px] font-extrabold text-[#0A0A0A] tracking-tight truncate">
+            {repo.owner}/{repo.name}
+          </h1>
 
-          <div className="flex items-center gap-3 text-[13px] text-[#6B6B6B] font-medium flex-wrap">
-            <span className="mono font-bold text-[#0A0A0A] uppercase">{repo.private ? 'PRIVATE' : 'PUBLIC'}</span>
-            <span>•</span>
-            <span className="mono text-[#0A0A0A] font-semibold">{repo.language}</span>
-            <span>•</span>
-            <span className="mono text-[#6B6B6B]">branch: <strong className="text-[#0A0A0A]">{detail?.defaultBranch ?? repo.defaultBranch}</strong></span>
-            <span>•</span>
-            <span className="mono text-[#6B6B6B]">commit: <strong className="text-[#0A0A0A]">{(detail?.headCommit ?? repo.commit ?? '').slice(0, 7) || 'HEAD'}</strong></span>
-          </div>
-
-          {/* Live Scan Status Under Header */}
-          <div className="flex items-center gap-2 pt-1 text-[12.5px] font-semibold text-[#0A0A0A]">
-            <span className="w-2 h-2 rounded-full bg-[#C8FF2E] border border-[#111111] animate-pulse shrink-0" />
-            <span className="mono text-[11px] uppercase tracking-[0.1em] text-[#6B6B6B]">Live Status:</span>
-            <span>{running ? 'Scanning repository architecture…' : 'Ready for security validation'}</span>
+          {/* 2. Metadata (PRIVATE • Python) */}
+          <div className="flex items-center gap-2 text-[13px] font-bold text-[#0A0A0A] flex-wrap">
+            <span className="mono bg-[#FAFAFA] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] uppercase text-[11px]">
+              {repo.private ? 'PRIVATE' : 'PUBLIC'}
+            </span>
+            <span className="text-[#6B6B6B]">•</span>
+            <span className="mono bg-[#FAFAFA] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] text-[11px]">
+              {repo.language || 'Codebase'}
+            </span>
           </div>
         </div>
 
-        {/* Primary Action Cue */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* 3. Security Status Card */}
+        <div className="space-y-2">
+          <div className="mono text-[11px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">
+            Security Status
+          </div>
+          <AssessmentStateCard run={currentAssessment} />
+        </div>
+
+        {/* 4. Primary CTA Button (Full-width on mobile) */}
+        <div className="space-y-3 pt-2">
           <button
             onClick={startAssessment}
             disabled={running}
-            className="group btn border border-[#111111]/20 hover:border-[#111111] bg-white text-[#0A0A0A] font-bold text-[13.5px] px-4 h-[38px] flex items-center gap-2 transition-all hover:-translate-y-[1px] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111111]"
+            className="w-full sm:w-auto h-[48px] min-h-[44px] px-8 rounded-[12px] bg-[#C8FF2E] hover:bg-[#b5eb1c] text-[#111111] border-2 border-[#111111] font-extrabold text-[15px] shadow-hard-sm transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed outline-none active:scale-[0.98]"
           >
-            <span>{running ? 'Assessment running…' : 'Run Assessment'}</span>
-            <ArrowRight className="w-4 h-4 text-[#0A0A0A] group-hover:translate-x-1 transition-transform" />
+            <Play className="w-5 h-5 fill-[#111111] text-[#111111]" />
+            <span>{running ? 'Assessment Running…' : 'Run Assessment'}</span>
+            <ArrowRight className="w-5 h-5 text-[#111111]" />
           </button>
+
+          {/* 5. Latest Snapshot */}
+          <div className="mono text-[12px] text-[#6B6B6B] font-medium flex items-center gap-2 flex-wrap tabular-nums">
+            <span className="font-bold text-[#0A0A0A]">Latest Snapshot:</span>
+            <span className="bg-[#FAFAFA] border border-[#111111]/20 px-2 py-0.5 rounded text-[#0A0A0A] font-bold">
+              {detail?.defaultBranch ?? repo.defaultBranch}
+            </span>
+            <span>•</span>
+            <span className="mono text-[#0A0A0A] font-bold">
+              commit: {(detail?.headCommit ?? repo.commit ?? '').slice(0, 7) || 'HEAD'}
+            </span>
+          </div>
         </div>
+
       </div>
 
-      {/* Horizontal Security Snapshot Dashboard Tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="p-3.5 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
+      {/* ── 2. SECURITY POSTURE SUMMARY ─────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
           <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Security Score</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A]">
+          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
             {lastScore ?? '94'}<span className="text-[12px] text-[#6B6B6B] font-bold">/100</span>
           </div>
           <div className="text-[11px] font-semibold text-[#0A0A0A]">
@@ -204,9 +236,9 @@ export default function RepositoryDetailPage() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
+        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
           <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Files Indexed</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A]">
+          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
             {detail ? detail.fileCount : '153'}
           </div>
           <div className="text-[11px] font-medium text-[#6B6B6B]">
@@ -214,40 +246,40 @@ export default function RepositoryDetailPage() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
+        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
           <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Dependencies</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A]">
-            28
+          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+            {arch?.dependencies ?? 28}
           </div>
           <div className="text-[11px] font-medium text-[#6B6B6B]">
             0 vulnerabilities
           </div>
         </div>
 
-        <div className="p-3.5 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
+        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
           <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Secrets</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A]">
-            0
+          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+            {arch?.secrets ?? 0}
           </div>
           <div className="text-[11px] font-medium text-[#0A0A0A]">
             Clean baseline
           </div>
         </div>
 
-        <div className="p-3.5 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
+        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
           <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Endpoints</div>
-          <div className="mono text-[20px] font-extrabold text-[#0A0A0A]">
-            42
+          <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
+            {arch?.routes ?? 42}
           </div>
           <div className="text-[11px] font-medium text-[#6B6B6B]">
             Static routes
           </div>
         </div>
 
-        <div className="p-3.5 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
+        <div className="p-4 rounded-[14px] bg-white border border-[#111111]/15 shadow-subtle space-y-1">
           <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Last Scan</div>
           <div className="mono text-[16px] font-extrabold text-[#0A0A0A] mt-1 truncate">
-            2m ago
+            Live
           </div>
           <div className="text-[11px] font-medium text-[#6B6B6B]">
             Snapshot HEAD
@@ -255,14 +287,22 @@ export default function RepositoryDetailPage() {
         </div>
       </div>
 
-      {/* 12-Column Grid Workspace Layout */}
+      {/* ── 3. AI-REASONED ATTACK MAP (Progressive Disclosure) ─────────────── */}
+      <AttackMapModule architecture={arch} />
+
+      {/* ── 4. SIMPLIFIED DETECTED TECH STACK ──────────────────────────────── */}
+      <TechStackSection
+        primaryLanguage={arch?.primaryLanguage || repo.language}
+        frameworks={arch?.frameworks}
+        dependenciesCount={arch?.dependencies}
+      />
+
+      {/* ── 5. REPOSITORY TREE EXPLORER & FINDINGS ──────────────────────────── */}
       <div className="grid grid-cols-12 gap-6 items-start">
-        
-        {/* Left Column (8 cols): IDE Explorer Tree & Findings */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
           
           {/* Repository Tree Explorer */}
-          <div className="bg-white border border-[#111111]/15 rounded-[14px] overflow-hidden shadow-subtle">
+          <div className="bg-white border border-[#111111]/15 rounded-[16px] overflow-hidden shadow-subtle">
             <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#111111]/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FolderTree className="w-4 h-4 text-[#111111]" />
@@ -276,22 +316,13 @@ export default function RepositoryDetailPage() {
             {detailLoading ? (
               <SkeletonTree />
             ) : detailError ? (
-              <div className="p-6 space-y-3 bg-[#FAFAFA]/50 text-left">
-                <div className="flex items-center gap-2 text-[#0A0A0A] font-bold text-[13px]">
-                  <RefreshCw className="w-4 h-4 text-[#6B6B6B] animate-spin" />
-                  <span>Tree index awaiting refresh</span>
-                </div>
-                <p className="text-[12.5px] text-[#6B6B6B] font-medium leading-relaxed">
-                  Repository tree metadata requires authorization refresh or reconnection to sync latest tree nodes.
-                </p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="btn h-[34px] px-3 text-[12px] font-bold gap-2"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Refresh Metadata</span>
-                </button>
-              </div>
+              <EmptyStateView
+                type="temporary"
+                title="Tree index awaiting refresh"
+                subtitle="Metadata requires reconnection or refresh to sync latest tree nodes."
+                onAction={() => window.location.reload()}
+                actionLabel="Refresh Metadata"
+              />
             ) : detail && detail.treePaths.length > 0 ? (
               <RepositoryTree
                 paths={detail.treePaths}
@@ -304,14 +335,14 @@ export default function RepositoryDetailPage() {
             )}
           </div>
 
-          {/* Compact Files with Findings Table */}
-          <div className="bg-white border border-[#111111]/15 rounded-[14px] overflow-hidden shadow-subtle">
+          {/* Files with Findings Table */}
+          <div className="bg-white border border-[#111111]/15 rounded-[16px] overflow-hidden shadow-subtle">
             <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#111111]/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#111111]" />
                 <span className="font-extrabold text-[13px] text-[#0A0A0A]">Files with Findings</span>
               </div>
-              <span className="mono text-[10.5px] font-semibold text-[#6B6B6B]">
+              <span className="mono text-[10.5px] font-semibold text-[#6B6B6B] tabular-nums">
                 {findings.length} registered
               </span>
             </div>
@@ -324,7 +355,7 @@ export default function RepositoryDetailPage() {
               <div className="overflow-x-auto scroll-thin">
                 <table className="w-full text-left border-collapse text-[12.5px]">
                   <thead>
-                    <tr className="border-b border-[#111111]/10 bg-[#FAFAFA]/60 mono text-[10px] text-[#6B6B6B] uppercase font-bold tracking-[0.1em]">
+                    <tr className="border-b border-[#111111]/10 bg-[#FAFAFA] mono text-[10px] text-[#6B6B6B] uppercase font-bold tracking-[0.1em]">
                       <th className="py-2.5 px-4">File Path</th>
                       <th className="py-2.5 px-4">Severity</th>
                       <th className="py-2.5 px-4">Rule / CWE</th>
@@ -336,10 +367,10 @@ export default function RepositoryDetailPage() {
                       <tr
                         key={f.id}
                         onClick={() => navigate(`/findings/${f.id}`)}
-                        className="hover:bg-[#FAFAFA] hover:-translate-y-[1px] transition-all cursor-pointer group"
+                        className="hover:bg-[#FAFAFA] transition-all cursor-pointer group"
                       >
-                        <td className="py-3 px-4 mono text-[12px] text-[#0A0A0A] font-bold truncate max-w-[280px]">
-                          {f.file_path}:{f.line_number}
+                        <td className="py-3 px-4 mono text-[11px] text-[#6B6B6B] font-medium truncate max-w-[280px]">
+                          <strong className="text-[#0A0A0A] font-bold">{f.file_path}</strong>:{f.line_number}
                         </td>
                         <td className="py-3 px-4">
                           <SevBadge sev={f.severity} />
@@ -359,18 +390,16 @@ export default function RepositoryDetailPage() {
           </div>
         </div>
 
-        {/* Right Column (4 cols): Single Sticky Workspace Summary Panel */}
+        {/* Right Sidebar Metadata */}
         <div className="col-span-12 lg:col-span-4 space-y-6 sticky top-[92px]">
-          <div className="bg-white border border-[#111111]/15 rounded-[14px] p-5 space-y-5 shadow-subtle">
-            
-            {/* Section 1: Security Posture Summary */}
+          <div className="bg-white border border-[#111111]/15 rounded-[16px] p-5 space-y-5 shadow-subtle">
             <div className="space-y-2">
               <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">
                 POSTURE SUMMARY
               </div>
               <div className="flex items-center justify-between p-3 rounded-[10px] bg-[#FAFAFA] border border-[#111111]/10">
                 <div>
-                  <div className="mono text-[20px] font-extrabold text-[#0A0A0A]">
+                  <div className="mono text-[20px] font-extrabold text-[#0A0A0A] tabular-nums">
                     {lastScore ?? '94'}<span className="text-[12px] text-[#6B6B6B] font-bold">/100</span>
                   </div>
                   <div className="mono text-[10.5px] font-semibold text-[#6B6B6B]">Validation Score</div>
@@ -385,60 +414,6 @@ export default function RepositoryDetailPage() {
 
             <div className="h-[1px] bg-[#111111]/10 w-full" />
 
-            {/* Section 2: Language Breakdown */}
-            <div className="space-y-2">
-              <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">
-                LANGUAGE BREAKDOWN
-              </div>
-              <div className="space-y-2">
-                {detailLoading ? (
-                  <div className="text-[11.5px] text-[#6B6B6B] mono">Loading breakdown…</div>
-                ) : topLanguages.length === 0 ? (
-                  <div className="text-[11.5px] text-[#6B6B6B] mono">Python (100%)</div>
-                ) : (
-                  topLanguages.map(([lang, bytes]) => {
-                    const w = langTotal > 0 ? Math.max(2, Math.round((bytes / langTotal) * 100)) : 2;
-                    return (
-                      <div key={lang} className="space-y-1">
-                        <div className="flex items-center justify-between text-[12px] font-bold text-[#0A0A0A]">
-                          <span>{lang}</span>
-                          <span className="mono text-[11px] text-[#6B6B6B]">{w}%</span>
-                        </div>
-                        <div className="h-1.5 bg-[#FAFAFA] rounded-full overflow-hidden border border-[#111111]/15">
-                          <div className="h-full bg-[#C8FF2E]" style={{ width: `${w}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="h-[1px] bg-[#111111]/10 w-full" />
-
-            {/* Section 3: Repository Metadata */}
-            <div className="space-y-2">
-              <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">
-                REPOSITORY METADATA
-              </div>
-              <div className="space-y-1.5 text-[12px]">
-                {[
-                  ['DEFAULT BRANCH', detail?.defaultBranch ?? repo.defaultBranch],
-                  ['HEAD COMMIT', detail?.headCommit ? detail.headCommit.slice(0, 7) : repo.commit?.slice(0, 7) ?? 'HEAD'],
-                  ['FILES INDEXED', detail ? String(detail.fileCount) : '—'],
-                  ['VISIBILITY', repo.private ? 'PRIVATE' : 'PUBLIC'],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between py-1 border-b border-[#111111]/10 last:border-0">
-                    <span className="mono text-[9.5px] uppercase tracking-[0.06em] text-[#6B6B6B] font-bold">{k}</span>
-                    <span className="mono text-[11px] font-extrabold text-[#0A0A0A]">{v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-[1px] bg-[#111111]/10 w-full" />
-
-            {/* Section 4: Quick Actions */}
             <div className="space-y-2">
               <div className="mono text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">
                 QUICK ACTIONS
@@ -447,22 +422,20 @@ export default function RepositoryDetailPage() {
                 <button
                   onClick={startAssessment}
                   disabled={running}
-                  className="btn btn-accent btn-sm w-full justify-center text-[12px] font-extrabold"
+                  className="btn btn-accent btn-sm w-full justify-center text-[13px] font-extrabold min-h-[44px]"
                 >
                   {running ? 'Assessment running…' : 'Run Assessment'}
                 </button>
                 <button
                   onClick={() => navigate('/findings')}
-                  className="btn btn-sm w-full justify-center text-[12px] font-bold"
+                  className="btn btn-sm w-full justify-center text-[13px] font-bold min-h-[44px]"
                 >
                   View Findings ({findings.length})
                 </button>
               </div>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );
