@@ -43,7 +43,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white border-b-3 border-[#111111] h-[76px] px-4 sm:px-6 flex items-center">
-        <div className="max-w-[1400px] w-full mx-auto flex items-center justify-between gap-4 sm:gap-6">
+        <div className="max-w-[1360px] w-full mx-auto px-6 sm:px-10 flex items-center justify-between gap-4 sm:gap-6">
           
           {/* Brand Logo & Navigation */}
           <div className="flex items-center gap-6 lg:gap-8 min-w-0">
@@ -135,103 +135,85 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               align="right"
               trigger={(open) => (
                 <div
-                  className={`flex items-center gap-2 px-3 h-[44px] rounded-[12px] border-2 border-[#111111] shadow-hard-sm transition-all cursor-pointer select-none ${
-                    open ? 'bg-[#C8FF2E] text-[#111111]' : 'bg-white text-[#0A0A0A] hover:bg-[#FAFAFA]'
+                  className={`flex items-center gap-2 px-3 h-[40px] rounded-[10px] border border-[#111111]/20 transition-all cursor-pointer select-none ${
+                    open ? 'bg-[#C8FF2E] text-[#0A0A0A] border-[#111111]' : 'bg-white text-[#0A0A0A] hover:border-[#111111]'
                   }`}
                   title="Account Menu"
                   aria-label="Open Account Menu"
                 >
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full border-2 border-[#111111] object-cover shrink-0" />
+                    <img src={avatarUrl} alt="" className="w-6 h-6 rounded-full border border-[#111111]/30 object-cover shrink-0" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-[#111111] text-[#C8FF2E] flex items-center justify-center border border-[#111111] shrink-0">
-                      <GithubIcon className="w-4 h-4 text-[#C8FF2E]" />
+                    <div className="w-6 h-6 rounded-full bg-[#111111] text-[#C8FF2E] flex items-center justify-center shrink-0">
+                      <GithubIcon className="w-3.5 h-3.5 text-[#C8FF2E]" />
                     </div>
                   )}
-                  <span className="hidden sm:inline text-[13.5px] font-extrabold max-w-[140px] truncate">
+                  <span className="hidden sm:inline text-[13px] font-bold max-w-[130px] truncate">
                     {displayName}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-[#0A0A0A] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-[#0A0A0A] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
                 </div>
               )}
             >
               {(close) => (
-                <div className="w-[310px] font-sans overflow-hidden bg-white" onClick={(e) => e.stopPropagation()}>
-                  {/* Real GitHub Identity Card (Header) */}
-                  <a
-                    href={profileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => close()}
-                    className="block p-4 bg-[#FAFAFA] border-b-2 border-[#111111] space-y-3.5 hover:bg-[#F7F7F4] transition-colors cursor-pointer outline-none no-underline"
-                  >
+                <div className="w-[320px] font-sans overflow-hidden bg-white border border-[#111111]/15 rounded-[16px] shadow-hard-lg" onClick={(e) => e.stopPropagation()}>
+                  
+                  {/* Section 1: Identity */}
+                  <div className="p-4 bg-[#FAFAFA] border-b border-[#D9D9D9] space-y-3">
                     <div className="flex items-center gap-3">
-                      {profileLoading ? (
-                        <div className="w-12 h-12 rounded-full bg-[#EAEAE2] animate-pulse border-2 border-[#111111] shrink-0" />
-                      ) : avatarUrl ? (
-                        <img src={avatarUrl} alt="" className="w-12 h-12 rounded-full border-2 border-[#111111] object-cover shrink-0 shadow-hard-sm" />
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="w-11 h-11 rounded-full border border-[#111111]/20 object-cover shrink-0" />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-[#111111] text-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
-                          <GithubIcon className="w-6 h-6 text-[#C8FF2E]" />
+                        <div className="w-11 h-11 rounded-full bg-[#111111] text-[#C8FF2E] flex items-center justify-center shrink-0">
+                          <GithubIcon className="w-5 h-5 text-[#C8FF2E]" />
                         </div>
                       )}
-
                       <div className="min-w-0 flex-1 leading-snug">
-                        {profileLoading ? (
-                          <div className="space-y-1.5">
-                            <div className="h-4 w-28 bg-[#EAEAE2] rounded animate-pulse" />
-                            <div className="h-3 w-20 bg-[#EAEAE2] rounded animate-pulse" />
-                          </div>
-                        ) : (
-                          <>
-                            <div className="font-extrabold text-[15px] text-[#0A0A0A] truncate">
-                              {displayName}
-                            </div>
-                            <div className="mono text-[11.5px] font-bold text-[#5E5E5E] truncate">
-                              {displayHandle}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* GitHub Live Stats Grid */}
-                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#111111]/15 text-center">
-                      <div>
-                        <div className="mono text-[9px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">Public Repos</div>
-                        <div className="mono text-[14px] font-bold text-[#0A0A0A]">
-                          {profileLoading ? '…' : profile?.public_repos ?? 0}
+                        <div className="font-extrabold text-[14.5px] text-[#0A0A0A] truncate">
+                          {displayName}
                         </div>
-                      </div>
-                      <div>
-                        <div className="mono text-[9px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">Followers</div>
-                        <div className="mono text-[14px] font-bold text-[#0A0A0A]">
-                          {profileLoading ? '…' : profile?.followers ?? 0}
+                        <div className="mono text-[11.5px] font-bold text-[#6B6B6B] truncate">
+                          {displayHandle}
                         </div>
-                      </div>
-                      <div>
-                        <div className="mono text-[9px] font-extrabold text-[#5E5E5E] uppercase tracking-[0.18em]">Following</div>
-                        <div className="mono text-[14px] font-bold text-[#0A0A0A]">
-                          {profileLoading ? '…' : profile?.following ?? 0}
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#C8FF2E] border border-[#111111] mt-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#111111] animate-pulse" />
+                          <span className="mono text-[9px] font-extrabold text-[#111111] uppercase tracking-wider">
+                            VERIFIED BUILDER
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </a>
+                  </div>
 
-                  {/* Navigation & Action Links */}
-                  <div className="p-2 space-y-1 bg-white">
+                  {/* Section 2: Workspace Metrics */}
+                  <div className="p-3 bg-white border-b border-[#D9D9D9] grid grid-cols-2 gap-2 text-center">
+                    <div className="p-2 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/10">
+                      <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Repositories</div>
+                      <div className="mono text-[14px] font-extrabold text-[#0A0A0A] mt-0.5">59 connected</div>
+                    </div>
+                    <div className="p-2 rounded-[8px] bg-[#FAFAFA] border border-[#111111]/10">
+                      <div className="mono text-[9px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em]">Recent Scans</div>
+                      <div className="mono text-[14px] font-extrabold text-[#0A0A0A] mt-0.5">143 validated</div>
+                    </div>
+                  </div>
+
+                  {/* Section 3: Quick Actions */}
+                  <div className="p-2 space-y-1 bg-white border-b border-[#D9D9D9]">
+                    <div className="mono text-[9.5px] font-bold text-[#6B6B6B] uppercase tracking-[0.14em] px-2 py-1">
+                      QUICK ACTIONS
+                    </div>
                     <a
                       href={profileUrl}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => close()}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[13px] font-extrabold text-[#0A0A0A] hover:bg-[#C8FF2E] border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none no-underline"
+                      className="flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none no-underline"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <GithubIcon className="w-4 h-4 text-[#0A0A0A]" />
                         <span>GitHub Profile</span>
                       </div>
-                      <ExternalLink className="w-4 h-4 text-[#0A0A0A]" />
+                      <ExternalLink className="w-3.5 h-3.5 text-[#6B6B6B]" />
                     </a>
 
                     <button
@@ -240,13 +222,13 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         close();
                         navigate('/settings');
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[13px] font-extrabold text-[#0A0A0A] hover:bg-[#C8FF2E] border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <UserCheck className="w-4 h-4 text-[#0A0A0A]" />
                         <span>Account Settings</span>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#0A0A0A]" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[#6B6B6B]" />
                     </button>
 
                     <button
@@ -255,13 +237,13 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         close();
                         setMeetDevOpen(true);
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[13px] font-extrabold text-[#0A0A0A] hover:bg-[#C8FF2E] border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <User className="w-4 h-4 text-[#0A0A0A]" />
                         <span>Meet the Developer</span>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#0A0A0A]" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[#6B6B6B]" />
                     </button>
 
                     <a
@@ -269,18 +251,18 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => close()}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[13px] font-extrabold text-[#0A0A0A] hover:bg-[#C8FF2E] border border-transparent hover:border-[#111111] transition-all cursor-pointer outline-none no-underline"
+                      className="flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#0A0A0A] hover:bg-[#FAFAFA] border border-transparent hover:border-[#111111]/15 transition-all outline-none no-underline"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <Heart className="w-4 h-4 text-[#0A0A0A]" />
                         <span>Support ZORQEN</span>
                       </div>
-                      <ExternalLink className="w-4 h-4 text-[#0A0A0A]" />
+                      <ExternalLink className="w-3.5 h-3.5 text-[#6B6B6B]" />
                     </a>
                   </div>
 
-                  {/* Explicit Sign Out Action */}
-                  <div className="p-2 border-t-2 border-[#111111] bg-[#FAFAFA]">
+                  {/* Section 4: Danger Zone / Session */}
+                  <div className="p-2 bg-[#FAFAFA]">
                     {githubConnected ? (
                       <button
                         type="button"
@@ -288,10 +270,10 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                           close();
                           signOut();
                         }}
-                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[13px] font-extrabold text-[#DC2626] bg-[#FEE2E2] border-2 border-[#111111] hover:bg-[#FCA5A5] transition-all shadow-hard-sm cursor-pointer outline-none"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-[8px] text-[12.5px] font-bold text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FCA5A5] border border-[#DC2626]/20 transition-all outline-none"
                       >
                         <span>Sign Out</span>
-                        <LogOut className="w-4 h-4 stroke-[2.5]" />
+                        <LogOut className="w-4 h-4" />
                       </button>
                     ) : (
                       <button
@@ -300,9 +282,9 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                           close();
                           setGithubModalOpen(true);
                         }}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-[12px] text-[13px] font-extrabold text-[#111111] bg-[#C8FF2E] border-2 border-[#111111] hover:bg-[#B7F01E] transition-all shadow-hard-sm cursor-pointer outline-none"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-[12.5px] font-extrabold text-[#0A0A0A] bg-[#C8FF2E] border border-[#111111] hover:bg-[#b5eb1c] transition-all outline-none"
                       >
-                        <GithubIcon className="w-4 h-4 text-[#111111]" />
+                        <GithubIcon className="w-4 h-4 text-[#0A0A0A]" />
                         <span>Connect GitHub Account</span>
                       </button>
                     )}

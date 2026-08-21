@@ -36,67 +36,78 @@ export default function OverviewPage() {
   /* ── Empty State ─────────────────────────────────────────── */
   if (!currentRepo) {
     return (
-      <div className="max-w-[980px] mx-auto py-12 sm:py-20 px-4 fade-in space-y-10">
-        <div className="space-y-4">
+      <div className="max-w-[1360px] mx-auto px-6 sm:px-10 pt-[56px] pb-16 fade-in">
+        
+        {/* Platform Badge */}
+        <div>
           <div className="protocol-tag">zorqen://platform/overview</div>
-          <h1 className="text-4xl sm:text-[56px] lg:text-[72px] font-extrabold text-[#0A0A0A] tracking-tight leading-[1.05]">
-            Security Validation <br />
-            <span className="text-[#6B6B6B] font-semibold">for AI-built software.</span>
-          </h1>
-          <p className="text-base sm:text-[18px] text-[#333333] max-w-[640px] leading-relaxed font-medium">
-            Autonomous security validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
-          </p>
         </div>
 
-        {/* Minimal Aligned Workspace Metadata Line (No Background Box) */}
+        {/* H1 Headline */}
+        <h1 className="text-5xl sm:text-[72px] lg:text-[88px] font-extrabold text-[#0A0A0A] tracking-tight leading-[1.02] mt-[18px]">
+          Security Validation <br />
+          <span className="text-[#6B6B6B] font-semibold">for AI-built software.</span>
+        </h1>
+
+        {/* Subtitle */}
+        <p className="hero-subtitle text-[24px] sm:text-[28px] lg:text-[30px] text-[#1F1F1F] opacity-100 font-medium leading-[1.4] max-w-[800px] mt-[28px]">
+          Autonomous security validation and vulnerability remediation for{' '}
+          <span className="hero-highlight whitespace-nowrap">
+            repositories you control.
+          </span>{' '}
+          Find it. Fix it. Prove it.
+        </p>
+
+        {/* Workspace Action Row */}
         <div
           onClick={connectGithub}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-          className="group flex items-center justify-between gap-4 py-2 cursor-pointer select-none border-b border-[#111111]/15 hover:border-[#111111] transition-colors"
+          className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 rounded-[14px] bg-white border border-[#111111]/20 hover:border-[#111111] transition-all cursor-pointer select-none mt-[40px] shadow-subtle"
         >
-          <div className="flex items-center gap-3 text-[13.5px] font-medium text-[#333333]">
-            <GithubIcon className="w-4 h-4 text-[#111111]" />
-            <span className="mono text-[11px] font-bold uppercase tracking-[0.14em] text-[#6B6B6B]">
-              GitHub Workspace
-            </span>
+          <div className="flex items-center gap-3 text-[14px] font-medium text-[#0A0A0A]">
+            <GithubIcon className="w-[16px] h-[16px] text-[#111111] shrink-0" />
+            <span className="font-extrabold text-[#0A0A0A]">GitHub Workspace</span>
             <span className="text-[#111111]/30">•</span>
             {githubConnected ? (
               <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#C8FF2E] border border-[#111111] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#C8FF2E] border border-[#111111] animate-pulse shrink-0" />
                 <span>Connected <strong className="text-[#0A0A0A]">@{user?.github_login || 'iamdevdhanush'}</strong></span>
               </span>
             ) : (
-              <span>Not connected — OAuth required</span>
+              <span className="text-[#6B6B6B]">Not connected · OAuth required</span>
             )}
           </div>
 
-          <div className="flex items-center gap-1 text-[13px] font-bold text-[#0A0A0A] group-hover:translate-x-1 transition-transform">
-            <span>{githubConnected ? 'Ready for validation' : 'Connect workspace'}</span>
-            <ArrowRight className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 text-[13.5px] font-extrabold text-[#0A0A0A] group-hover:translate-x-1 transition-transform">
+            <span>{githubConnected ? 'Ready for validation' : 'Connect Workspace'}</span>
+            <ArrowRight className="w-4 h-4 text-[#0A0A0A]" />
           </div>
         </div>
 
         {/* Workflow Grid */}
-        <div className="space-y-4 pt-4">
-          <div className="mono text-[11px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">
+        <div className="mt-[56px] space-y-4">
+          <div className="mono text-[12px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">
             WORKFLOW PIPELINE
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               ['01', 'Static Analysis', 'Maps architecture & flags patterns', '153 files · 42 endpoints'],
               ['02', 'AI Reasoning', 'Correlates exploit pathways', 'High confidence scoring'],
               ['03', 'Sandbox Probes', 'Executes containerized probes', 'Isolated runtime test'],
               ['04', 'Remediation', 'Generates validated code diffs', 'Automated patch PRs'],
             ].map(([num, title, desc, meta]) => (
-              <div key={num} className="p-4 rounded-[12px] bg-white border border-[#111111]/15 hover:border-[#111111] transition-all space-y-2 relative group overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-transparent group-hover:bg-[#C8FF2E] transition-colors" />
-                <div className="mono text-[11px] font-extrabold text-[#0A0A0A]">{num}</div>
-                <div className="font-extrabold text-[14.5px] text-[#0A0A0A]">{title}</div>
-                <div className="text-[13px] text-[#6B6B6B] font-medium leading-snug">{desc}</div>
-                <div className="h-[1px] bg-[#111111]/10 my-2" />
-                <div className="mono text-[10.5px] text-[#6B6B6B] font-semibold">{meta}</div>
+              <div
+                key={num}
+                className="p-[28px] rounded-[18px] bg-white border border-[#111111]/15 hover:border-[#111111] hover:-translate-y-[4px] transition-all duration-180 ease-out space-y-3 relative group overflow-hidden shadow-subtle"
+              >
+                <div className="absolute top-0 left-0 w-full h-[3px] bg-transparent group-hover:bg-[#C8FF2E] transition-colors" />
+                <div className="mono text-[12px] font-extrabold text-[#6B6B6B] uppercase tracking-[0.14em]">{num}</div>
+                <div className="text-[28px] font-extrabold text-[#0A0A0A] tracking-tight leading-tight">{title}</div>
+                <div className="text-[15px] text-[#6B6B6B] font-medium leading-relaxed">{desc}</div>
+                <div className="h-[1px] bg-[#111111]/10 my-3" />
+                <div className="mono text-[12px] text-[#6B6B6B] font-semibold">{meta}</div>
               </div>
             ))}
           </div>

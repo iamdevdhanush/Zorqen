@@ -152,11 +152,17 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
             <Terminal className="w-3.5 h-3.5" />
           </div>
           <div>
-            <div className="font-extrabold text-[13px] text-white leading-none">
-              Ask ZORQEN
+            <div className="font-extrabold text-[13px] text-white leading-none flex items-center gap-2">
+              <span>Ask ZORQEN</span>
+              <span className="flex items-center gap-1 text-[9.5px] font-mono text-[#C8FF2E] bg-[#222222] px-1.5 py-0.5 rounded border border-[#333333]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C8FF2E] animate-pulse" />
+                <span>LIVE ANALYST</span>
+              </span>
             </div>
-            <div className="mono text-[10px] text-[#A0A0A0] font-semibold mt-0.5">
-              Repository: <strong className="text-[#C8FF2E]">{currentRepo?.name || 'Zorqen'}</strong>
+            <div className="mono text-[10px] text-[#A0A0A0] font-semibold mt-1 flex items-center gap-2">
+              <span>Repo: <strong className="text-[#C8FF2E]">{currentRepo?.name || 'Zorqen'}</strong></span>
+              <span>•</span>
+              <span>Scan: <strong className="text-zinc-300">{currentAssessment?.id || 'RUN-143'}</strong></span>
             </div>
           </div>
         </div>

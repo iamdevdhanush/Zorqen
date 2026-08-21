@@ -82,27 +82,27 @@ svg {
   box-shadow: 0 0 0 1px #C8FF2E;
 }
 
-/* ── Card Hierarchy (Linear / Vercel Security Operations Console) ───────────── */
+/* ── Card Hierarchy & Elevation (Linear / Vercel Security Operations Console) ── */
 
-/* Primary Card: 1px border, 14px radius, crisp white background */
+/* Primary Card: 1.5px border, 20px radius, 24px padding */
 .panel, .card-primary {
   background-color: var(--color-panel);
-  border: 1px solid rgba(17, 17, 17, 0.15);
-  border-radius: 14px;
+  border: 1.5px solid rgba(17, 17, 17, 0.15);
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 150ms cubic-bezier(.22,1,.36,1), border-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: transform 180ms cubic-bezier(.22,1,.36,1), border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .panel:hover, .card-primary:hover {
   border-color: rgba(17, 17, 17, 0.3);
 }
 
-/* Secondary Card: 1px border, 10px radius, 16px padding */
+/* Secondary Card: 1px border, 14px radius, 16px padding */
 .panel-subtle, .card-secondary {
   background-color: var(--color-panel);
   border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 16px;
   transition: border-color 150ms ease;
 }
@@ -113,15 +113,15 @@ svg {
   justify-content: space-between;
   gap: 16px;
   padding: 14px 20px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+  border-bottom: 1px solid #D9D9D9;
   background-color: #FAFAFA;
-  border-radius: 13px 13px 0 0;
+  border-radius: 19px 19px 0 0;
   min-height: 44px;
 }
 
 .panel-head-title {
   font-family: var(--font-sans);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--color-ink);
@@ -134,11 +134,11 @@ svg {
 .panel-body-flush { padding: 0; }
 
 @media (max-width: 640px) {
-  .panel, .card-primary { padding: 18px; }
+  .panel, .card-primary { padding: 18px; border-radius: 16px; }
   .panel-head { padding: 12px 16px; }
 }
 
-/* ── Buttons (Linear & Vercel Style: 38-42px Height, 8px Radius, 1px Border) ─ */
+/* ── ZORQEN Button System (Primary Neon Lime, Secondary White, Ghost, Destructive) ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -146,17 +146,17 @@ svg {
   gap: 8px;
   font-family: var(--font-sans);
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   height: 40px;
   padding: 0 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid rgba(17, 17, 17, 0.2);
   background-color: #FFFFFF;
   color: var(--color-ink);
   cursor: pointer;
   user-select: none;
-  transition: all 150ms ease-out;
+  transition: all 180ms cubic-bezier(.22,1,.36,1);
   outline: none;
 }
 
@@ -166,32 +166,93 @@ svg {
   transform: translateY(-1px);
 }
 
-.btn-primary {
-  background-color: #111111;
-  color: #FFFFFF;
+.btn:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+.btn:focus-visible {
+  ring: 2px solid #111111;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Primary CTA: Neon Lime Background, Black Bold Text */
+.btn-primary, .btn-accent {
+  background-color: #C8FF2E;
+  color: #0A0A0A;
+  border: 1.5px solid #111111;
+  font-weight: 800;
+}
+
+.btn-primary:hover, .btn-accent:hover {
+  background-color: #b5eb1c;
+  border-color: #111111;
+  color: #0A0A0A;
+  transform: translateY(-1px);
+}
+
+/* Secondary CTA: White background with thin border */
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: #0A0A0A;
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  font-weight: 700;
+}
+
+.btn-secondary:hover {
+  background-color: #FAFAFA;
   border-color: #111111;
 }
 
-.btn-primary:hover {
-  background-color: #222222;
-  border-color: #222222;
-  color: #FFFFFF;
+/* Ghost Button: Borderless */
+.btn-ghost {
+  background-color: transparent;
+  color: #0A0A0A;
+  border: 1px solid transparent;
+  font-weight: 600;
 }
 
-.btn-accent {
-  background-color: #111111;
-  color: #FFFFFF;
-  border: 1px solid #111111;
+.btn-ghost:hover {
+  background-color: rgba(17, 17, 17, 0.05);
+  border-color: transparent;
 }
 
-.btn-accent:hover {
-  background-color: #222222;
-  border-color: #C8FF2E;
+/* Destructive Button: Soft Red */
+.btn-destructive {
+  background-color: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  font-weight: 700;
 }
 
-.btn:active {
-  transform: translateY(0px);
-  box-shadow: 2px 2px 0px #111111;
+.btn-destructive:hover {
+  background-color: #FCA5A5;
+  color: #991B1B;
+}
+
+/* ── Hero Subtitle Visibility & Highlight System ── */
+.hero-subtitle {
+  color: #1F1F1F !important;
+  opacity: 1 !important;
+  font-weight: 500;
+  line-height: 1.45;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  mix-blend-mode: normal !important;
+}
+
+.hero-highlight {
+  display: inline;
+  background: #C7F11D;
+  color: #111111;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .btn-accent {
