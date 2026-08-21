@@ -1,5 +1,6 @@
 import { memo, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Bot, ChevronDown, ChevronRight, ExternalLink, Heart, LogOut, Menu, Search, User, UserCheck, X } from 'lucide-react';
 import GithubIcon from './GithubIcon';
 import ZorqenLogoMark from './ZorqenLogoMark';
@@ -55,21 +56,37 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             </NavLink>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-2 ml-2" aria-label="Main Navigation">
+            <nav className="hidden md:flex items-center gap-1 lg:gap-2 ml-2" aria-label="Main Navigation">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `px-4 h-[44px] flex items-center rounded-[12px] text-[14px] font-extrabold transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#111111] ${
+                    `relative px-3.5 lg:px-4 h-[44px] flex items-center justify-center text-[14px] transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[8px] select-none ${
                       isActive
-                        ? 'bg-[#C8FF2E] text-[#111111] border-2 border-[#111111] shadow-hard-sm'
-                        : 'text-[#5E5E5E] hover:text-[#0A0A0A] hover:bg-[#FAFAFA] border-2 border-transparent'
+                        ? 'text-[#111111] font-bold'
+                        : 'text-[#5A5A5A] font-medium hover:text-[#111111] hover:-translate-y-[1px]'
                     }`
                   }
                 >
-                  {item.label}
+                  {({ isActive }) => (
+                    <span className="relative flex flex-col items-center justify-center h-full">
+                      <span className="relative z-10">{item.label}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="topNavActiveUnderline"
+                          className="absolute bottom-[4px] w-[calc(100%+14px)] left-1/2 -translate-x-1/2 h-[5px] bg-[#111111] rounded-full"
+                          transition={{
+                            type: 'spring',
+                            stiffness: 420,
+                            damping: 32,
+                            mass: 0.7,
+                          }}
+                        />
+                      )}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </nav>
