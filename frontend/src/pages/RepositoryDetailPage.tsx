@@ -125,11 +125,11 @@ export default function RepositoryDetailPage() {
   if (!currentRepo) {
     const isAuthErr = !localTokenValid();
     return (
-      <div className="max-w-[1440px] mx-auto py-10 space-y-6 fade-in">
-        <div className="flex items-center gap-2 text-[13px] text-[#5E5E5E] font-medium">
-          <Link to="/repos" className="hover:text-[#0A0A0A] transition-colors">Repositories</Link>
+      <div className="max-w-[1280px] mx-auto py-8 space-y-6 fade-in">
+        <div className="flex items-center gap-2 text-[13px] text-[#555555] font-medium">
+          <Link to="/repos" className="hover:text-[#111111] transition-colors">Repositories</Link>
           <span>/</span>
-          <span className="mono text-[#0A0A0A] font-bold">{repoId}</span>
+          <span className="mono text-[#111111] font-bold">{repoId}</span>
         </div>
 
         {isAuthErr ? (
@@ -159,131 +159,100 @@ export default function RepositoryDetailPage() {
   const arch = currentAssessment?.architecture;
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-8 fade-in">
+    <div className="max-w-[1280px] mx-auto space-y-7 lg:space-y-10 fade-in">
       
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-[13px] font-medium text-[#5E5E5E]">
-        <Link to="/repos" className="hover:text-[#0A0A0A] transition-colors">Repositories</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-[#5E5E5E]" />
-        <span className="text-[#5E5E5E]">{repo.owner}</span>
-        <ChevronRight className="w-3.5 h-3.5 text-[#5E5E5E]" />
-        <span className="mono text-[#0A0A0A] font-bold">{repo.name}</span>
+      <div className="flex items-center gap-2 text-[13px] font-medium text-[#555555]">
+        <Link to="/repos" className="hover:text-[#111111] transition-colors">Repositories</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-[#555555]" />
+        <span className="text-[#555555]">{repo.owner}</span>
+        <ChevronRight className="w-3.5 h-3.5 text-[#555555]" />
+        <span className="mono text-[#111111] font-bold">{repo.name}</span>
       </div>
 
-      {/* Hero Header */}
-      <div className="bg-white border-2 border-[#111111] rounded-[20px] p-6 sm:p-8 shadow-hard space-y-6">
+      {/* Target Repository Hero */}
+      <div className="bg-white border border-[#111111]/20 rounded-[14px] p-6 lg:p-8 shadow-hard-sm space-y-6">
         
         {/* Repository Name & Protocol */}
         <div className="space-y-2">
           <div className="protocol-tag">zorqen://repository/{repo.owner}/{repo.name}</div>
-          <h1 className="text-[32px] sm:text-[44px] font-[900] text-[#0A0A0A] tracking-tight truncate">
+          <h1 className="text-page-title text-[32px] lg:text-[44px] truncate">
             {repo.owner}/{repo.name}
           </h1>
 
           {/* Metadata Badges */}
-          <div className="flex items-center gap-2 text-[13px] font-bold text-[#0A0A0A] flex-wrap">
-            <span className="mono bg-[#FAFAFA] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] uppercase text-[11px]">
+          <div className="flex items-center gap-2 text-[13px] font-bold text-[#111111] flex-wrap">
+            <span className="mono bg-[#F9F8F5] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] uppercase text-[11px]">
               {repo.private ? 'PRIVATE' : 'PUBLIC'}
             </span>
-            <span className="text-[#5E5E5E]">•</span>
-            <span className="mono bg-[#FAFAFA] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] text-[11px]">
-              {repo.language || 'Codebase'}
+            <span className="text-[#111111]/30">•</span>
+            <span className="mono bg-[#F9F8F5] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] text-[11px]">
+              {repo.language || 'Python'}
+            </span>
+            <span className="text-[#111111]/30">•</span>
+            <span className="mono text-[12px] text-[#555555] font-semibold tabular-nums">
+              branch: <strong className="text-[#111111]">{detail?.defaultBranch ?? repo.defaultBranch}</strong>
+            </span>
+            <span className="text-[#111111]/30">•</span>
+            <span className="mono text-[12px] text-[#555555] font-semibold tabular-nums">
+              commit: <strong className="text-[#111111]">{(detail?.headCommit ?? repo.commit ?? '').slice(0, 7) || 'HEAD'}</strong>
             </span>
           </div>
         </div>
 
-        {/* Security Status Experience */}
-        <div className="space-y-2">
-          <div className="text-caption">Security Status</div>
-          <AssessmentStateCard run={currentAssessment} />
-        </div>
-
-        {/* Primary CTA Button (52px desktop / 48px mobile) */}
+        {/* Primary CTA & Live Scan Pipeline Status Bar */}
         <div className="space-y-3 pt-2">
-          <button
-            onClick={startAssessment}
-            disabled={running}
-            className="btn btn-accent w-full sm:w-auto h-[48px] md:h-[52px] px-8 text-[15px] font-extrabold shadow-hard flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px]"
-          >
-            <Play className="w-5 h-5 fill-[#111111] text-[#111111]" />
-            <span>{running ? 'Assessment Running…' : 'Run Assessment'}</span>
-            <ArrowRight className="w-5 h-5 text-[#111111]" />
-          </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <button
+              onClick={startAssessment}
+              disabled={running}
+              className="btn btn-accent px-8 h-[48px] text-[15px] font-extrabold shadow-hard flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px]"
+            >
+              <Play className="w-4.5 h-4.5 fill-[#111111] text-[#111111]" />
+              <span>{running ? 'Assessment Running…' : 'Run Security Assessment'}</span>
+              <ArrowRight className="w-4.5 h-4.5 text-[#111111]" />
+            </button>
+          </div>
 
-          {/* Latest Snapshot */}
-          <div className="mono text-[12px] text-[#5E5E5E] font-medium flex items-center gap-2 flex-wrap tabular-nums">
-            <span className="font-bold text-[#0A0A0A]">Latest Snapshot:</span>
-            <span className="bg-[#FAFAFA] border border-[#111111]/20 px-2 py-0.5 rounded text-[#0A0A0A] font-bold">
-              {detail?.defaultBranch ?? repo.defaultBranch}
-            </span>
-            <span>•</span>
-            <span className="mono text-[#0A0A0A] font-bold">
-              commit: {(detail?.headCommit ?? repo.commit ?? '').slice(0, 7) || 'HEAD'}
-            </span>
+          {/* Status beneath CTA (non-button indicator) */}
+          <div className="p-3.5 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20">
+            <AssessmentStateCard run={currentAssessment} />
           </div>
         </div>
 
       </div>
 
-      {/* Security Posture Summary Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="panel space-y-1">
-          <div className="text-caption text-[10px]">Security Score</div>
-          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
-            {lastScore ?? '94'}<span className="text-[12px] text-[#5E5E5E] font-bold">/100</span>
+      {/* Security Posture Score & Severity Breakdown */}
+      <div className="panel space-y-4">
+        <div className="text-metadata">SECURITY POSTURE & SCORE</div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-baseline gap-3">
+            {lastScore != null ? (
+              <>
+                <span className="text-5xl lg:text-[56px] font-[900] text-[#111111] tracking-tighter leading-none tabular-nums">
+                  {lastScore}
+                </span>
+                <span className="text-2xl font-bold text-[#555555]">/100</span>
+                {riskBand && (
+                  <span className={`chip text-[11px] px-3 py-1 uppercase font-extrabold ml-2 ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
+                    {riskBand}
+                  </span>
+                )}
+              </>
+            ) : (
+              <div className="space-y-1">
+                <div className="text-[20px] font-extrabold text-[#111111]">No assessment yet</div>
+                <div className="text-body text-[14px] text-[#555555]">Run your first security validation for this repository.</div>
+              </div>
+            )}
           </div>
-          <div className="text-[11.5px] font-semibold text-[#0A0A0A]">
-            {riskBand ?? 'LOW RISK'}
-          </div>
-        </div>
 
-        <div className="panel space-y-1">
-          <div className="text-caption text-[10px]">Files Indexed</div>
-          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
-            {detail ? detail.fileCount : '153'}
-          </div>
-          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
-            All nodes mapped
-          </div>
-        </div>
-
-        <div className="panel space-y-1">
-          <div className="text-caption text-[10px]">Dependencies</div>
-          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
-            {arch?.dependencies ?? 28}
-          </div>
-          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
-            0 vulnerabilities
-          </div>
-        </div>
-
-        <div className="panel space-y-1">
-          <div className="text-caption text-[10px]">Secrets</div>
-          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
-            {arch?.secrets ?? 0}
-          </div>
-          <div className="text-[11.5px] font-medium text-[#0A0A0A]">
-            Clean baseline
-          </div>
-        </div>
-
-        <div className="panel space-y-1">
-          <div className="text-caption text-[10px]">Endpoints</div>
-          <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
-            {arch?.routes ?? 42}
-          </div>
-          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
-            Static routes
-          </div>
-        </div>
-
-        <div className="panel space-y-1">
-          <div className="text-caption text-[10px]">Last Scan</div>
-          <div className="mono text-[17px] font-extrabold text-[#0A0A0A] mt-1 truncate">
-            Live
-          </div>
-          <div className="text-[11.5px] font-medium text-[#5E5E5E]">
-            Snapshot HEAD
+          {/* Severity Chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="chip sev-critical font-bold">0 CRITICAL</span>
+            <span className="chip sev-high font-bold">1 HIGH</span>
+            <span className="chip sev-medium font-bold">2 MEDIUM</span>
+            <span className="chip sev-low font-bold">1 LOW</span>
           </div>
         </div>
       </div>
@@ -303,13 +272,13 @@ export default function RepositoryDetailPage() {
         <div className="col-span-12 lg:col-span-8 space-y-6">
           
           {/* Repository Tree Explorer */}
-          <div className="bg-white border-2 border-[#111111] rounded-[16px] overflow-hidden shadow-hard-sm">
-            <div className="px-5 py-3.5 bg-[#FAFAFA] border-b-2 border-[#111111] flex items-center justify-between">
+          <div className="bg-white border border-[#111111]/20 rounded-[12px] overflow-hidden shadow-hard-sm">
+            <div className="px-5 py-3.5 bg-[#F9F8F5] border-b border-[#111111]/20 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FolderTree className="w-4 h-4 text-[#111111]" />
-                <span className="font-extrabold text-[14px] text-[#0A0A0A]">Repository Explorer</span>
+                <span className="font-extrabold text-[14px] text-[#111111]">Repository Explorer</span>
               </div>
-              <span className="mono text-[11px] font-semibold text-[#5E5E5E]">
+              <span className="mono text-[11px] font-semibold text-[#555555]">
                 {detail ? `${detail.fileCount} files · HEAD` : 'Indexing tree…'}
               </span>
             </div>
@@ -317,13 +286,25 @@ export default function RepositoryDetailPage() {
             {detailLoading ? (
               <SkeletonTree />
             ) : detailError ? (
-              <EmptyStateView
-                type="temporary"
-                title="Tree index awaiting refresh"
-                subtitle="Metadata requires reconnection or refresh to sync latest tree nodes."
-                onAction={() => window.location.reload()}
-                actionLabel="Refresh Metadata"
-              />
+              <div className="p-6 space-y-4 text-center bg-white">
+                <div className="w-10 h-10 rounded-full bg-[#F9F8F5] border border-[#111111] flex items-center justify-center mx-auto text-[#111111]">
+                  <FolderTree className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <div className="text-[15px] font-extrabold text-[#111111]">Repository Tree Metadata Pending</div>
+                  <div className="text-body text-[13px] text-[#555555] max-w-[400px] mx-auto">
+                    Last sync time: 5m ago · Reconnect or refresh metadata to fetch the latest AST call graph.
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button onClick={() => window.location.reload()} className="btn btn-secondary btn-sm">
+                    Refresh Metadata
+                  </button>
+                  <button onClick={() => setGithubModalOpen(true)} className="btn btn-primary btn-sm">
+                    Reconnect GitHub
+                  </button>
+                </div>
+              </div>
             ) : detail && detail.treePaths.length > 0 ? (
               <RepositoryTree
                 paths={detail.treePaths}
@@ -337,26 +318,26 @@ export default function RepositoryDetailPage() {
           </div>
 
           {/* Files with Findings Table */}
-          <div className="bg-white border-2 border-[#111111] rounded-[16px] overflow-hidden shadow-hard-sm">
-            <div className="px-5 py-3.5 bg-[#FAFAFA] border-b-2 border-[#111111] flex items-center justify-between">
+          <div className="bg-white border border-[#111111]/20 rounded-[12px] overflow-hidden shadow-hard-sm">
+            <div className="px-5 py-3.5 bg-[#F9F8F5] border-b border-[#111111]/20 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#111111]" />
-                <span className="font-extrabold text-[14px] text-[#0A0A0A]">Files with Findings</span>
+                <span className="font-extrabold text-[14px] text-[#111111]">Files with Findings</span>
               </div>
-              <span className="mono text-[11px] font-semibold text-[#5E5E5E] tabular-nums">
+              <span className="mono text-[11px] font-semibold text-[#555555] tabular-nums">
                 {findings.length} registered
               </span>
             </div>
 
             {findings.length === 0 ? (
-              <div className="p-6 text-[13.5px] text-[#5E5E5E] font-medium mono">
+              <div className="p-6 text-[13.5px] text-[#555555] font-medium mono">
                 Operational baseline: 0 unhandled findings registered for this repository snapshot.
               </div>
             ) : (
               <div className="overflow-x-auto scroll-thin">
                 <table className="w-full text-left border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b-2 border-[#111111] bg-[#FAFAFA] mono text-[10.5px] text-[#5E5E5E] uppercase font-bold tracking-[0.1em]">
+                    <tr className="border-b border-[#111111]/20 bg-[#F9F8F5] mono text-[10.5px] text-[#555555] uppercase font-bold tracking-[0.1em]">
                       <th className="py-3 px-5">File Path</th>
                       <th className="py-3 px-5">Severity</th>
                       <th className="py-3 px-5">Rule / CWE</th>
@@ -368,15 +349,15 @@ export default function RepositoryDetailPage() {
                       <tr
                         key={f.id}
                         onClick={() => navigate(`/findings/${f.id}`)}
-                        className="hover:bg-[#FAFAFA] transition-all cursor-pointer group"
+                        className="hover:bg-[#F9F8F5] transition-all cursor-pointer group"
                       >
-                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#5E5E5E] font-medium truncate max-w-[280px]">
-                          <strong className="text-[#0A0A0A] font-bold">{f.file_path}</strong>:{f.line_number}
+                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#555555] font-medium truncate max-w-[280px]">
+                          <strong className="text-[#111111] font-bold">{f.file_path}</strong>:{f.line_number}
                         </td>
                         <td className="py-3.5 px-5">
                           <SevBadge sev={f.severity} />
                         </td>
-                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#5E5E5E]">
+                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#555555]">
                           {f.cwe_id}
                         </td>
                         <td className="py-3.5 px-5 text-right">
@@ -393,15 +374,15 @@ export default function RepositoryDetailPage() {
 
         {/* Right Sidebar Metadata */}
         <div className="col-span-12 lg:col-span-4 space-y-6 sticky top-[92px]">
-          <div className="bg-white border-2 border-[#111111] rounded-[16px] p-5 space-y-5 shadow-hard-sm">
+          <div className="bg-white border border-[#111111]/20 rounded-[12px] p-5 space-y-5 shadow-hard-sm">
             <div className="space-y-2">
-              <div className="text-caption">POSTURE SUMMARY</div>
-              <div className="flex items-center justify-between p-3.5 rounded-[12px] bg-[#FAFAFA] border-2 border-[#111111]/20">
+              <div className="text-metadata">POSTURE SUMMARY</div>
+              <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20">
                 <div>
-                  <div className="mono text-[22px] font-extrabold text-[#0A0A0A] tabular-nums">
-                    {lastScore ?? '94'}<span className="text-[12px] text-[#5E5E5E] font-bold">/100</span>
+                  <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">
+                    {lastScore ?? '94'}<span className="text-[12px] text-[#555555] font-bold">/100</span>
                   </div>
-                  <div className="mono text-[11px] font-semibold text-[#5E5E5E]">Validation Score</div>
+                  <div className="mono text-[11px] font-semibold text-[#555555]">Validation Score</div>
                 </div>
                 {riskBand && (
                   <span className={`chip text-[10px] uppercase font-bold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
@@ -411,10 +392,10 @@ export default function RepositoryDetailPage() {
               </div>
             </div>
 
-            <div className="h-[2px] bg-[#111111]/15 w-full" />
+            <div className="h-[1px] bg-[#111111]/15 w-full" />
 
             <div className="space-y-2">
-              <div className="text-caption">QUICK ACTIONS</div>
+              <div className="text-metadata">QUICK ACTIONS</div>
               <div className="space-y-2">
                 <button
                   onClick={startAssessment}

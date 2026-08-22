@@ -35,7 +35,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
 
   return (
     <>
-      {/* ── STICKY BOTTOM DOCK (Strict 56px Height) ────────────────────────── */}
+      {/* ── STICKY BOTTOM DOCK (Compact 52px Height with Safe-Area Padding) ── */}
       <div
         className="fixed bottom-0 left-0 right-0 z-30 bg-[#111111] text-white border-t-2 border-[#111111] shadow-hard-lg cursor-pointer transition-all hover:bg-black"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -44,34 +44,39 @@ export const BottomOperationDock = memo(function BottomOperationDock({
         tabIndex={0}
         aria-label="Open live security operation console"
       >
-        <div className="max-w-[1440px] mx-auto h-[56px] px-4 sm:px-6 md:px-8 flex items-center justify-between gap-3 min-h-[44px]">
-          {/* Left: Status & Timers */}
+        <div className="max-w-[1280px] mx-auto h-[52px] px-5 lg:px-8 flex items-center justify-between gap-3 min-h-[44px]">
+          {/* Left: Status Badge & Timers */}
           <div className="flex items-center gap-3 min-w-0">
             {isCompleted ? (
-              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8FF2E] px-2.5 py-1 rounded-[6px] border border-white shrink-0 flex items-center gap-1.5">
+              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-white shrink-0 flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
                 COMPLETE
               </span>
             ) : isScanning ? (
-              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8FF2E] px-2.5 py-1 rounded-[6px] border border-white animate-pulse shrink-0 flex items-center gap-1.5 tabular-nums">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-                {runNumber} LIVE OPERATION ({progressPct}%)
-              </span>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-white shrink-0 flex items-center gap-1.5 tabular-nums">
+                  <span className="w-2 h-2 rounded-full bg-[#111111] animate-ping" />
+                  ● LIVE
+                </span>
+                <span className="mono text-[12px] font-extrabold text-white tracking-wider truncate">
+                  {runNumber} SCAN RUNNING ({progressPct}%)
+                </span>
+              </div>
             ) : (
-              <span className="mono text-[11px] font-extrabold text-[#111111] bg-white px-2.5 py-1 rounded-[6px] border border-white shrink-0">
+              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-white shrink-0">
                 ● LIVE
               </span>
             )}
 
             {/* Elapsed Timer & ETA */}
             {isScanning && (
-              <div className="hidden md:flex items-center gap-2 mono text-[12px] text-zinc-300 font-bold tabular-nums">
+              <div className="hidden sm:flex items-center gap-2 mono text-[12px] text-zinc-300 font-bold tabular-nums">
+                <span className="text-zinc-400">•</span>
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-[#C8FF2E]" />
+                  <Clock className="w-3.5 h-3.5 text-[#C7F11A]" />
                   Elapsed: <strong className="text-white">{formattedElapsed}</strong>
                 </span>
-                <span>•</span>
-                <span className="text-zinc-400">ETA: {formattedEta}</span>
+                <span className="hidden md:inline text-zinc-400">• ETA: {formattedEta}</span>
               </div>
             )}
           </div>
@@ -81,7 +86,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
             <span className="mono text-[11px] text-zinc-300 font-bold max-w-[120px] sm:max-w-[200px] truncate">
               {repoName || run.repo}
             </span>
-            <div className="w-8 h-8 rounded-[8px] bg-white/10 flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-colors">
+            <div className="w-7 h-7 rounded-[6px] bg-white/10 flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-colors">
               <ChevronUp className="w-4 h-4" />
             </div>
           </div>
@@ -93,20 +98,20 @@ export const BottomOperationDock = memo(function BottomOperationDock({
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-[#0A0A0A]/80 backdrop-blur-sm fade-in">
           {/* Modal Container */}
           <div
-            className="relative z-10 w-full max-w-[1440px] mx-auto h-[92vh] max-h-[92vh] overflow-y-auto bg-[#ECEBE6] border-t-2 border-[#111111] rounded-t-[24px] shadow-hard-lg p-4 sm:p-6 space-y-6 slide-up"
+            className="relative z-10 w-full max-w-[1280px] mx-auto h-[92vh] max-h-[92vh] overflow-y-auto bg-[#ECEAE4] border-t-2 border-[#111111] rounded-t-[20px] shadow-hard-lg p-5 lg:p-7 space-y-6 slide-up"
             style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }}
           >
             {/* Sticky Header Bar */}
-            <div className="sticky top-0 z-20 bg-[#ECEBE6] pb-3 border-b-2 border-[#111111] flex items-center justify-between gap-4">
+            <div className="sticky top-0 z-20 bg-[#ECEAE4] pb-3 border-b-2 border-[#111111] flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-[8px] bg-[#111111] text-[#C8FF2E] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-[8px] bg-[#111111] text-[#C7F11A] flex items-center justify-center shrink-0">
                   <Terminal className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <div className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8FF2E] px-2.5 py-0.5 rounded border border-[#111111] inline-block">
+                  <div className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded border border-[#111111] inline-block">
                     {runNumber} LIVE OPERATION CONSOLE
                   </div>
-                  <div className="mono text-[13px] font-extrabold text-[#0A0A0A] mt-0.5 tabular-nums">
+                  <div className="mono text-[13px] font-extrabold text-[#111111] mt-0.5 tabular-nums">
                     Target: {repoName || run.repo} · Elapsed: {formattedElapsed}
                   </div>
                 </div>
@@ -114,7 +119,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
 
               <button
                 onClick={() => setExpanded(false)}
-                className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] bg-white border-2 border-[#111111] text-[#0A0A0A] hover:bg-[#C8FF2E] transition-all shadow-hard-sm"
+                className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] bg-white border-2 border-[#111111] text-[#111111] hover:bg-[#C7F11A] transition-all shadow-hard-sm"
                 aria-label="Close operation console"
               >
                 <X className="w-5 h-5 stroke-[2.5]" />
@@ -125,8 +130,8 @@ export const BottomOperationDock = memo(function BottomOperationDock({
             <AssessmentOperationConsole run={run} />
 
             {/* Sticky Footer */}
-            <div className="sticky bottom-0 z-20 bg-[#ECEBE6] pt-3 border-t-2 border-[#111111] flex items-center justify-between gap-4">
-              <span className="mono text-[11.5px] font-bold text-[#5E5E5E]">
+            <div className="sticky bottom-0 z-20 bg-[#ECEAE4] pt-3 border-t-2 border-[#111111] flex items-center justify-between gap-4">
+              <span className="mono text-[11.5px] font-bold text-[#555555]">
                 ZORQEN Isolated Sandbox Execution Mode
               </span>
               <button

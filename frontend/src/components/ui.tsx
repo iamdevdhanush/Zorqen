@@ -216,22 +216,22 @@ export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED'
 
 export function PageHeader({ kicker, title, right }: { kicker?: string; title: ReactNode; right?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-[#111111]">
+    <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#111111]/20 mb-7 lg:mb-10">
       <div className="space-y-1 min-w-0">
-        {kicker && <div className="text-[10.5px] mono uppercase tracking-[0.12em] text-[#4A4A4A] font-extrabold mb-1">{kicker}</div>}
-        <h1 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight leading-tight">{title}</h1>
+        {kicker && <div className="text-metadata text-[#555555] mb-1">{kicker}</div>}
+        <h1 className="text-page-title">{title}</h1>
       </div>
-      {right && <div className="flex items-center gap-2 flex-wrap shrink-0">{right}</div>}
+      {right && <div className="flex items-center gap-3 flex-wrap shrink-0">{right}</div>}
     </div>
   );
 }
 
 export function SectionHeader({ icon: Icon, title, right }: { icon?: any; title: ReactNode; right?: ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex items-center gap-2.5">
         {Icon && <Icon className="w-5 h-5 text-[#111111]" />}
-        <h2 className="text-xl font-extrabold text-[#111111] tracking-tight">{title}</h2>
+        <h2 className="text-section-title">{title}</h2>
       </div>
       {right && <div className="flex items-center gap-2 shrink-0">{right}</div>}
     </div>

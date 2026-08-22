@@ -24,20 +24,22 @@ const RepositoryCard = memo(function RepositoryCard({
   return (
     <div
       onClick={() => onAssess(r)}
-      className="p-4 rounded-[14px] bg-white border-2 border-[#111111]/20 hover:border-[#111111] flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-[#FAFAFA] transition-all duration-120 hover:-translate-y-0.5 group min-h-[52px] shadow-hard-sm"
+      className={`p-4 lg:p-5 rounded-[12px] bg-white border flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-all duration-150 group min-h-[52px] ${
+        isLoaded ? 'border-[#111111] shadow-hard-sm' : 'border-[#111111]/20 hover:border-[#111111] interactive-card'
+      }`}
     >
-      {/* Left: Monochrome GitHub Icon & Compact Details */}
+      {/* Left: Monochrome GitHub Icon & Repository Details */}
       <div className="flex items-center gap-3.5 min-w-0">
-        <div className="w-10 h-10 rounded-[10px] bg-[#FAFAFA] border-2 border-[#111111]/20 text-[#0A0A0A] group-hover:bg-[#111111] group-hover:text-[#C8FF2E] transition-colors flex items-center justify-center shrink-0 shadow-hard-sm">
-          <GithubIcon className="w-5 h-5 text-current" />
+        <div className="w-9 h-9 rounded-[8px] bg-[#F9F8F5] border border-[#111111]/20 text-[#111111] group-hover:bg-[#111111] group-hover:text-[#C7F11A] transition-colors flex items-center justify-center shrink-0">
+          <GithubIcon className="w-4.5 h-4.5 text-current" />
         </div>
 
-        <div className="space-y-0.5 min-w-0 flex-1">
+        <div className="space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="mono text-[15px] font-extrabold text-[#0A0A0A] truncate group-hover:text-black">
+            <span className="text-[16px] font-extrabold text-[#111111] truncate group-hover:text-black">
               {r.owner}/{r.name}
             </span>
-            <span className="chip font-bold text-[10px] bg-[#FAFAFA] uppercase">
+            <span className="chip font-bold text-[10px] bg-[#F9F8F5] text-[#555555] uppercase border-[#111111]/20">
               {r.language || 'Python'}
             </span>
             {isLoaded && (
@@ -47,9 +49,9 @@ const RepositoryCard = memo(function RepositoryCard({
             )}
           </div>
 
-          <div className="mono text-[11.5px] text-[#5E5E5E] flex items-center gap-2 font-semibold flex-wrap tabular-nums">
-            <span className="flex items-center gap-1 text-[#0A0A0A]">
-              <GitBranch className="w-3.5 h-3.5 text-[#5E5E5E]" />
+          <div className="mono text-[11.5px] text-[#555555] flex items-center gap-2 font-semibold flex-wrap tabular-nums">
+            <span className="flex items-center gap-1 text-[#111111]">
+              <GitBranch className="w-3.5 h-3.5 text-[#555555]" />
               <strong>{r.defaultBranch || 'main'}</strong>
             </span>
             <span>•</span>
@@ -58,23 +60,23 @@ const RepositoryCard = memo(function RepositoryCard({
         </div>
       </div>
 
-      {/* Right: Security Posture Metrics & Quick Action Cue */}
+      {/* Right: Security Posture Metrics & Action Arrow */}
       <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#111111]/10">
         <div className="text-left sm:text-right leading-tight">
           <div className="flex items-center gap-1.5 sm:justify-end">
-            <span className={`chip uppercase font-bold text-[9.5px] ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
+            <span className={`chip uppercase font-bold text-[9.5px] ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'bg-[#F9F8F5] text-[#111111]'}`}>
               {riskBand}
             </span>
-            <span className="hidden group-hover:inline-flex items-center gap-1 mono text-[10.5px] font-semibold text-[#5E5E5E]">
-              <Clock className="w-3 h-3 text-[#5E5E5E]" />
+            <span className="hidden group-hover:inline-flex items-center gap-1 mono text-[10.5px] font-semibold text-[#555555]">
+              <Clock className="w-3 h-3 text-[#555555]" />
               2m ago
             </span>
           </div>
 
           <div className="pt-0.5">
-            <span className="mono text-[15px] font-extrabold text-[#0A0A0A] tabular-nums">{score}</span>
-            <span className="mono text-[11px] font-bold text-[#5E5E5E] tabular-nums">/100</span>
-            <div className="mono text-[10.5px] text-[#5E5E5E] font-medium tabular-nums">{findingsCount} findings</div>
+            <span className="mono text-[15px] font-extrabold text-[#111111] tabular-nums">{score}</span>
+            <span className="mono text-[11px] font-bold text-[#555555] tabular-nums">/100</span>
+            <div className="mono text-[10.5px] text-[#555555] font-medium tabular-nums">{findingsCount} findings</div>
           </div>
         </div>
 
@@ -91,8 +93,8 @@ const RepositoryCard = memo(function RepositoryCard({
             <span>Run Scan</span>
           </button>
 
-          <div className="flex items-center justify-center w-[40px] h-[40px] min-w-[40px] min-h-[40px] rounded-[10px] bg-[#FAFAFA] border border-[#111111]/20 text-[#0A0A0A] group-hover:bg-[#C8FF2E] group-hover:border-[#111111] transition-all shrink-0">
-            <ArrowRight className="w-5 h-5 text-[#0A0A0A] group-hover:translate-x-1 transition-transform" />
+          <div className="flex items-center justify-center w-[36px] h-[36px] min-w-[36px] min-h-[36px] rounded-[8px] bg-[#F9F8F5] border border-[#111111]/20 text-[#111111] group-hover:bg-[#C7F11A] group-hover:border-[#111111] transition-all shrink-0">
+            <ArrowRight className="w-4 h-4 text-[#111111] group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </div>
@@ -134,17 +136,17 @@ export default function RepositoriesPage() {
   }, [loadRepo, startAssessment, navigate]);
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-8 fade-in">
+    <div className="max-w-[1280px] mx-auto space-y-7 lg:space-y-10 fade-in">
       
-      {/* Header Aligned to 1440px Grid */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 border-b-2 border-[#111111]">
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 border-b border-[#111111]/20">
         <div className="space-y-1">
           <div className="protocol-tag">zorqen://workspace/repositories</div>
-          <h1 className="text-section text-[32px] sm:text-[40px]">
+          <h1 className="text-page-title">
             Repositories Intelligence
           </h1>
-          <p className="text-body text-[14.5px] text-[#5E5E5E]">
-            <strong className="text-[#0A0A0A] tabular-nums">{repos.length}</strong> connected · Synced live
+          <p className="text-body text-[14.5px] text-[#555555]">
+            <strong className="text-[#111111] tabular-nums">{repos.length}</strong> connected · Synced live
           </p>
         </div>
 
@@ -152,50 +154,55 @@ export default function RepositoriesPage() {
           onClick={() => refreshRepos()}
           className="btn h-[48px] px-5 text-[13.5px] font-extrabold gap-2 bg-white border-2 border-[#111111] shadow-hard-sm"
         >
-          <RefreshCw className="w-4 h-4 text-[#0A0A0A]" />
+          <RefreshCw className="w-4 h-4 text-[#111111]" />
           <span>Sync</span>
         </button>
       </div>
 
-      {/* Compact Status Bar */}
-      <div className="py-3 px-4 rounded-[12px] bg-white border-2 border-[#111111]/20 flex items-center justify-between gap-4 text-[13.5px] font-semibold text-[#333333] flex-wrap shadow-hard-sm">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <GithubIcon className="w-4 h-4 text-[#111111]" />
-          <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#5E5E5E]">GitHub</span>
-          <span>•</span>
+      {/* Stacked Layout on Mobile Repository Connection Strip */}
+      <div className="p-4 sm:p-5 rounded-[12px] bg-white border border-[#111111]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13.5px] font-semibold text-[#333333] shadow-hard-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
+            <GithubIcon className="w-4 h-4 text-[#111111]" />
+            <span className="font-extrabold text-[#111111]">GitHub</span>
+          </div>
+          <span className="hidden sm:inline text-[#111111]/30">•</span>
           {githubConnected ? (
-            <span>Connected <strong className="text-[#0A0A0A]">@{user?.github_login || 'iamdevdhanush'}</strong></span>
+            <span className="text-[#333333]">Connected as <strong className="text-[#111111]">@{user?.github_login || 'iamdevdhanush'}</strong></span>
           ) : (
             <span>Not connected</span>
           )}
-          <span>•</span>
-          <span className="mono text-[11px] text-[#5E5E5E]">Read-only access</span>
+          <span className="hidden sm:inline text-[#111111]/30">•</span>
+          <span className="mono text-[11px] font-extrabold text-[#555555] uppercase tracking-wider">READ ONLY</span>
         </div>
 
         <button
           onClick={() => setGithubModalOpen(true)}
-          className="font-extrabold text-[#0A0A0A] hover:underline inline-flex items-center gap-1.5 text-[13.5px] min-h-[44px] py-1"
+          className="font-extrabold text-[#111111] hover:underline inline-flex items-center gap-1.5 text-[13.5px] min-h-[44px] self-start sm:self-auto"
         >
-          <span>Sync account</span>
-          <ArrowRight className="w-4 h-4" />
+          <span>Sync now</span>
+          <ArrowRight className="w-4 h-4 text-[#111111]" />
         </button>
       </div>
 
-      {/* Search Input */}
-      <div className="relative">
-        <Search className="w-4 h-4 absolute left-4 top-4 text-[#5E5E5E]" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search repositories by name or language…"
-          className="w-full h-[48px] min-h-[44px] pl-11 pr-4 bg-white border-2 border-[#111111]/20 focus:border-[#111111] rounded-[12px] text-[14.5px] font-semibold outline-none transition-colors shadow-hard-sm"
-        />
+      {/* Sticky Search Input Bar */}
+      <div className="sticky top-[72px] z-20 bg-[#ECEAE4] pt-2 pb-3">
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-4 top-4 text-[#111111]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search target repositories by name, language, or branch…"
+            className="w-full h-[48px] min-h-[44px] pl-11 pr-24 bg-white border-2 border-[#111111] focus:ring-2 focus:ring-[#111111] rounded-[10px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#555555] outline-none shadow-hard-sm"
+          />
+          <kbd className="absolute right-4 top-3.5 hidden md:inline-flex">Ctrl K</kbd>
+        </div>
       </div>
 
       {/* Authorized Repositories List */}
       <div className="space-y-4">
-        <div className="text-caption">
+        <div className="text-metadata">
           AUTHORIZED REPOSITORIES ({githubConnected && reposLoading && filteredRepos.length === 0 ? '…' : filteredRepos.length})
         </div>
 
@@ -216,11 +223,11 @@ export default function RepositoriesPage() {
             actionLabel="Retry Sync"
           />
         ) : reposLoading && filteredRepos.length === 0 ? (
-          <div className="p-8 text-center text-[#5E5E5E] mono text-[13px] bg-white border-2 border-[#111111] rounded-[16px] shadow-hard-sm">
+          <div className="p-8 text-center text-[#555555] mono text-[13px] bg-white border border-[#111111]/20 rounded-[12px] shadow-hard-sm">
             Syncing repositories from GitHub…
           </div>
         ) : filteredRepos.length === 0 ? (
-          <div className="p-8 text-center text-[#5E5E5E] mono text-[13px] bg-white border-2 border-[#111111] rounded-[16px] shadow-hard-sm">
+          <div className="p-8 text-center text-[#555555] mono text-[13px] bg-white border border-[#111111]/20 rounded-[12px] shadow-hard-sm">
             {searchQuery ? `No repositories match "${searchQuery}"` : 'No repositories found.'}
           </div>
         ) : (
@@ -236,8 +243,8 @@ export default function RepositoriesPage() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-[13px] text-[#5E5E5E] pt-2 font-medium">
-        <ShieldCheck className="w-4 h-4 text-[#0A0A0A] shrink-0" />
+      <div className="flex items-center gap-2 text-[13px] text-[#555555] pt-2 font-medium">
+        <ShieldCheck className="w-4 h-4 text-[#111111] shrink-0" />
         ZORQEN performs read-only posture validation and creates review branches upon request.
       </div>
     </div>

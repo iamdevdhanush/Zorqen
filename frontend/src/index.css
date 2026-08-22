@@ -8,18 +8,18 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  --color-base: #ECEBE6;        /* Primary console background */
+  --color-base: #ECEAE4;        /* Off-white background */
   --color-panel: #FFFFFF;       /* Crisp white card surface */
-  --color-panel-2: #FAFAFA;     /* Secondary light surface */
-  --color-hover: #F2F2EB;       /* Warm hover fill */
-  --color-active: #EAEAE2;      /* Active selection fill */
+  --color-panel-2: #F9F8F5;     /* Secondary light surface */
+  --color-hover: #F2F0E9;       /* Warm hover fill */
+  --color-active: #E6E4DC;      /* Active selection fill */
   --color-line: #111111;        /* Strong 2px dark border */
-  --color-line-subtle: rgba(17, 17, 17, 0.15); /* Subtile border */
-  --color-ink: #0A0A0A;         /* Primary text */
+  --color-line-subtle: rgba(17, 17, 17, 0.18); /* Subtle container border */
+  --color-ink: #111111;         /* Primary text */
   --color-ink-2: #333333;       /* Body text */
-  --color-ink-3: #5E5E5E;       /* Muted secondary text */
-  --color-accent: #C8FF2E;      /* Primary Neon Lime Accent */
-  --color-accent-hover: #B7F01E;
+  --color-ink-3: #555555;       /* Muted secondary text */
+  --color-accent: #C7F11A;      /* Lime Accent */
+  --color-accent-hover: #B4DD14;
   --color-critical: #DC2626;    /* Red */
   --color-high: #EA580C;        /* Orange */
   --color-medium: #D97706;      /* Amber */
@@ -53,7 +53,7 @@ svg {
 }
 
 ::selection {
-  background: #C8FF2E;
+  background: #C7F11A;
   color: #111111;
 }
 
@@ -69,62 +69,69 @@ svg {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Typography Scale Classes ─────────────────────────────────────────── */
+/* ── Typography Hierarchy ─────────────────────────────────────────────── */
 .text-hero {
   font-size: 40px;
+  line-height: 48px;
   font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 1.04;
-  color: #0A0A0A;
-}
-@media (min-width: 640px) {
-  .text-hero { font-size: 48px; }
+  letter-spacing: -0.03em;
+  color: #111111;
 }
 @media (min-width: 1024px) {
-  .text-hero { font-size: 72px; }
+  .text-hero {
+    font-size: 64px;
+    line-height: 72px;
+  }
 }
 
-.text-section {
+.text-page-title {
   font-size: 32px;
+  line-height: 40px;
   font-weight: 800;
   letter-spacing: -0.025em;
-  line-height: 1.1;
-  color: #0A0A0A;
+  color: #111111;
 }
 @media (min-width: 1024px) {
-  .text-section { font-size: 40px; }
+  .text-page-title {
+    font-size: 48px;
+    line-height: 56px;
+  }
+}
+
+.text-section-title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #111111;
 }
 
 .text-card-title {
   font-size: 20px;
+  line-height: 28px;
   font-weight: 800;
   letter-spacing: -0.015em;
-  color: #0A0A0A;
-}
-@media (min-width: 640px) {
-  .text-card-title { font-size: 24px; }
+  color: #111111;
 }
 
 .text-body {
   font-size: 16px;
-  font-weight: 500;
-  line-height: 1.6;
+  line-height: 24px;
+  font-weight: 400;
   color: #333333;
 }
-@media (min-width: 1024px) {
-  .text-body { font-size: 18px; }
-}
 
-.text-caption {
+.text-metadata {
   font-family: var(--font-mono);
   font-size: 13px;
+  line-height: 18px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5E5E5E;
+  color: #555555;
 }
 
-/* ── Elevation & Shadow Tokens ─────────────────────────────────────────── */
+/* ── Elevation & Brutalist Offset Shadows ────────────────────────────── */
 .shadow-hard {
   box-shadow: 3px 3px 0px #111111;
 }
@@ -135,35 +142,35 @@ svg {
   box-shadow: 5px 5px 0px #111111;
 }
 .shadow-hard-lime {
-  box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C8FF2E;
+  box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C7F11A;
 }
 
-/* ── Standard Card System (120ms Spring Lift) ─────────────────────────── */
+/* ── Container & Card System ─────────────────────────────────────────── */
 .panel, .card-primary {
   background-color: var(--color-panel);
-  border: 2px solid rgba(17, 17, 17, 0.2);
-  border-radius: 16px;
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 2px 2px 0px #111111;
-  transition: transform 120ms cubic-bezier(.22,1,.36,1), border-color 120ms ease, box-shadow 120ms ease;
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   .panel, .card-primary { padding: 24px; }
 }
 
-.panel:hover, .card-primary:hover {
-  border-color: #111111;
-  transform: translateY(-2px) scale(1.005);
-  box-shadow: 4px 4px 0px #111111;
+@media (hover: hover) and (min-width: 768px) {
+  .interactive-card:hover, .card-primary.interactive:hover {
+    border-color: #111111;
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0px #111111;
+  }
 }
 
 .panel-subtle, .card-secondary {
   background-color: var(--color-panel);
-  border: 1.5px solid rgba(17, 17, 17, 0.15);
-  border-radius: 14px;
+  border: 1px solid rgba(17, 17, 17, 0.15);
+  border-radius: 10px;
   padding: 16px;
-  transition: border-color 120ms ease;
 }
 
 .panel-head {
@@ -172,9 +179,9 @@ svg {
   justify-content: space-between;
   gap: 16px;
   padding: 14px 20px;
-  border-bottom: 2px solid #111111;
-  background-color: #FAFAFA;
-  border-radius: 14px 14px 0 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.2);
+  background-color: #F9F8F5;
+  border-radius: 10px 10px 0 0;
   min-height: 44px;
 }
 
@@ -190,9 +197,12 @@ svg {
 }
 
 .panel-body { padding: 20px; }
+@media (min-width: 1024px) {
+  .panel-body { padding: 24px; }
+}
 .panel-body-flush { padding: 0; }
 
-/* ── Standardized Button System (52px Desktop / 48px Mobile) ──────────── */
+/* ── Standardized Button System (Min height 48px, Touch 44x44px) ──────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -204,35 +214,32 @@ svg {
   line-height: 1;
   height: 48px;
   min-height: 44px;
+  min-width: 44px;
   padding: 0 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 2px solid #111111;
   background-color: #FFFFFF;
   color: var(--color-ink);
   cursor: pointer;
   user-select: none;
   box-shadow: 3px 3px 0px #111111;
-  transition: transform 120ms cubic-bezier(.22,1,.36,1), background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
   outline: none;
 }
 
-@media (min-width: 768px) {
-  .btn {
-    height: 52px;
+@media (hover: hover) and (min-width: 768px) {
+  .btn:hover {
+    background-color: #F9F8F5;
+    border-color: #111111;
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px #111111;
   }
 }
 
-.btn:hover {
-  background-color: #FAFAFA;
-  border-color: #111111;
-  transform: translateY(-2px);
-  box-shadow: 4px 4px 0px #111111;
-}
-
 .btn:active {
-  transform: scale(0.98) translateY(0px);
+  transform: translate(1px, 1px);
   box-shadow: 1px 1px 0px #111111;
-  transition-duration: 80ms;
+  transition-duration: 60ms;
 }
 
 .btn:focus-visible {
@@ -245,21 +252,23 @@ svg {
   pointer-events: none;
 }
 
-/* Primary CTA: Neon Lime Background */
+/* Primary CTA: Lime Background */
 .btn-primary, .btn-accent {
-  background-color: #C8FF2E;
+  background-color: #C7F11A;
   color: #111111;
   border: 2px solid #111111;
   font-weight: 800;
   box-shadow: 3px 3px 0px #111111;
 }
 
-.btn-primary:hover, .btn-accent:hover {
-  background-color: #b5eb1c;
-  border-color: #111111;
-  color: #111111;
-  transform: translateY(-2px);
-  box-shadow: 4px 4px 0px #111111;
+@media (hover: hover) and (min-width: 768px) {
+  .btn-primary:hover, .btn-accent:hover {
+    background-color: #b8e010;
+    border-color: #111111;
+    color: #111111;
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px #111111;
+  }
 }
 
 /* Secondary CTA: White Background */
@@ -328,7 +337,7 @@ svg {
 }
 
 .chip.ok {
-  background: #C8FF2E;
+  background: #C7F11A;
   border-color: #111111;
   color: #111111;
 }
@@ -381,7 +390,7 @@ svg {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-ink);
-  background: #C8FF2E;
+  background: #C7F11A;
   border: 1.5px solid #111111;
   padding: 3px 10px;
   border-radius: 8px;
@@ -405,7 +414,7 @@ svg {
   font-weight: 600;
   height: 48px;
   padding: 0 16px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 2px solid #111111;
   background: #FFFFFF;
   color: var(--color-ink);
@@ -416,32 +425,33 @@ svg {
 
 .input:focus, .select:focus {
   border-color: #111111;
-  box-shadow: 0 0 0 2px #C8FF2E;
+  box-shadow: 0 0 0 2px #C7F11A;
 }
 
-.input::placeholder { color: var(--color-ink-3); font-weight: 500; }
+.input::placeholder { color: var(--color-ink-3); font-weight: 400; }
 
 /* ── Interactive Cards Micro-Interactions ──────────────────────────────── */
 .interactive-card {
-  transition: transform 120ms cubic-bezier(.22,1,.36,1),
+  transition: transform 120ms ease,
               box-shadow 120ms ease,
               border-color 120ms ease;
 }
-.interactive-card:hover {
-  transform: translateY(-2px) scale(1.005);
-  border-color: #111111;
-  box-shadow: 4px 4px 0px #111111;
+@media (hover: hover) and (min-width: 768px) {
+  .interactive-card:hover {
+    transform: translateY(-2px);
+    border-color: #111111;
+    box-shadow: 3px 3px 0px #111111;
+  }
 }
 .interactive-card:active {
-  transform: translateY(0px) scale(0.99);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #111111;
 }
 
 /* ── Command Palette & Backdrop Overlays ───────────────────────────────── */
 .cmd-backdrop, .modal-backdrop {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(10, 10, 10, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   display: flex; align-items: flex-start; justify-content: center;
   padding-top: 12vh;
   padding-left: 20px; padding-right: 20px;
@@ -456,9 +466,8 @@ svg {
   width: 100%; max-width: 600px;
   background: #FFFFFF;
   border: 2px solid #111111;
-  border-radius: 18px;
+  border-radius: 14px;
   box-shadow: 5px 5px 0px #111111;
-  animation: slide-in-down 120ms cubic-bezier(.22,1,.36,1);
   overflow: hidden;
 }
 
@@ -467,7 +476,7 @@ kbd {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-ink);
-  background: #C8FF2E;
+  background: #C7F11A;
   border: 1.5px solid #111111;
   border-radius: 6px;
   padding: 2px 6px;

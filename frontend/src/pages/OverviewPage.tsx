@@ -41,87 +41,98 @@ export default function OverviewPage() {
   /* ── 1. LANDING PAGE VIEWPORT (When No Active Target Repo Selected) ───── */
   if (!currentRepo) {
     return (
-      <div className="max-w-[1440px] mx-auto space-y-12 fade-in py-6 sm:py-10">
+      <div className="max-w-[1280px] mx-auto space-y-10 lg:space-y-12 fade-in">
         
         {/* Landing Hero Section */}
-        <div className="space-y-6 max-w-[1040px]">
+        <div className="space-y-4 max-w-[960px] text-left">
           <div className="protocol-tag">zorqen://platform/overview</div>
           <h1 className="text-hero">
             Autonomous Security Validation <br />
-            <span className="text-[#5E5E5E] font-bold">for AI-built software.</span>
+            <span className="text-[#333333] font-extrabold">for AI-built software.</span>
           </h1>
-          <p className="text-body text-[#333333] max-w-[820px]">
+          <p className="text-body text-[#333333] max-w-[760px] leading-normal font-normal">
             Continuous threat validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
           </p>
         </div>
 
-        {/* Premium Command Bar GitHub CTA */}
+        {/* GitHub Workspace Clean Status Strip */}
         <div
           onClick={connectGithub}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-          className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[18px] bg-white border-2 border-[#111111] shadow-hard hover:scale-[1.005] transition-all duration-120 cursor-pointer select-none"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 rounded-[12px] bg-white border border-[#111111]/20 hover:border-[#111111] shadow-hard-sm transition-all cursor-pointer select-none"
         >
-          <div className="flex items-center gap-3.5 text-[15px] font-bold text-[#0A0A0A]">
-            <div className="w-10 h-10 rounded-[10px] bg-[#111111] text-[#C8FF2E] flex items-center justify-center shrink-0">
-              <GithubIcon className="w-5 h-5 text-[#C8FF2E]" />
+          <div className="flex items-center gap-3 text-[14px]">
+            <div className="w-8 h-8 rounded-[8px] bg-[#111111] text-[#C7F11A] flex items-center justify-center shrink-0">
+              <GithubIcon className="w-4 h-4 text-[#C7F11A]" />
             </div>
-            <div>
-              <div className="mono text-[11px] font-extrabold uppercase tracking-wider text-[#5E5E5E]">
-                WORKSPACE INTEGRATION
-              </div>
-              <div className="text-[16px] font-extrabold text-[#0A0A0A]">
-                {githubConnected ? `Connected @${user?.github_login || 'iamdevdhanush'}` : 'Connect GitHub Repositories'}
-              </div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="font-extrabold text-[#111111]">GitHub Workspace</span>
+              <span className="text-[#111111]/30">•</span>
+              <span className="mono text-[12px] font-bold text-[#111111] bg-[#C7F11A] px-2 py-0.5 rounded border border-[#111111] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+                {githubConnected ? `Connected as @${user?.github_login || 'iamdevdhanush'}` : 'Disconnected'}
+              </span>
+              <span className="text-[#111111]/30">•</span>
+              <span className="mono text-[11.5px] font-semibold text-[#555555]">READ-ONLY ACCESS</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[14.5px] font-extrabold text-[#0A0A0A] group-hover:translate-x-1 transition-transform">
-            <span>{githubConnected ? 'Select Active Target' : 'Connect Workspace'}</span>
-            <ArrowRight className="w-5 h-5 text-[#0A0A0A]" />
+          <div className="flex items-center gap-1.5 text-[13.5px] font-extrabold text-[#111111] shrink-0">
+            <span>{githubConnected ? 'Sync now' : 'Connect Account'}</span>
+            <ArrowRight className="w-4 h-4 text-[#111111]" />
           </div>
         </div>
 
-        {/* Connected Security Validation Pipeline */}
+        {/* Connected Security Validation Pipeline (Compact 25% Reduced Height Workflow Cards) */}
         <div className="space-y-4">
-          <div className="text-caption">ZORQEN SECURITY VALIDATION PIPELINE</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="panel space-y-3">
-              <div className="w-10 h-10 rounded-[10px] bg-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[#111111]">
-                01
+          <div className="text-metadata">ZORQEN SECURITY VALIDATION PIPELINE</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="panel space-y-2 p-5">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-[8px] bg-[#C7F11A] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[13px] text-[#111111]">
+                  01
+                </span>
+                <span className="mono text-[11px] font-bold text-[#555555]">MODULE // AST</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#111111]" />
+              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
+                <ShieldCheck className="w-4.5 h-4.5 text-[#111111]" />
                 Static AST Analysis
               </h3>
-              <p className="text-body text-[14px]">
-                Deep call graph extraction and pattern matching for OWASP Top 10 vulnerabilities across your codebase.
+              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
+                Deep call graph extraction and pattern matching for OWASP vulnerabilities across your codebase.
               </p>
             </div>
 
-            <div className="panel space-y-3">
-              <div className="w-10 h-10 rounded-[10px] bg-[#111111] text-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold">
-                02
+            <div className="panel space-y-2 p-5">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-[8px] bg-[#111111] text-[#C7F11A] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[13px]">
+                  02
+                </span>
+                <span className="mono text-[11px] font-bold text-[#555555]">MODULE // REASONING</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2">
-                <Zap className="w-5 h-5 text-[#111111]" />
+              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
+                <Zap className="w-4.5 h-4.5 text-[#111111]" />
                 AI Threat Reasoning
               </h3>
-              <p className="text-body text-[14px]">
+              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
                 Autonomous threat vector correlation and confidence scoring derived from repository data flow architecture.
               </p>
             </div>
 
-            <div className="panel space-y-3">
-              <div className="w-10 h-10 rounded-[10px] bg-[#FAFAFA] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[#111111]">
-                03
+            <div className="panel space-y-2 p-5">
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-[8px] bg-[#F9F8F5] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[13px] text-[#111111]">
+                  03
+                </span>
+                <span className="mono text-[11px] font-bold text-[#555555]">MODULE // SANDBOX</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-[#111111]" />
+              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
+                <Terminal className="w-4.5 h-4.5 text-[#111111]" />
                 Sandbox Verification
               </h3>
-              <p className="text-body text-[14px]">
+              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
                 Safe isolated container reproduction verifying exploits and generating automated pull request patches.
               </p>
             </div>
@@ -150,16 +161,16 @@ export default function OverviewPage() {
   const criticalHigh = counts.critical + counts.high;
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-8 fade-in">
+    <div className="max-w-[1280px] mx-auto space-y-8 lg:space-y-10 fade-in">
       
       {/* Editorial Hero Section */}
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="space-y-2">
             <div className="protocol-tag">zorqen://repository/security-posture</div>
-            <h1 className="text-section text-[36px] sm:text-[52px] lg:text-[60px] leading-tight">
+            <h1 className="text-hero text-left">
               SECURITY VALIDATION <br />
-              <span className="text-[#5E5E5E] font-bold">FOR AI-BUILT SOFTWARE.</span>
+              <span className="text-[#333333] font-extrabold">FOR AI-BUILT SOFTWARE.</span>
             </h1>
           </div>
 
@@ -167,7 +178,7 @@ export default function OverviewPage() {
             <button
               onClick={startAssessment}
               disabled={running}
-              className="btn btn-accent px-6 h-[48px] md:h-[52px] text-[14px] font-extrabold shadow-hard min-h-[44px]"
+              className="btn btn-accent px-6 h-[48px] text-[14px] font-extrabold shadow-hard min-h-[44px]"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>{running ? 'Pipeline Running…' : 'Run Assessment'}</span>
@@ -180,21 +191,21 @@ export default function OverviewPage() {
         {/* Repository Target Card */}
         <div className="panel flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-1.5 min-w-0">
-            <div className="text-caption">TARGET REPOSITORY</div>
+            <div className="text-metadata">TARGET REPOSITORY</div>
             <div className="text-card-title text-[24px] sm:text-[28px] flex items-center gap-3 flex-wrap break-all">
               {currentRepo.owner}/{currentRepo.name}
               <span className="chip uppercase text-[10px] font-bold">{currentRepo.private ? 'Private' : 'Public'}</span>
             </div>
-            <div className="text-[14px] text-[#5E5E5E] font-medium">
+            <div className="text-[14px] text-[#333333] font-medium">
               Security posture for latest assessed snapshot.
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-[12px]">
-            <div className="mono text-[11.5px] font-bold text-[#0A0A0A] bg-[#FAFAFA] px-3 py-2 rounded-[8px] border-2 border-[#111111] shadow-hard-sm">
+            <div className="mono text-[11.5px] font-bold text-[#111111] bg-[#F9F8F5] px-3 py-2 rounded-[8px] border border-[#111111]/20 shadow-hard-sm">
               {arch?.primaryLanguage ? `${arch.primaryLanguage} • ${arch.dependencies} DEPS` : 'READY TO SCAN'}
             </div>
-            <div className="flex items-center gap-2 mono text-[11.5px] font-extrabold text-[#111111] bg-[#C8FF2E] px-3 py-2 rounded-[8px] border-2 border-[#111111] shadow-hard-sm">
+            <div className="flex items-center gap-2 mono text-[11.5px] font-extrabold text-[#111111] bg-[#C7F11A] px-3 py-2 rounded-[8px] border-2 border-[#111111] shadow-hard-sm">
               <GitBranch className="w-4 h-4 text-[#111111]" />
               <span>{branch}</span>
               <span className="text-[#111111] font-mono tabular-nums">@{commit.slice(0, 7)}</span>
@@ -206,18 +217,18 @@ export default function OverviewPage() {
       {/* Security Score & Live Activity Stream */}
       <div className="grid lg:grid-cols-12 gap-6 items-stretch">
         <div className="col-span-12 lg:col-span-8 panel grid lg:grid-cols-[280px_1fr] gap-6 items-center">
-          <div className="border-b lg:border-b-0 lg:border-r-2 border-[#111111] pb-6 lg:pb-0 pr-0 lg:pr-6 flex flex-col justify-center">
-            <div className="text-caption mb-1">SECURITY SCORE</div>
+          <div className="border-b lg:border-b-0 lg:border-r-2 border-[#111111]/20 pb-6 lg:pb-0 pr-0 lg:pr-6 flex flex-col justify-center">
+            <div className="text-metadata mb-1">SECURITY SCORE</div>
             <div className="flex items-baseline gap-2">
               {score != null ? (
                 <>
-                  <span className="text-5xl sm:text-[60px] font-[900] text-[#0A0A0A] tracking-tighter leading-none tabular-nums">
+                  <span className="text-5xl sm:text-[60px] font-[900] text-[#111111] tracking-tighter leading-none tabular-nums">
                     <AnimatedNumber value={score} />
                   </span>
-                  <span className="text-2xl sm:text-[30px] font-bold text-[#5E5E5E]">/100</span>
+                  <span className="text-2xl sm:text-[30px] font-bold text-[#555555]">/100</span>
                 </>
               ) : (
-                <span className="text-4xl sm:text-[60px] font-[900] text-[#5E5E5E] tracking-tighter leading-none">
+                <span className="text-4xl sm:text-[60px] font-[900] text-[#555555] tracking-tighter leading-none">
                   —
                 </span>
               )}
@@ -235,21 +246,21 @@ export default function OverviewPage() {
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 text-[13px] font-bold">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEE2E2] text-[#DC2626] border-2 border-[#111111] shadow-hard-sm">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEE2E2] text-[#DC2626] border border-[#111111]/20 shadow-hard-sm">
                 <span className="font-mono font-bold text-[15px] tabular-nums">{counts.critical}</span> CRITICAL
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FFEDD5] text-[#C2410C] border-2 border-[#111111] shadow-hard-sm">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FFEDD5] text-[#C2410C] border border-[#111111]/20 shadow-hard-sm">
                 <span className="font-mono font-bold text-[15px] tabular-nums">{counts.high}</span> HIGH
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEF3C7] text-[#B45309] border-2 border-[#111111] shadow-hard-sm">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEF3C7] text-[#B45309] border border-[#111111]/20 shadow-hard-sm">
                 <span className="font-mono font-bold text-[15px] tabular-nums">{counts.medium}</span> MEDIUM
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#DBEAFE] text-[#1D4ED8] border-2 border-[#111111] shadow-hard-sm">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#DBEAFE] text-[#1D4ED8] border border-[#111111]/20 shadow-hard-sm">
                 <span className="font-mono font-bold text-[15px] tabular-nums">{counts.low}</span> LOW
               </div>
             </div>
 
-            <div className="text-base sm:text-[20px] font-extrabold text-[#0A0A0A] tracking-tight leading-snug">
+            <div className="text-base sm:text-[20px] font-extrabold text-[#111111] tracking-tight leading-snug">
               {criticalHigh > 0
                 ? `“${criticalHigh} critical & high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.”`
                 : findings.length > 0
@@ -261,14 +272,14 @@ export default function OverviewPage() {
 
         {/* Live Activity Stream */}
         <div className="col-span-12 lg:col-span-4 panel space-y-3 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b-2 border-[#111111]/15 pb-2">
+          <div className="flex items-center justify-between border-b border-[#111111]/15 pb-2">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-[#111111]" />
-              <span className="mono text-[11px] font-extrabold uppercase tracking-wider text-[#0A0A0A]">
+              <span className="mono text-[11px] font-extrabold uppercase tracking-wider text-[#111111]">
                 LIVE ACTIVITY FEED
               </span>
             </div>
-            <span className="mono text-[10px] font-bold text-[#111111] bg-[#C8FF2E] px-2 py-0.5 rounded border border-[#111111]">
+            <span className="mono text-[10px] font-bold text-[#111111] bg-[#C7F11A] px-2 py-0.5 rounded border border-[#111111]">
               SOC LIVE
             </span>
           </div>

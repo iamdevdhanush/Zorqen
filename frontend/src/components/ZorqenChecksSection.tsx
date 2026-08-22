@@ -50,36 +50,39 @@ export default function ZorqenChecksSection() {
     <div className="space-y-4">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-[#0A0A0A]" />
-          <h2 className="text-section text-[24px] sm:text-[32px]">
+        <div className="flex items-center gap-2.5">
+          <ShieldCheck className="w-5 h-5 text-[#111111]" />
+          <h2 className="text-section-title">
             WHAT ZORQEN CHECKS
           </h2>
         </div>
-        <span className="mono text-[11px] font-bold text-[#5E5E5E] hidden sm:inline">
+        <span className="text-metadata hidden sm:inline">
           6 Active Modules
         </span>
       </div>
 
-      {/* ── DESKTOP 3-COLUMN GRID & MOBILE HORIZONTAL SNAPPING CAROUSEL ────── */}
-      <div className="flex md:grid grid-cols-1 md:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory scroll-thin pb-2">
+      {/* 3-Column Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {CHECKS_DATA.map((item, idx) => {
           const Icon = item.icon;
           return (
             <div
               key={idx}
-              className="snap-start shrink-0 w-[280px] sm:w-[320px] md:w-auto p-5 sm:p-6 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard-sm space-y-4 transition-all duration-120 hover:-translate-y-0.5 hover:scale-[1.005]"
+              className="p-4.5 rounded-[12px] bg-white border border-[#111111]/20 shadow-hard-sm space-y-2.5 transition-all duration-150 interactive-card"
             >
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-[10px] bg-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center text-[#111111]">
-                  <Icon className="w-5 h-5" strokeWidth={2.2} />
+                <div className="w-8 h-8 rounded-[8px] bg-[#C7F11A] border-2 border-[#111111] flex items-center justify-center text-[#111111]">
+                  <Icon className="w-4 h-4" strokeWidth={2.2} />
                 </div>
-                <span className="mono text-[12px] font-extrabold text-[#0A0A0A] bg-[#FAFAFA] px-2.5 py-0.5 rounded-[6px] border-2 border-[#111111]">
+                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#F9F8F5] px-2 py-0.5 rounded border border-[#111111]/30">
                   {item.num}
                 </span>
               </div>
-              <h3 className="font-extrabold text-[18px] text-[#0A0A0A] tracking-tight">{item.title}</h3>
-              <p className="text-[14px] text-[#5E5E5E] leading-relaxed font-medium">{item.desc}</p>
+              <div>
+                <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight">{item.title}</h3>
+                <div className="mono text-[10.5px] text-[#555555] font-semibold">{item.subtitle}</div>
+              </div>
+              <p className="text-[13px] text-[#333333] leading-snug font-normal line-clamp-2">{item.desc}</p>
             </div>
           );
         })}
