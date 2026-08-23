@@ -1,0 +1,169 @@
+/* VAYU AI Map Styles */
+
+.vayu-map {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-base);
+  background: #F5F6F8;
+}
+
+/* Desaturate and style CARTO tiles */
+.map-tiles {
+  filter: saturate(0.85) contrast(1.02);
+}
+
+/* Hide leaflet attribution */
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+/* Smooth map interactions */
+.leaflet-container {
+  font-family: inherit;
+  cursor: grab;
+}
+
+.leaflet-container:active {
+  cursor: grabbing;
+}
+
+/* Premium inertia feel */
+.leaflet-dragging .leaflet-container {
+  cursor: move;
+}
+
+/* Map Loading Overlay */
+.map-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(236, 238, 241, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: var(--z-modal);
+}
+
+.map-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--color-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.map-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(37, 99, 235, 0.2);
+  border-top-color: var(--color-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Map Controls */
+.map-controls {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  z-index: var(--z-floating);
+}
+
+.map-control-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  color: var(--color-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.map-control-btn:hover {
+  background: var(--color-white);
+  color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.map-control-btn.active {
+  background: var(--color-blue);
+  color: white;
+  border-color: var(--color-blue);
+}
+
+.map-controls-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 4px 0;
+}
+
+/* Bottom Toolbar */
+.bottom-toolbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  z-index: var(--z-floating);
+}
+
+.toolbar-btn {
+  height: 36px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-primary);
+}
+
+.toolbar-btn.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.toolbar-btn.active:hover {
+  background: #1a1a1a;
+}
