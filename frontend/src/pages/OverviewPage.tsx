@@ -15,6 +15,7 @@ import GithubIcon from '../components/GithubIcon';
 import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
+import SecurityGridViz from '../components/SecurityGridViz';
 import {
   HeroDotUpperRight,
   HeroDotGithubCard,
@@ -50,85 +51,96 @@ export default function OverviewPage() {
       <div className="relative max-w-[1280px] mx-auto fade-in overflow-hidden">
 
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION — Premium enterprise cybersecurity landing
-            120px top clearance from navbar, wide breathing room throughout
+            HERO SECTION — Premium 12-Column Grid (Linear x Vercel x Stripe quality)
+            120px top clearance from navbar, 7 cols left, 5 cols security grid right
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="relative pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-10 sm:pb-14 lg:pb-16">
+        <div className="relative pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-12 sm:pb-16 lg:pb-20">
 
-          {/* Cluster 1: Large dot field behind upper-right of headline */}
+          {/* Selective dot background behind upper-right hero visualization */}
           <HeroDotUpperRight />
 
-          {/* Status badge: protocol eyebrow */}
-          <div className="relative z-1 mb-6 sm:mb-8">
-            <div className="protocol-tag inline-block">zorqen://platform/overview</div>
-          </div>
+          <div className="grid grid-cols-12 gap-8 lg:gap-12 items-center relative z-1">
+            
+            {/* ── LEFT PANEL (7 Columns Desktop) ── */}
+            <div className="col-span-12 lg:col-span-7 flex flex-col justify-center">
 
-          {/* Headline: tight line-height for impact, constrained to 640px */}
-          <div className="relative z-1 mb-6 sm:mb-8">
-            <h1
-              className="text-[#111111] font-black tracking-[-0.025em] max-w-[640px]"
-              style={{
-                fontSize: 'clamp(34px, 5vw, 58px)',
-                lineHeight: '0.94',
-              }}
-            >
-              Autonomous
-              <br />
-              Security Validation
-              <br />
-              <span className="text-[#333333]">for AI-built software.</span>
-            </h1>
-          </div>
-
-          {/* Description: slightly higher opacity, 520px width cap, relaxed line-height */}
-          <div className="relative z-1 mb-10 sm:mb-14">
-            <p
-              className="text-[#2a2a2a] font-medium max-w-[520px] leading-[1.65]"
-              style={{ fontSize: 'clamp(15px, 1.2vw, 16.5px)' }}
-            >
-              Continuous threat validation and vulnerability remediation for repositories you control.
-              Find it. Fix it. Prove it.
-            </p>
-          </div>
-
-          {/* Cluster 2: Small faded dots positioned directly behind GitHub card */}
-          <div className="relative">
-            <HeroDotGithubCard className="top-1/2 -translate-y-1/2" />
-
-            {/* GitHub Workspace Card — sits lower for breathing room */}
-            <div
-              onClick={connectGithub}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
-              }}
-              className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg hover:-translate-y-[2px] transition-all duration-200 cursor-pointer select-none max-w-[720px]"
-            >
-              <div className="flex items-center gap-4 text-[14px]">
-                <GithubIcon className="w-5 h-5 text-[#111111] shrink-0" aria-label="GitHub" />
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-extrabold text-[#111111] text-[14.5px]">GitHub Workspace</span>
-                  <span className="text-[#111111]/25">•</span>
-                  <span className="chip ok text-[11px] font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-                    {githubConnected
-                      ? `Connected as @${user?.github_login || 'iamdevdhanush'}`
-                      : 'Disconnected'}
-                  </span>
-                  <span className="text-[#111111]/25">•</span>
-                  <span className="mono text-[11.5px] font-semibold text-[#525252]">READ-ONLY ACCESS</span>
+              {/* Badge: uppercase, 11px, letter-spacing 0.18em */}
+              <div className="mb-[28px]">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
+                  <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
+                  <span>zorqen://platform/overview</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-[#111111] shrink-0">
-                <span>{githubConnected ? 'Sync now' : 'Connect Account'}</span>
-                <ArrowRight className="w-4 h-4 text-[#111111] stroke-[2px]" />
+              {/* Heading: 72px desktop / 56px tablet / 40px mobile, font-black, line-height 0.9 */}
+              <div className="mb-[30px]">
+                <h1 className="text-[#111111] font-black text-[40px] sm:text-[56px] lg:text-[72px] leading-[0.9] tracking-[-0.03em]">
+                  Autonomous
+                  <br />
+                  Security Validation
+                  <br />
+                  <span className="text-[#333333]">for AI-built software.</span>
+                </h1>
               </div>
+
+              {/* Description: 20px desktop / 17px mobile, max-width 540px */}
+              <div className="mb-[40px]">
+                <p className="text-[#2a2a2a] font-medium text-[17px] lg:text-[20px] max-w-[540px] leading-[1.6]">
+                  Continuous threat validation and vulnerability remediation for repositories you control.
+                  Find it. Fix it. Prove it.
+                </p>
+              </div>
+
+              {/* GitHub Workspace Card — integrated cleanly into hero flow */}
+              <div className="relative max-w-[620px]">
+                <HeroDotGithubCard className="top-1/2 -translate-y-1/2 -left-6" />
+
+                <div
+                  onClick={connectGithub}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
+                  }}
+                  className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg hover:-translate-y-[2px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+                >
+                  <div className="flex items-center gap-4 text-[14px]">
+                    <div className="w-10 h-10 rounded-[12px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
+                      <GithubIcon className="w-5 h-5 text-[#111111]" aria-label="GitHub" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="font-extrabold text-[#111111] text-[15px]">GitHub Workspace</span>
+                        <span className="chip ok text-[10.5px] font-bold py-0.5 px-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+                          {githubConnected
+                            ? `@${user?.github_login || 'iamdevdhanush'}`
+                            : 'Disconnected'}
+                        </span>
+                      </div>
+                      <div className="mono text-[11px] font-semibold text-[#666666]">
+                        READ-ONLY INTEGRATION // ENCRYPTED
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] transition-all duration-150 shrink-0 shadow-hard-sm self-start sm:self-auto">
+                    <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
+                  </div>
+                </div>
+              </div>
+
             </div>
+
+            {/* ── RIGHT PANEL (5 Columns Desktop) Security Grid Visualization ── */}
+            <div className="col-span-12 lg:col-span-5 relative mt-6 lg:mt-0">
+              <SecurityGridViz />
+            </div>
+
           </div>
 
-          {/* Cluster 3: Soft transition dots near section boundary */}
+          {/* Soft transition dots near section boundary */}
           <div className="relative mt-12 sm:mt-16 flex">
             <HeroDotTransition />
           </div>
