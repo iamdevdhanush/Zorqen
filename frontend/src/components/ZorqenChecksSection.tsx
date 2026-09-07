@@ -1,5 +1,5 @@
 import { Database, FileCode, Key, Lock, ShieldCheck, Terminal, Zap } from 'lucide-react';
-import { CardBadgeCluster, CardCornerCluster, RadialDotHalo } from './SelectiveDotGrid';
+import { ChecksHeadingDotAccent } from './SelectiveDotGrid';
 
 const CHECKS_DATA = [
   {
@@ -50,20 +50,22 @@ const CHECKS_DATA = [
 export default function ZorqenChecksSection() {
   return (
     <div className="space-y-4">
-      {/* Section Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+      {/* Section Header with Editorial Dot Accent behind heading */}
+      <div className="relative flex items-center justify-between py-1">
+        <ChecksHeadingDotAccent />
+        
+        <div className="flex items-center gap-2.5 relative z-1">
           <ShieldCheck className="w-5 h-5 text-[#111111]" />
           <h2 className="text-section-title">
             WHAT ZORQEN CHECKS
           </h2>
         </div>
-        <span className="text-metadata hidden sm:inline">
+        <span className="text-metadata hidden sm:inline relative z-1">
           6 Active Modules
         </span>
       </div>
 
-      {/* 3-Column Grid */}
+      {/* 3-Column Grid (Clean interior surfaces with NO dots inside cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {CHECKS_DATA.map((item, idx) => {
           const Icon = item.icon;
@@ -72,27 +74,19 @@ export default function ZorqenChecksSection() {
               key={idx}
               className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-3 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg interactive-card relative overflow-hidden"
             >
-              {/* Selective Dot Clusters in corners / behind badge (opacity < 12%) */}
-              <CardBadgeCluster />
-              <CardCornerCluster />
-
-              <div className="flex items-center justify-between relative z-10">
-                <div className="relative inline-flex items-center justify-center">
-                  {/* Radial Dot Halo behind validation card icon */}
-                  {item.isValidation && <RadialDotHalo />}
-                  <div className="w-10 h-10 rounded-[12px] bg-[#C8F31D] border-2 border-[#111111] flex items-center justify-center text-[#111111] shadow-hard-sm relative z-10">
-                    <Icon className="w-5 h-5 stroke-[2]" />
-                  </div>
+              <div className="flex items-center justify-between relative z-1">
+                <div className="w-10 h-10 rounded-[12px] bg-[#C8F31D] border-2 border-[#111111] flex items-center justify-center text-[#111111] shadow-hard-sm">
+                  <Icon className="w-5 h-5 stroke-[2]" />
                 </div>
                 <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#F7F5F0] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111] shadow-hard-sm">
                   {item.num}
                 </span>
               </div>
-              <div className="relative z-10">
+              <div className="relative z-1">
                 <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight">{item.title}</h3>
                 <div className="mono text-[11px] text-[#525252] font-semibold">{item.subtitle}</div>
               </div>
-              <p className="text-[13px] text-[#525252] leading-relaxed font-medium line-clamp-2 relative z-10">{item.desc}</p>
+              <p className="text-[13px] text-[#525252] leading-relaxed font-medium line-clamp-2 relative z-1">{item.desc}</p>
             </div>
           );
         })}

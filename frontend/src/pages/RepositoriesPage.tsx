@@ -184,7 +184,7 @@ export default function RepositoriesPage() {
       </div>
 
       {/* Sticky Search Input Bar */}
-      <div className="sticky top-[72px] z-20 bg-[#ECEAE4] pt-2 pb-3">
+      <div className="sticky top-[72px] z-20 bg-[var(--color-base)] pt-2 pb-3">
         <div className="relative">
           <Search className="w-[18px] h-[18px] absolute left-4 top-3.5 text-[#111111] stroke-[2px]" />
           <input

@@ -16,12 +16,9 @@ import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
 import {
-  HeroDotGrid,
-  CardBadgeCluster,
-  CardCornerCluster,
-  StatusDotStrip,
-  RadialDotHalo,
-  DottedSeparator,
+  HeroDotAccent,
+  PipelineDividerDotAccent,
+  PageCornerDotAccent,
 } from '../components/SelectiveDotGrid';
 
 export default function OverviewPage() {
@@ -49,13 +46,13 @@ export default function OverviewPage() {
   /* ── 1. LANDING PAGE VIEWPORT (When No Active Target Repo Selected) ───── */
   if (!currentRepo) {
     return (
-      <div className="max-w-[1280px] mx-auto space-y-8 lg:space-y-10 fade-in">
+      <div className="relative max-w-[1280px] mx-auto space-y-8 lg:space-y-10 fade-in overflow-hidden">
         
-        {/* Landing Hero Section with upper-right 35% selective dot-grid */}
-        <div className="relative overflow-hidden rounded-[24px] bg-transparent pt-8 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-10">
-          <HeroDotGrid />
+        {/* Landing Hero Section: Editorial dot accent positioned behind the right side of the headline */}
+        <div className="relative rounded-[24px] bg-transparent pt-8 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-10">
+          <HeroDotAccent />
           
-          <div className="relative z-10 space-y-4 max-w-[920px] text-left">
+          <div className="relative z-1 space-y-4 max-w-[920px] text-left">
             <div className="protocol-tag inline-block">zorqen://platform/overview</div>
             <h1 className="text-hero text-[#111111]">
               Autonomous Security Validation <br />
@@ -67,121 +64,104 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* GitHub Workspace Clean Status Strip (Consistent 24px radius, 3px border, 8px grid padding) */}
+        {/* GitHub Workspace Clean Status Strip (Clean interior - NO dots inside cards) */}
         <div
           onClick={connectGithub}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-          className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg transition-all duration-180 cursor-pointer select-none"
+          className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg transition-all duration-180 cursor-pointer select-none z-1"
         >
-          <div className="flex items-center gap-4 text-[14px] relative z-10">
+          <div className="flex items-center gap-4 text-[14px]">
             <GithubIcon className="w-[20px] h-[20px] text-[#111111] shrink-0" aria-label="GitHub" />
             <div className="flex items-center gap-3 flex-wrap">
               <span className="font-extrabold text-[#111111] text-[14.5px]">GitHub Workspace</span>
               <span className="text-[#111111]/30">•</span>
               
-              {/* Status Badge with Horizontal Dot Strip behind Disconnected */}
-              <div className="relative inline-flex items-center">
-                {!githubConnected && <StatusDotStrip />}
-                <span className="chip ok text-[11px] font-bold relative z-10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-                  {githubConnected ? `Connected as @${user?.github_login || 'iamdevdhanush'}` : 'Disconnected'}
-                </span>
-              </div>
+              <span className="chip ok text-[11px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+                {githubConnected ? `Connected as @${user?.github_login || 'iamdevdhanush'}` : 'Disconnected'}
+              </span>
 
               <span className="text-[#111111]/30">•</span>
               <span className="mono text-[11.5px] font-semibold text-[#525252]">READ-ONLY ACCESS</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-[#111111] shrink-0 relative z-10">
+          <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-[#111111] shrink-0">
             <span>{githubConnected ? 'Sync now' : 'Connect Account'}</span>
             <ArrowRight className="w-4 h-4 text-[#111111] stroke-[2px]" />
           </div>
         </div>
 
-        {/* Dotted Separator between GitHub card and pipeline section */}
-        <DottedSeparator />
+        {/* 2. Editorial Dot Accent: Between GitHub connection card and pipeline cards */}
+        <PipelineDividerDotAccent />
 
-        {/* Connected Security Validation Pipeline (Compact Workflow Cards) */}
-        <div className="space-y-4">
+        {/* Connected Security Validation Pipeline (Clean interior - NO dots inside cards) */}
+        <div className="space-y-4 relative z-1">
           <div className="text-metadata">ZORQEN SECURITY VALIDATION PIPELINE</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Module 01 */}
-            <div className="relative overflow-hidden p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
-              <CardBadgeCluster />
-              <CardCornerCluster />
-              <div className="flex items-center justify-between relative z-10">
-                <div className="relative inline-flex items-center">
-                  <span className="w-7 h-7 rounded-full bg-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
-                    01
-                  </span>
-                </div>
+            <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-full bg-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
+                  01
+                </span>
                 <span className="mono text-[11px] font-bold text-[#525252]">MODULE // AST</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2 text-[18px] relative z-10">
+              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
                 <ShieldCheck className="w-5 h-5 text-[#111111] stroke-[2px]" />
                 Static AST Analysis
               </h3>
-              <p className="text-body text-[13.5px] text-[#333333] leading-snug relative z-10">
+              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
                 Deep call graph extraction and pattern matching for OWASP vulnerabilities across your codebase.
               </p>
             </div>
 
             {/* Module 02 */}
-            <div className="relative overflow-hidden p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
-              <CardBadgeCluster />
-              <CardCornerCluster />
-              <div className="flex items-center justify-between relative z-10">
-                <div className="relative inline-flex items-center">
-                  <span className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px]">
-                    02
-                  </span>
-                </div>
+            <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px]">
+                  02
+                </span>
                 <span className="mono text-[11px] font-bold text-[#525252]">MODULE // REASONING</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2 text-[18px] relative z-10">
+              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
                 <Zap className="w-5 h-5 text-[#111111] stroke-[2px]" />
                 AI Threat Reasoning
               </h3>
-              <p className="text-body text-[13.5px] text-[#333333] leading-snug relative z-10">
+              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
                 Autonomous threat vector correlation and confidence scoring derived from repository data flow architecture.
               </p>
             </div>
 
-            {/* Module 03 (Validation with Radial Dot Halo behind icon) */}
-            <div className="relative overflow-hidden p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
-              <CardBadgeCluster />
-              <CardCornerCluster />
-              <div className="flex items-center justify-between relative z-10">
-                <div className="relative inline-flex items-center">
-                  <span className="w-7 h-7 rounded-full bg-[#ECEAE5] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
-                    03
-                  </span>
-                </div>
+            {/* Module 03 */}
+            <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
+              <div className="flex items-center justify-between">
+                <span className="w-7 h-7 rounded-full bg-[#F9F8F5] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
+                  03
+                </span>
                 <span className="mono text-[11px] font-bold text-[#525252]">MODULE // SANDBOX</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2 text-[18px] relative z-10">
-                <div className="relative inline-flex items-center justify-center">
-                  <RadialDotHalo className="!w-10 !h-10 -inset-2.5" />
-                  <Terminal className="w-5 h-5 text-[#111111] stroke-[2px] relative z-10" />
-                </div>
+              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
+                <Terminal className="w-5 h-5 text-[#111111] stroke-[2px]" />
                 Sandbox Verification
               </h3>
-              <p className="text-body text-[13.5px] text-[#333333] leading-snug relative z-10">
+              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
                 Safe isolated container reproduction verifying exploits and generating automated pull request patches.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Dotted Separator between pipeline and checks section */}
-        <DottedSeparator />
+        {/* What ZORQEN Checks Component (contains ChecksHeadingDotAccent behind heading) */}
+        <div className="relative z-1 pt-4">
+          <ZorqenChecksSection />
+        </div>
 
-        {/* What ZORQEN Checks Component */}
-        <ZorqenChecksSection />
+        {/* 4. Bottom-right corner subtle dot accent */}
+        <PageCornerDotAccent />
 
       </div>
     );

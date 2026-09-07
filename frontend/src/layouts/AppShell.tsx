@@ -78,7 +78,7 @@ function AppShellInner() {
       )}
 
       {/* Footer Aligned to 1280px Grid */}
-      <footer className="border-t border-[#111111]/15 px-5 lg:px-8 py-5 mt-auto bg-[#ECEAE4]">
+      <footer className="border-t border-[#111111]/15 px-5 lg:px-8 py-5 mt-auto bg-[var(--color-base)]">
         <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[13px] text-[#555555]">
           <div className="flex items-center gap-2 flex-wrap font-medium">
             <span className="font-extrabold text-[#111111]">ZORQEN</span>

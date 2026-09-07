@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { RefreshCw, Check, ArrowRight } from 'lucide-react';
 import GithubIcon from './GithubIcon';
+import { EmptyStateIllustrationDotAccent } from './SelectiveDotGrid';
 
 interface EmptyStateViewProps {
   type: 'auth' | 'temporary' | 'no-data' | 'clean-pass';
@@ -14,8 +15,11 @@ interface EmptyStateViewProps {
 function SecurityIllustration() {
   return (
     <div className="relative w-36 h-36 mx-auto flex items-center justify-center my-2">
+      {/* 5. Editorial Dot Accent: Behind the empty-state illustration on Repositories */}
+      <EmptyStateIllustrationDotAccent />
+
       {/* Concentric Radar Grid Rings */}
-      <svg className="w-full h-full" viewBox="0 0 144 144" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-full h-full relative z-1" viewBox="0 0 144 144" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="72" cy="72" r="64" stroke="#111111" strokeWidth="2" strokeDasharray="4 4" opacity="0.25" />
         <circle cx="72" cy="72" r="48" stroke="#111111" strokeWidth="2" opacity="0.35" />
         <circle cx="72" cy="72" r="32" stroke="#111111" strokeWidth="2" strokeDasharray="3 3" opacity="0.5" />

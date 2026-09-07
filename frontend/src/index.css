@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  --color-base: #ECEAE5;        /* Clean cream background */
+  --color-base: #E8E6E1;        /* Warm off-white background */
   --color-panel: #FFFFFF;       /* Crisp white card surface */
   --color-panel-2: #F9F8F5;     /* Secondary light surface */
   --color-hover: #F2F0E9;       /* Warm hover fill */
@@ -571,5 +571,23 @@ kbd {
   }
   .animate-radar-sweep, .animate-signal-pulse {
     animation: none !important;
+  }
+}
+
+/* ── Premium Editorial Dot Accent Pattern (Nothing / Linear / Luxury SaaS) ─── */
+.dot-accent {
+  background-image: radial-gradient(circle, rgba(17, 17, 17, 0.16) 1px, transparent 1px);
+  background-size: 16px 16px;
+  -webkit-mask-image: radial-gradient(circle, black 35%, transparent 100%);
+  mask-image: radial-gradient(circle, black 35%, transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .dot-accent {
+    background-image: radial-gradient(circle, rgba(17, 17, 17, 0.16) 0.75px, transparent 0.75px);
+    background-size: 12px 12px;
   }
 }
