@@ -3,52 +3,67 @@
  * Inspired by Nothing, Linear, and Luxury SaaS aesthetics.
  *
  * Rules:
- * - Uses black dots only (#111111) at 16% opacity (12-18% range) via .dot-accent class.
+ * - Uses black dots only (#111111) at 16% opacity via .dot-accent class.
  * - Dot size: 2px desktop, 1.5px mobile.
  * - Grid spacing: 16px desktop, 12px mobile.
  * - Radial fade masks ensure soft edge falloff.
- * - Placed ONLY in the 5 authorized areas (z-index: 0, content at z-index: 1).
+ * - Placed ONLY in the authorized areas (z-index: 0, content at z-index: 1).
  * - NEVER inside cards, navbar, behind buttons/inputs, or behind body text.
  */
 
 /**
- * 1. Hero Section: Behind the right side of the headline
+ * Hero Cluster 1 — Large cluster behind the upper-right area of the hero.
+ * Desktop only; disappears gracefully on mobile.
  */
-export function HeroDotAccent({ className = '' }: { className?: string }) {
+export function HeroDotUpperRight({ className = '' }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`dot-accent absolute top-2 right-0 sm:right-6 lg:right-10 w-[280px] sm:w-[380px] lg:w-[460px] h-[160px] sm:h-[190px] z-0 ${className}`}
+      className={`dot-accent hidden md:block absolute top-0 right-[-16px] w-[420px] lg:w-[560px] h-[280px] lg:h-[360px] z-0 pointer-events-none select-none ${className}`}
       style={{
-        WebkitMaskImage: 'radial-gradient(circle at 65% 45%, black 25%, transparent 80%)',
-        maskImage: 'radial-gradient(circle at 65% 45%, black 25%, transparent 80%)',
+        WebkitMaskImage: 'radial-gradient(ellipse at 75% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 38%, transparent 72%)',
+        maskImage: 'radial-gradient(ellipse at 75% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 38%, transparent 72%)',
       }}
     />
   );
 }
 
 /**
- * 2. Between the GitHub connection card and the pipeline cards
+ * Hero Cluster 2 — Small faded cluster behind the GitHub connection card.
+ * Stays behind the card; never overlaps the card interior.
  */
-export function PipelineDividerDotAccent({ className = '' }: { className?: string }) {
+export function HeroDotGithubCard({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`relative w-full h-16 sm:h-20 flex items-center justify-center my-1 pointer-events-none ${className}`}
       aria-hidden="true"
-    >
-      <div
-        className="dot-accent w-[280px] sm:w-[380px] lg:w-[440px] h-full z-0"
-        style={{
-          WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 85%)',
-          maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 85%)',
-        }}
-      />
-    </div>
+      className={`dot-accent hidden sm:block absolute left-[30%] w-[260px] sm:w-[320px] lg:w-[380px] h-[80px] z-0 pointer-events-none select-none ${className}`}
+      style={{
+        WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.55) 0%, transparent 75%)',
+        maskImage: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.55) 0%, transparent 75%)',
+      }}
+    />
   );
 }
 
 /**
- * 3. Behind the “WHAT ZORQEN CHECKS” heading
+ * Hero Cluster 3 — Soft faded cluster near the transition into the next section.
+ * Signals visual breathing room before the pipeline cards.
+ */
+export function HeroDotTransition({ className = '' }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`dot-accent hidden sm:block w-[200px] sm:w-[280px] lg:w-[340px] h-[48px] sm:h-[56px] z-0 pointer-events-none select-none mx-auto sm:mx-0 ${className}`}
+      style={{
+        WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,0.40) 0%, transparent 80%)',
+        maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,0.40) 0%, transparent 80%)',
+      }}
+    />
+  );
+}
+
+/**
+ * Legacy: Behind the "WHAT ZORQEN CHECKS" heading
  */
 export function ChecksHeadingDotAccent({ className = '' }: { className?: string }) {
   return (
@@ -64,7 +79,7 @@ export function ChecksHeadingDotAccent({ className = '' }: { className?: string 
 }
 
 /**
- * 4. Bottom-right corner of the page as a subtle accent
+ * Bottom-right corner of the page as a subtle accent
  */
 export function PageCornerDotAccent({ className = '' }: { className?: string }) {
   return (
@@ -80,7 +95,7 @@ export function PageCornerDotAccent({ className = '' }: { className?: string }) 
 }
 
 /**
- * 5. Behind the empty-state illustration on Repositories
+ * Behind the empty-state illustration on Repositories
  */
 export function EmptyStateIllustrationDotAccent({ className = '' }: { className?: string }) {
   return (

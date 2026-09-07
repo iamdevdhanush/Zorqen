@@ -16,8 +16,9 @@ import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
 import {
-  HeroDotAccent,
-  PipelineDividerDotAccent,
+  HeroDotUpperRight,
+  HeroDotGithubCard,
+  HeroDotTransition,
   PageCornerDotAccent,
 } from '../components/SelectiveDotGrid';
 
@@ -46,62 +47,99 @@ export default function OverviewPage() {
   /* ── 1. LANDING PAGE VIEWPORT (When No Active Target Repo Selected) ───── */
   if (!currentRepo) {
     return (
-      <div className="relative max-w-[1280px] mx-auto space-y-8 lg:space-y-10 fade-in overflow-hidden">
-        
-        {/* Landing Hero Section: Editorial dot accent positioned behind the right side of the headline */}
-        <div className="relative rounded-[24px] bg-transparent pt-8 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-10">
-          <HeroDotAccent />
-          
-          <div className="relative z-1 space-y-4 max-w-[920px] text-left">
+      <div className="relative max-w-[1280px] mx-auto fade-in overflow-hidden">
+
+        {/* ══════════════════════════════════════════════════════════════════
+            HERO SECTION — Premium enterprise cybersecurity landing
+            120px top clearance from navbar, wide breathing room throughout
+        ══════════════════════════════════════════════════════════════════ */}
+        <div className="relative pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-10 sm:pb-14 lg:pb-16">
+
+          {/* Cluster 1: Large dot field behind upper-right of headline */}
+          <HeroDotUpperRight />
+
+          {/* Status badge: protocol eyebrow */}
+          <div className="relative z-1 mb-6 sm:mb-8">
             <div className="protocol-tag inline-block">zorqen://platform/overview</div>
-            <h1 className="text-hero text-[#111111]">
-              Autonomous Security Validation <br />
-              <span className="text-[#333333] font-extrabold">for AI-built software.</span>
+          </div>
+
+          {/* Headline: tight line-height for impact, constrained to 640px */}
+          <div className="relative z-1 mb-6 sm:mb-8">
+            <h1
+              className="text-[#111111] font-black tracking-[-0.025em] max-w-[640px]"
+              style={{
+                fontSize: 'clamp(34px, 5vw, 58px)',
+                lineHeight: '0.94',
+              }}
+            >
+              Autonomous
+              <br />
+              Security Validation
+              <br />
+              <span className="text-[#333333]">for AI-built software.</span>
             </h1>
-            <p className="text-body text-[#333333] max-w-[720px] text-[15px] sm:text-[16px] leading-relaxed">
-              Continuous threat validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
+          </div>
+
+          {/* Description: slightly higher opacity, 520px width cap, relaxed line-height */}
+          <div className="relative z-1 mb-10 sm:mb-14">
+            <p
+              className="text-[#2a2a2a] font-medium max-w-[520px] leading-[1.65]"
+              style={{ fontSize: 'clamp(15px, 1.2vw, 16.5px)' }}
+            >
+              Continuous threat validation and vulnerability remediation for repositories you control.
+              Find it. Fix it. Prove it.
             </p>
           </div>
-        </div>
 
-        {/* GitHub Workspace Clean Status Strip (Clean interior - NO dots inside cards) */}
-        <div
-          onClick={connectGithub}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-          className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg transition-all duration-180 cursor-pointer select-none z-1"
-        >
-          <div className="flex items-center gap-4 text-[14px]">
-            <GithubIcon className="w-[20px] h-[20px] text-[#111111] shrink-0" aria-label="GitHub" />
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-extrabold text-[#111111] text-[14.5px]">GitHub Workspace</span>
-              <span className="text-[#111111]/30">•</span>
-              
-              <span className="chip ok text-[11px] font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-                {githubConnected ? `Connected as @${user?.github_login || 'iamdevdhanush'}` : 'Disconnected'}
-              </span>
+          {/* Cluster 2: Small faded dots positioned directly behind GitHub card */}
+          <div className="relative">
+            <HeroDotGithubCard className="top-1/2 -translate-y-1/2" />
 
-              <span className="text-[#111111]/30">•</span>
-              <span className="mono text-[11.5px] font-semibold text-[#525252]">READ-ONLY ACCESS</span>
+            {/* GitHub Workspace Card — sits lower for breathing room */}
+            <div
+              onClick={connectGithub}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
+              }}
+              className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg hover:-translate-y-[2px] transition-all duration-200 cursor-pointer select-none max-w-[720px]"
+            >
+              <div className="flex items-center gap-4 text-[14px]">
+                <GithubIcon className="w-5 h-5 text-[#111111] shrink-0" aria-label="GitHub" />
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-extrabold text-[#111111] text-[14.5px]">GitHub Workspace</span>
+                  <span className="text-[#111111]/25">•</span>
+                  <span className="chip ok text-[11px] font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+                    {githubConnected
+                      ? `Connected as @${user?.github_login || 'iamdevdhanush'}`
+                      : 'Disconnected'}
+                  </span>
+                  <span className="text-[#111111]/25">•</span>
+                  <span className="mono text-[11.5px] font-semibold text-[#525252]">READ-ONLY ACCESS</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-[#111111] shrink-0">
+                <span>{githubConnected ? 'Sync now' : 'Connect Account'}</span>
+                <ArrowRight className="w-4 h-4 text-[#111111] stroke-[2px]" />
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-[#111111] shrink-0">
-            <span>{githubConnected ? 'Sync now' : 'Connect Account'}</span>
-            <ArrowRight className="w-4 h-4 text-[#111111] stroke-[2px]" />
+          {/* Cluster 3: Soft transition dots near section boundary */}
+          <div className="relative mt-12 sm:mt-16 flex">
+            <HeroDotTransition />
           </div>
         </div>
+        {/* ══════════════════════════════════════════════ END HERO ══════ */}
 
-        {/* 2. Editorial Dot Accent: Between GitHub connection card and pipeline cards */}
-        <PipelineDividerDotAccent />
-
-        {/* Connected Security Validation Pipeline (Clean interior - NO dots inside cards) */}
-        <div className="space-y-4 relative z-1">
+        {/* Connected Security Validation Pipeline */}
+        <div className="space-y-4 relative z-1 pb-8 lg:pb-10">
           <div className="text-metadata">ZORQEN SECURITY VALIDATION PIPELINE</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             {/* Module 01 */}
             <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
               <div className="flex items-center justify-between">
@@ -155,12 +193,12 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* What ZORQEN Checks Component (contains ChecksHeadingDotAccent behind heading) */}
-        <div className="relative z-1 pt-4">
+        {/* What ZORQEN Checks Component */}
+        <div className="relative z-1 pb-10 lg:pb-14">
           <ZorqenChecksSection />
         </div>
 
-        {/* 4. Bottom-right corner subtle dot accent */}
+        {/* Bottom-right corner subtle dot accent */}
         <PageCornerDotAccent />
 
       </div>
