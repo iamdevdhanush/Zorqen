@@ -34,7 +34,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               className="flex items-center group shrink-0 py-1 px-1.5 transition-opacity hover:opacity-90 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[10px]"
               aria-label="ZORQEN Home"
             >
-              <ZorqenLogoMark size="md" showText={true} />
+              <ZorqenLogoMark hideIcon={true} showText={true} textClassName="flex" />
             </Link>
 
             <nav className="hidden lg:flex items-center gap-0.5 ml-2" aria-label="ZORQEN product pages">

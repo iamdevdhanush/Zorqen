@@ -5,6 +5,7 @@ interface ZorqenLogoMarkProps {
   className?: string;
   showText?: boolean;
   textClassName?: string;
+  hideIcon?: boolean;
 }
 
 const SIZE_MAP = {
@@ -19,6 +20,7 @@ export const ZorqenLogoMark = memo(function ZorqenLogoMark({
   className = '',
   showText = false,
   textClassName = '',
+  hideIcon = false,
 }: ZorqenLogoMarkProps) {
   const pixelSize =
     typeof size === 'number'
@@ -26,18 +28,18 @@ export const ZorqenLogoMark = memo(function ZorqenLogoMark({
       : SIZE_MAP[size] || 33;
 
   return (
-    <div className={`inline-flex items-center gap-3.5 sm:gap-4 select-none ${className}`}>
-      {/* Refined, Minimal European Cybersecurity Geometric Mark */}
-      <svg
-        width={pixelSize}
-        height={pixelSize}
-        viewBox="0 0 36 36"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0 transition-transform duration-200 group-hover:scale-[1.03]"
-        shapeRendering="geometricPrecision"
-        aria-hidden="true"
-      >
+    <div className={`inline-flex items-center ${!hideIcon && showText ? 'gap-3.5 sm:gap-4' : ''} select-none ${className}`}>
+      {!hideIcon && (
+        <svg
+          width={pixelSize}
+          height={pixelSize}
+          viewBox="0 0 36 36"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="shrink-0 transition-transform duration-200 group-hover:scale-[1.03]"
+          shapeRendering="geometricPrecision"
+          aria-hidden="true"
+        >
         {/* Outer Precision Architectural Shield Contour */}
         <path
           d="M 18 2.5 L 31 8.5 V 19 C 31 26.5 18 33.5 18 33.5 C 18 33.5 5 26.5 5 19 V 8.5 L 18 2.5 Z"
@@ -78,17 +80,18 @@ export const ZorqenLogoMark = memo(function ZorqenLogoMark({
         {/* Precision Micro Center Point */}
         <circle cx="18" cy="17.5" r="1.1" fill="#111111" />
       </svg>
+      )}
 
       {showText && (
         <div className={`leading-tight flex flex-col justify-center select-none ${textClassName}`}>
-          {/* Brand Name - Elegant italic cursive/serif style (Bodoni Moda / Cormorant Garamond) */}
+          {/* Brand Name - Elegant italic cursive/serif style (Bodoni Moda / Cormorant Garamond / Playfair) */}
           <span
-            className="italic font-semibold text-[19px] sm:text-[21px] tracking-[0.02em] text-[#111111] leading-none select-none font-serif"
+            className="italic font-normal sm:font-medium text-[22px] sm:text-[23.5px] tracking-[-0.01em] text-[#111111] leading-none select-none font-serif"
             style={{ fontFamily: 'var(--font-serif-luxury)' }}
           >
             Zorqen
           </span>
-          {/* Italian Descriptor - Exactly preserved as requested */}
+          {/* Subtitle - Exactly preserved as requested */}
           <span className="font-mono text-[9.5px] sm:text-[10px] font-medium tracking-[0.28em] text-[#525252] uppercase mt-1 sm:mt-1.5 whitespace-nowrap">
             CONVALIDA DI SICUREZZA
           </span>

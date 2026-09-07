@@ -53,8 +53,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               className="flex items-center group shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[10px] py-1.5 pr-2 transition-opacity hover:opacity-90"
               aria-label="ZORQEN Home"
             >
-              {/* Logo text collapses below 380px screen width */}
-              <ZorqenLogoMark size="md" showText={true} textClassName="hidden min-[380px]:flex" />
+              {/* Text-only luxury brand mark: Zorqen in elegant italic cursive/serif + CONVALIDA DI SICUREZZA */}
+              <ZorqenLogoMark hideIcon={true} showText={true} textClassName="flex" />
             </NavLink>
 
             {/* Desktop Navigation Links (>= md) */}
