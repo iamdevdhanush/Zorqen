@@ -31,19 +31,19 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
       icon: ShieldCheck,
       name: 'Static AST Analysis Engine',
       status: 'Active',
-      statusClass: 'bg-[#C7F11A] text-[#111111]',
+      statusClass: 'bg-[#C8F31D] text-[#111111]',
     },
     {
       icon: Cpu,
       name: 'AI Threat Reasoning Engine',
       status: 'In Progress',
-      statusClass: 'bg-[#111111] text-[#C7F11A]',
+      statusClass: 'bg-[#111111] text-[#C8F31D]',
     },
     {
       icon: Terminal,
       name: 'Container Sandbox Validation',
       status: 'Beta',
-      statusClass: 'bg-[#F9F8F5] text-[#111111]',
+      statusClass: 'bg-[#F7F5F0] text-[#111111]',
     },
   ];
 
@@ -64,42 +64,42 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
       aria-labelledby="meet-dev-title"
     >
       <div
-        className="w-full max-w-[480px] max-h-[90vh] bg-white border-2 border-[#111111] rounded-[16px] shadow-hard-lg flex flex-col overflow-hidden slide-up"
+        className="w-full max-w-[480px] max-h-[90vh] bg-white border-2 border-[#111111] rounded-[24px] shadow-hard-lg flex flex-col overflow-hidden slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3.5 bg-[#F9F8F5] border-b-2 border-[#111111] shrink-0">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-[#F7F5F0] border-b-2 border-[#111111] shrink-0">
           <div className="flex items-center gap-2">
-            <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-[#111111]">
+            <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#111111] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111]">
               DEVELOPER PROFILE
             </span>
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center w-[36px] h-[36px] rounded-[8px] text-[#111111] hover:bg-white border border-transparent hover:border-[#111111] transition-all outline-none"
+            className="flex items-center justify-center w-[44px] h-[44px] rounded-[12px] text-[#111111] hover:bg-white border-2 border-transparent hover:border-[#111111] transition-all outline-none cursor-pointer"
             aria-label="Close modal"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 stroke-[2]" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4 overflow-y-auto scroll-thin flex-1">
+        <div className="p-6 space-y-4 overflow-y-auto scroll-thin flex-1">
           {/* Identity Header */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-4">
             <img
               src={avatarUrl}
               alt={displayName}
               className="w-14 h-14 rounded-full border-2 border-[#111111] object-cover shrink-0"
             />
             <div className="space-y-0.5 min-w-0 flex-1">
-              <h2 id="meet-dev-title" className="text-lg font-extrabold text-[#111111] tracking-tight leading-none truncate">
+              <h2 id="meet-dev-title" className="text-xl font-extrabold text-[#111111] tracking-tight leading-none truncate">
                 {displayName}
               </h2>
-              <div className="mono text-[12px] font-bold text-[#555555]">
+              <div className="mono text-[12px] font-bold text-[#525252]">
                 {displayHandle}
               </div>
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#C7F11A] border border-[#111111] mt-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#C8F31D] border-[1.5px] border-[#111111] mt-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
                 <span className="mono text-[9.5px] font-extrabold text-[#111111] uppercase tracking-wider">
                   VERIFIED BUILDER
@@ -109,29 +109,29 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
           </div>
 
           {/* Compact Builder Stats Grid */}
-          <div className="p-3.5 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20 grid grid-cols-3 divide-x divide-[#111111]/15 text-center">
+          <div className="p-4 rounded-[16px] bg-[#F7F5F0] border-2 border-[#111111] grid grid-cols-3 divide-x-2 divide-[#111111]/15 text-center">
             <div>
               <div className="text-metadata text-[9px]">BUILDER SCORE</div>
-              <div className="mono text-[17px] font-extrabold text-[#111111] mt-0.5 tabular-nums">94</div>
+              <div className="mono text-[18px] font-extrabold text-[#111111] mt-0.5 tabular-nums">94</div>
             </div>
             <div>
               <div className="text-metadata text-[9px]">REPOSITORIES</div>
-              <div className="mono text-[17px] font-extrabold text-[#111111] mt-0.5 tabular-nums">59</div>
+              <div className="mono text-[18px] font-extrabold text-[#111111] mt-0.5 tabular-nums">59</div>
             </div>
             <div>
               <div className="text-metadata text-[9px]">SCANS</div>
-              <div className="mono text-[17px] font-extrabold text-[#111111] mt-0.5 tabular-nums">143</div>
+              <div className="mono text-[18px] font-extrabold text-[#111111] mt-0.5 tabular-nums">143</div>
             </div>
           </div>
 
           {/* Current Projects Compact Rows */}
-          <div className="p-4 rounded-[10px] bg-white border border-[#111111]/20 space-y-2.5">
-            <div className="flex items-center justify-between border-b border-[#111111]/15 pb-2">
+          <div className="p-4 rounded-[16px] bg-white border-2 border-[#111111] space-y-3">
+            <div className="flex items-center justify-between border-b-2 border-[#111111]/15 pb-2">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#111111]" />
+                <Activity className="w-4 h-4 stroke-[2] text-[#111111]" />
                 <span className="font-extrabold text-[13px] text-[#111111]">Current Projects</span>
               </div>
-              <span className="mono text-[9.5px] font-bold text-[#111111] bg-[#C7F11A] px-2 py-0.5 rounded border border-[#111111] uppercase tracking-wider">
+              <span className="mono text-[9.5px] font-bold text-[#111111] bg-[#C8F31D] px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] uppercase tracking-wider">
                 LIVE
               </span>
             </div>
@@ -142,13 +142,13 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
                 return (
                   <div
                     key={item.name}
-                    className="flex items-center justify-between p-2.5 rounded-[8px] bg-[#F9F8F5] border border-[#111111]/10 text-[12.5px]"
+                    className="flex items-center justify-between p-2.5 rounded-[10px] bg-[#F7F5F0] border-2 border-[#111111] text-[12.5px]"
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-[#111111] shrink-0" />
+                      <Icon className="w-4 h-4 stroke-[2] text-[#111111] shrink-0" />
                       <span className="font-extrabold text-[#111111]">{item.name}</span>
                     </div>
-                    <span className={`mono text-[9.5px] font-bold px-2 py-0.5 rounded border border-[#111111]/20 ${item.statusClass}`}>
+                    <span className={`mono text-[9.5px] font-bold px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] ${item.statusClass}`}>
                       {item.status}
                     </span>
                   </div>
@@ -158,21 +158,21 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
           </div>
 
           {/* Contribution Heatmap Mini Grid */}
-          <div className="p-4 rounded-[10px] bg-white border border-[#111111]/20 space-y-2.5">
+          <div className="p-4 rounded-[16px] bg-white border-2 border-[#111111] space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-metadata text-[9.5px]">CONTRIBUTION ACTIVITY</div>
-              <span className="mono text-[10px] text-[#555555] font-semibold">Past 90 Days</span>
+              <span className="mono text-[10px] text-[#525252] font-semibold">Past 90 Days</span>
             </div>
             
             {/* SVG/CSS Mini Heatmap */}
-            <div className="p-2.5 rounded-[8px] bg-[#F9F8F5] border border-[#111111]/10 space-y-1.5">
+            <div className="p-3 rounded-[10px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1.5">
               {miniHeatmapLevels.map((row, rIdx) => (
                 <div key={rIdx} className="flex items-center gap-1.5 justify-between">
                   {row.map((lvl, cIdx) => (
                     <div
                       key={cIdx}
-                      className={`w-3.5 h-3.5 rounded-[3px] border border-[#111111]/20 ${
-                        lvl === 4 ? 'bg-[#111111]' : lvl === 3 ? 'bg-[#C7F11A]' : lvl === 2 ? 'bg-[#C7F11A]/60' : lvl === 1 ? 'bg-[#C7F11A]/25' : 'bg-white'
+                      className={`w-3.5 h-3.5 rounded-[3px] border border-[#111111] ${
+                        lvl === 4 ? 'bg-[#111111]' : lvl === 3 ? 'bg-[#C8F31D]' : lvl === 2 ? 'bg-[#C8F31D]/60' : lvl === 1 ? 'bg-[#C8F31D]/25' : 'bg-white'
                       }`}
                     />
                   ))}
@@ -183,7 +183,7 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
         </div>
 
         {/* Footer Social Buttons */}
-        <div className="sticky bottom-0 z-10 p-4 bg-[#F9F8F5] border-t-2 border-[#111111] space-y-2.5">
+        <div className="sticky bottom-0 z-10 p-4 bg-[#F7F5F0] border-t-2 border-[#111111] space-y-2.5">
           <div className="grid grid-cols-3 gap-2">
             <a
               href={profileUrl}
@@ -221,13 +221,13 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
             target="_blank"
             rel="noreferrer"
             onClick={() => onOpenSupport?.()}
-            className="w-full flex items-center justify-between px-4 h-[44px] min-h-[44px] rounded-[10px] border-2 border-[#111111] bg-white hover:bg-[#F9F8F5] text-[13px] font-extrabold text-[#111111] shadow-hard-sm no-underline transition-all"
+            className="w-full flex items-center justify-between px-4 h-[44px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-white hover:bg-[#F7F5F0] text-[13px] font-extrabold text-[#111111] shadow-hard-sm no-underline transition-all"
           >
             <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-[#111111] fill-[#111111]" />
+              <Heart className="w-4 h-4 stroke-[2] text-[#111111] fill-[#111111]" />
               <span>Support ZORQEN Platform</span>
             </div>
-            <ExternalLink className="w-4 h-4 text-[#111111]" />
+            <ExternalLink className="w-4 h-4 stroke-[2] text-[#111111]" />
           </a>
         </div>
       </div>

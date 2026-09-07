@@ -41,16 +41,16 @@ export default function OverviewPage() {
   /* ── 1. LANDING PAGE VIEWPORT (When No Active Target Repo Selected) ───── */
   if (!currentRepo) {
     return (
-      <div className="max-w-[1280px] mx-auto space-y-10 lg:space-y-12 fade-in">
+      <div className="max-w-[1280px] mx-auto space-y-6 lg:space-y-8 fade-in">
         
         {/* Landing Hero Section */}
-        <div className="space-y-4 max-w-[960px] text-left">
+        <div className="space-y-3 max-w-[920px] text-left">
           <div className="protocol-tag">zorqen://platform/overview</div>
           <h1 className="text-hero">
             Autonomous Security Validation <br />
             <span className="text-[#333333] font-extrabold">for AI-built software.</span>
           </h1>
-          <p className="text-body text-[#333333] max-w-[760px] leading-normal font-normal">
+          <p className="text-body text-[#333333] max-w-[720px] leading-relaxed">
             Continuous threat validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
           </p>
         </div>
@@ -61,43 +61,43 @@ export default function OverviewPage() {
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 rounded-[12px] bg-white border border-[#111111]/20 hover:border-[#111111] shadow-hard-sm transition-all cursor-pointer select-none"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 rounded-[20px] bg-white border-2 border-[#111111] hover:border-[#111111] shadow-hard-sm transition-all cursor-pointer select-none"
         >
           <div className="flex items-center gap-3 text-[14px]">
-            <div className="w-8 h-8 rounded-[8px] bg-[#111111] text-[#C7F11A] flex items-center justify-center shrink-0">
-              <GithubIcon className="w-4 h-4 text-[#C7F11A]" />
+            <div className="w-9 h-9 rounded-[10px] bg-[#111111] text-[#C8F31D] flex items-center justify-center shrink-0">
+              <GithubIcon className="w-[18px] h-[18px] text-[#C8F31D]" />
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="font-extrabold text-[#111111]">GitHub Workspace</span>
               <span className="text-[#111111]/30">•</span>
-              <span className="mono text-[12px] font-bold text-[#111111] bg-[#C7F11A] px-2 py-0.5 rounded border border-[#111111] flex items-center gap-1.5">
+              <span className="chip ok text-[11px] font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
                 {githubConnected ? `Connected as @${user?.github_login || 'iamdevdhanush'}` : 'Disconnected'}
               </span>
               <span className="text-[#111111]/30">•</span>
-              <span className="mono text-[11.5px] font-semibold text-[#555555]">READ-ONLY ACCESS</span>
+              <span className="mono text-[11.5px] font-semibold text-[#525252]">READ-ONLY ACCESS</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[13.5px] font-extrabold text-[#111111] shrink-0">
+          <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-[#111111] shrink-0">
             <span>{githubConnected ? 'Sync now' : 'Connect Account'}</span>
-            <ArrowRight className="w-4 h-4 text-[#111111]" />
+            <ArrowRight className="w-4 h-4 text-[#111111] stroke-[2px]" />
           </div>
         </div>
 
-        {/* Connected Security Validation Pipeline (Compact 25% Reduced Height Workflow Cards) */}
+        {/* Connected Security Validation Pipeline (Compact Workflow Cards) */}
         <div className="space-y-4">
           <div className="text-metadata">ZORQEN SECURITY VALIDATION PIPELINE</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="panel space-y-2 p-5">
+            <div className="panel space-y-3 p-6">
               <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-[8px] bg-[#C7F11A] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[13px] text-[#111111]">
+                <span className="w-7 h-7 rounded-full bg-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
                   01
                 </span>
-                <span className="mono text-[11px] font-bold text-[#555555]">MODULE // AST</span>
+                <span className="mono text-[11px] font-bold text-[#525252]">MODULE // AST</span>
               </div>
               <h3 className="text-card-title flex items-center gap-2 text-[18px]">
-                <ShieldCheck className="w-4.5 h-4.5 text-[#111111]" />
+                <ShieldCheck className="w-5 h-5 text-[#111111] stroke-[2px]" />
                 Static AST Analysis
               </h3>
               <p className="text-body text-[13.5px] text-[#333333] leading-snug">
@@ -105,15 +105,15 @@ export default function OverviewPage() {
               </p>
             </div>
 
-            <div className="panel space-y-2 p-5">
+            <div className="panel space-y-3 p-6">
               <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-[8px] bg-[#111111] text-[#C7F11A] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[13px]">
+                <span className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px]">
                   02
                 </span>
-                <span className="mono text-[11px] font-bold text-[#555555]">MODULE // REASONING</span>
+                <span className="mono text-[11px] font-bold text-[#525252]">MODULE // REASONING</span>
               </div>
               <h3 className="text-card-title flex items-center gap-2 text-[18px]">
-                <Zap className="w-4.5 h-4.5 text-[#111111]" />
+                <Zap className="w-5 h-5 text-[#111111] stroke-[2px]" />
                 AI Threat Reasoning
               </h3>
               <p className="text-body text-[13.5px] text-[#333333] leading-snug">
@@ -121,15 +121,15 @@ export default function OverviewPage() {
               </p>
             </div>
 
-            <div className="panel space-y-2 p-5">
+            <div className="panel space-y-3 p-6">
               <div className="flex items-center justify-between">
-                <span className="w-8 h-8 rounded-[8px] bg-[#F9F8F5] border-2 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[13px] text-[#111111]">
+                <span className="w-7 h-7 rounded-full bg-[#F9F8F5] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
                   03
                 </span>
-                <span className="mono text-[11px] font-bold text-[#555555]">MODULE // SANDBOX</span>
+                <span className="mono text-[11px] font-bold text-[#525252]">MODULE // SANDBOX</span>
               </div>
               <h3 className="text-card-title flex items-center gap-2 text-[18px]">
-                <Terminal className="w-4.5 h-4.5 text-[#111111]" />
+                <Terminal className="w-5 h-5 text-[#111111] stroke-[2px]" />
                 Sandbox Verification
               </h3>
               <p className="text-body text-[13.5px] text-[#333333] leading-snug">
@@ -161,12 +161,12 @@ export default function OverviewPage() {
   const criticalHigh = counts.critical + counts.high;
 
   return (
-    <div className="max-w-[1280px] mx-auto space-y-8 lg:space-y-10 fade-in">
+    <div className="max-w-[1280px] mx-auto space-y-6 lg:space-y-8 fade-in">
       
-      {/* Editorial Hero Section */}
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="space-y-2">
+      {/* Compressed Editorial Hero Section */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-1.5">
             <div className="protocol-tag">zorqen://repository/security-posture</div>
             <h1 className="text-hero text-left">
               SECURITY VALIDATION <br />
@@ -174,13 +174,13 @@ export default function OverviewPage() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pt-1">
             <button
               onClick={startAssessment}
               disabled={running}
               className="btn btn-accent px-6 h-[48px] text-[14px] font-extrabold shadow-hard min-h-[44px]"
             >
-              <Play className="w-4 h-4 fill-current" />
+              <Play className="w-[18px] h-[18px] fill-current" />
               <span>{running ? 'Pipeline Running…' : 'Run Assessment'}</span>
             </button>
           </div>
@@ -189,10 +189,10 @@ export default function OverviewPage() {
         <div className="h-[2px] bg-[#111111] w-full" />
 
         {/* Repository Target Card */}
-        <div className="panel flex flex-wrap items-center justify-between gap-6">
+        <div className="panel flex flex-wrap items-center justify-between gap-6 p-6">
           <div className="space-y-1.5 min-w-0">
             <div className="text-metadata">TARGET REPOSITORY</div>
-            <div className="text-card-title text-[24px] sm:text-[28px] flex items-center gap-3 flex-wrap break-all">
+            <div className="text-card-title text-[22px] sm:text-[26px] flex items-center gap-3 flex-wrap break-all">
               {currentRepo.owner}/{currentRepo.name}
               <span className="chip uppercase text-[10px] font-bold">{currentRepo.private ? 'Private' : 'Public'}</span>
             </div>
@@ -202,11 +202,11 @@ export default function OverviewPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-[12px]">
-            <div className="mono text-[11.5px] font-bold text-[#111111] bg-[#F9F8F5] px-3 py-2 rounded-[8px] border border-[#111111]/20 shadow-hard-sm">
+            <div className="mono text-[11.5px] font-bold text-[#111111] bg-[#F9F8F5] px-3 py-2 rounded-full border-1.5 border-[#111111] shadow-hard-sm">
               {arch?.primaryLanguage ? `${arch.primaryLanguage} • ${arch.dependencies} DEPS` : 'READY TO SCAN'}
             </div>
-            <div className="flex items-center gap-2 mono text-[11.5px] font-extrabold text-[#111111] bg-[#C7F11A] px-3 py-2 rounded-[8px] border-2 border-[#111111] shadow-hard-sm">
-              <GitBranch className="w-4 h-4 text-[#111111]" />
+            <div className="flex items-center gap-2 mono text-[11.5px] font-extrabold text-[#111111] bg-[#C8F31D] px-3.5 py-2 rounded-full border-1.5 border-[#111111] shadow-hard-sm">
+              <GitBranch className="w-4 h-4 text-[#111111] stroke-[2px]" />
               <span>{branch}</span>
               <span className="text-[#111111] font-mono tabular-nums">@{commit.slice(0, 7)}</span>
             </div>
@@ -216,51 +216,51 @@ export default function OverviewPage() {
 
       {/* Security Score & Live Activity Stream */}
       <div className="grid lg:grid-cols-12 gap-6 items-stretch">
-        <div className="col-span-12 lg:col-span-8 panel grid lg:grid-cols-[280px_1fr] gap-6 items-center">
-          <div className="border-b lg:border-b-0 lg:border-r-2 border-[#111111]/20 pb-6 lg:pb-0 pr-0 lg:pr-6 flex flex-col justify-center">
+        <div className="col-span-12 lg:col-span-8 panel grid lg:grid-cols-[260px_1fr] gap-6 items-center p-6">
+          <div className="border-b lg:border-b-0 lg:border-r-2 border-[#111111] pb-6 lg:pb-0 pr-0 lg:pr-6 flex flex-col justify-center">
             <div className="text-metadata mb-1">SECURITY SCORE</div>
             <div className="flex items-baseline gap-2">
               {score != null ? (
                 <>
-                  <span className="text-5xl sm:text-[60px] font-[900] text-[#111111] tracking-tighter leading-none tabular-nums">
+                  <span className="text-5xl sm:text-[56px] font-[900] text-[#111111] tracking-tighter leading-none tabular-nums">
                     <AnimatedNumber value={score} />
                   </span>
-                  <span className="text-2xl sm:text-[30px] font-bold text-[#555555]">/100</span>
+                  <span className="text-2xl sm:text-[28px] font-bold text-[#525252]">/100</span>
                 </>
               ) : (
-                <span className="text-4xl sm:text-[60px] font-[900] text-[#555555] tracking-tighter leading-none">
+                <span className="text-4xl sm:text-[56px] font-[900] text-[#525252] tracking-tighter leading-none">
                   —
                 </span>
               )}
             </div>
             <div className="mt-4">
               {riskBand ? (
-                <span className={`chip text-[11px] px-3 py-1 uppercase font-extrabold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
+                <span className={`chip text-[11px] px-3.5 py-1 uppercase font-extrabold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
                   {riskBand}
                 </span>
               ) : (
-                <span className="chip text-[11px] px-3 py-1 uppercase font-extrabold">NOT STARTED</span>
+                <span className="chip text-[11px] px-3.5 py-1 uppercase font-extrabold">NOT STARTED</span>
               )}
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 text-[13px] font-bold">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEE2E2] text-[#DC2626] border border-[#111111]/20 shadow-hard-sm">
-                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.critical}</span> CRITICAL
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 text-[12.5px] font-bold">
+              <div className="chip sev-critical text-[11.5px] font-extrabold">
+                <span className="font-mono font-bold tabular-nums">{counts.critical}</span> CRITICAL
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FFEDD5] text-[#C2410C] border border-[#111111]/20 shadow-hard-sm">
-                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.high}</span> HIGH
+              <div className="chip sev-high text-[11.5px] font-extrabold">
+                <span className="font-mono font-bold tabular-nums">{counts.high}</span> HIGH
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#FEF3C7] text-[#B45309] border border-[#111111]/20 shadow-hard-sm">
-                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.medium}</span> MEDIUM
+              <div className="chip sev-medium text-[11.5px] font-extrabold">
+                <span className="font-mono font-bold tabular-nums">{counts.medium}</span> MEDIUM
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-[#DBEAFE] text-[#1D4ED8] border border-[#111111]/20 shadow-hard-sm">
-                <span className="font-mono font-bold text-[15px] tabular-nums">{counts.low}</span> LOW
+              <div className="chip sev-low text-[11.5px] font-extrabold">
+                <span className="font-mono font-bold tabular-nums">{counts.low}</span> LOW
               </div>
             </div>
 
-            <div className="text-base sm:text-[20px] font-extrabold text-[#111111] tracking-tight leading-snug">
+            <div className="text-base sm:text-[19px] font-extrabold text-[#111111] tracking-tight leading-snug">
               {criticalHigh > 0
                 ? `“${criticalHigh} critical & high security finding${criticalHigh === 1 ? '' : 's'} require${criticalHigh === 1 ? 's' : ''} immediate engineering remediation.”`
                 : findings.length > 0
@@ -271,15 +271,15 @@ export default function OverviewPage() {
         </div>
 
         {/* Live Activity Stream */}
-        <div className="col-span-12 lg:col-span-4 panel space-y-3 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-[#111111]/15 pb-2">
+        <div className="col-span-12 lg:col-span-4 panel space-y-3 flex flex-col justify-between p-6">
+          <div className="flex items-center justify-between border-b-2 border-[#111111] pb-2.5">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#111111]" />
+              <Activity className="w-4 h-4 text-[#111111] stroke-[2px]" />
               <span className="mono text-[11px] font-extrabold uppercase tracking-wider text-[#111111]">
                 LIVE ACTIVITY FEED
               </span>
             </div>
-            <span className="mono text-[10px] font-bold text-[#111111] bg-[#C7F11A] px-2 py-0.5 rounded border border-[#111111]">
+            <span className="chip ok text-[10px] font-extrabold">
               SOC LIVE
             </span>
           </div>
@@ -287,10 +287,10 @@ export default function OverviewPage() {
           <div className="space-y-2.5 text-[12.5px]">
             {activityFeedItems.map((item, idx) => (
               <div key={idx} className="flex items-start gap-2.5">
-                <span className="mono text-[10.5px] font-bold text-[#5E5E5E] shrink-0 tabular-nums pt-0.5">
+                <span className="mono text-[10.5px] font-bold text-[#525252] shrink-0 tabular-nums pt-0.5">
                   {item.time}
                 </span>
-                <span className="font-semibold text-[#0A0A0A] leading-snug">
+                <span className="font-semibold text-[#111111] leading-snug">
                   {item.event}
                 </span>
               </div>
@@ -316,23 +316,24 @@ export default function OverviewPage() {
       {biggestFinding && (
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h2 className="text-[22px] sm:text-[24px] font-extrabold text-[#0A0A0A] tracking-tight flex items-center gap-3">
-              <ShieldAlert className="w-6 h-6 text-red-600 shrink-0" />
+            <h2 className="text-[20px] sm:text-[22px] font-extrabold text-[#111111] tracking-tight flex items-center gap-2.5">
+              <ShieldAlert className="w-5 h-5 text-red-600 shrink-0 stroke-[2px]" />
               BIGGEST SECURITY FINDING
             </h2>
             <button
               onClick={() => navigate(`/findings/${biggestFinding.id}`)}
-              className="text-[13.5px] font-extrabold text-[#0A0A0A] hover:underline flex items-center gap-1 min-h-[44px]"
+              className="text-[13.5px] font-extrabold text-[#111111] hover:underline flex items-center gap-1.5 min-h-[44px]"
             >
-              Investigate finding <ArrowRight className="w-4 h-4" />
+              <span>Investigate finding</span>
+              <ArrowRight className="w-4 h-4 stroke-[2px]" />
             </button>
           </div>
 
-          <div className="panel space-y-6">
+          <div className="panel space-y-6 p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <SevBadge sev={biggestFinding.severity} />
-                <h3 className="text-xl sm:text-2xl font-extrabold text-[#0A0A0A] tracking-tight break-words">
+                <h3 className="text-xl sm:text-2xl font-extrabold text-[#111111] tracking-tight break-words">
                   {biggestFinding.title.toUpperCase()}
                 </h3>
               </div>
@@ -344,14 +345,14 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px] border-y-2 border-[#111111] py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px] border-y-2 border-[#111111] py-4 bg-[#F9F8F5] px-4 rounded-[12px]">
               <div className="min-w-0">
-                <span className="text-[#5E5E5E] font-bold">ENDPOINT: </span>
-                <span className="mono font-bold text-[#0A0A0A] break-all">{biggestFinding.endpoint || '—'}</span>
+                <span className="text-[#525252] font-bold">ENDPOINT: </span>
+                <span className="mono font-bold text-[#111111] break-all">{biggestFinding.endpoint || '—'}</span>
               </div>
               <div className="min-w-0">
-                <span className="text-[#5E5E5E] font-bold">LOCATION: </span>
-                <span className="mono font-bold text-[#0A0A0A] break-all tabular-nums">{biggestFinding.file_path}:{biggestFinding.line_number}</span>
+                <span className="text-[#525252] font-bold">LOCATION: </span>
+                <span className="mono font-bold text-[#111111] break-all tabular-nums">{biggestFinding.file_path}:{biggestFinding.line_number}</span>
               </div>
             </div>
 
@@ -362,7 +363,7 @@ export default function OverviewPage() {
 
               <button
                 onClick={() => navigate(`/findings/${biggestFinding.id}`)}
-                className="btn btn-accent px-6 text-[13.5px] font-extrabold min-h-[44px]"
+                className="btn btn-accent px-6 h-[48px] text-[13.5px] font-extrabold min-h-[44px]"
               >
                 Inspect Threat Flow →
               </button>

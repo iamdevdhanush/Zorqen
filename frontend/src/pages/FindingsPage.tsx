@@ -15,26 +15,26 @@ const FindingRow = memo(function FindingRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-[16px] bg-white border-2 border-[#111111]/20 hover:border-[#111111] transition-all duration-120 overflow-hidden shadow-hard-sm">
+    <div className="rounded-[20px] bg-white border-2 border-[#111111] transition-all duration-180 overflow-hidden shadow-hard-sm">
       {/* Summary Header Row */}
       <div
         onClick={() => setExpanded((o) => !o)}
-        className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-[#FAFAFA] transition-colors select-none min-h-[56px]"
+        className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-[#F9F8F5] transition-colors select-none min-h-[64px]"
       >
         <div className="space-y-1.5 flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <SevBadge sev={finding.severity} />
-            <h3 className="text-card-title text-[18px] sm:text-[20px] font-extrabold text-[#0A0A0A] tracking-tight hover:text-[#111111] transition-colors break-words">
+            <h3 className="text-card-title text-[18px] sm:text-[20px] font-extrabold text-[#111111] tracking-tight hover:text-black transition-colors break-words">
               {finding.title}
             </h3>
-            <span className="chip mono font-bold text-[10.5px] bg-[#FAFAFA] border-2 border-[#111111]/20">{finding.cwe_id}</span>
-            <span className="mono text-[11px] font-bold text-[#111111] bg-[#C8FF2E] px-2 py-0.5 rounded border border-[#111111] tabular-nums">
+            <span className="chip mono font-bold text-[10.5px] bg-[#F9F8F5]">{finding.cwe_id}</span>
+            <span className="chip ok font-bold text-[10.5px] tabular-nums">
               {finding.confidence_pct}% CONFIDENCE
             </span>
           </div>
 
-          <div className="mono text-[12px] text-[#5E5E5E] flex items-center gap-2 font-semibold flex-wrap break-all tabular-nums">
-            <span className="font-extrabold text-[#0A0A0A]">{finding.file_path}:{finding.line_number}</span>
+          <div className="mono text-[12px] text-[#525252] flex items-center gap-2 font-semibold flex-wrap break-all tabular-nums">
+            <span className="font-extrabold text-[#111111]">{finding.file_path}:{finding.line_number}</span>
             {finding.endpoint && (
               <>
                 <span>•</span>
@@ -44,7 +44,7 @@ const FindingRow = memo(function FindingRow({
           </div>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#111111]/10 shrink-0">
+        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t-2 sm:border-t-0 border-[#111111]/10 shrink-0">
           <div className="flex items-center gap-2 flex-wrap">
             <ValidationBadge v={finding.validation} />
             <StatusBadge s={finding.status} />
@@ -56,14 +56,14 @@ const FindingRow = memo(function FindingRow({
                 e.stopPropagation();
                 onNavigate(finding.id);
               }}
-              className="btn btn-accent btn-xs text-[12px] font-extrabold flex items-center gap-1.5 min-h-[44px] px-3.5 shadow-hard-sm"
+              className="btn btn-accent btn-xs text-[12px] font-extrabold flex items-center gap-1.5 min-h-[40px] px-3.5 shadow-hard-sm"
             >
               <span>Inspect</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2px]" />
             </button>
 
-            <div className="w-9 h-9 rounded-[10px] bg-[#FAFAFA] border-2 border-[#111111]/20 flex items-center justify-center text-[#0A0A0A]">
-              <ChevronDown className={`w-4 h-4 transition-transform duration-120 ${expanded ? 'rotate-180' : ''}`} />
+            <div className="w-9 h-9 rounded-[10px] bg-[#F9F8F5] border-2 border-[#111111] flex items-center justify-center text-[#111111]">
+              <ChevronDown className={`w-4 h-4 transition-transform duration-180 stroke-[2px] ${expanded ? 'rotate-180' : ''}`} />
             </div>
           </div>
         </div>
@@ -71,23 +71,23 @@ const FindingRow = memo(function FindingRow({
 
       {/* Progressive Disclosure Details Drawer */}
       {expanded && (
-        <div className="p-5 border-t-2 border-[#111111]/15 bg-[#FAFAFA] space-y-4 text-[14px] font-medium leading-relaxed fade-in">
+        <div className="p-6 border-t-2 border-[#111111] bg-[#F9F8F5] space-y-4 text-[14px] font-medium leading-relaxed fade-in">
           <div className="space-y-1">
-            <div className="text-caption text-[10.5px]">
+            <div className="text-metadata">
               ROOT CAUSE ANALYSIS
             </div>
-            <p className="text-[#0A0A0A] font-semibold">{finding.root_cause}</p>
+            <p className="text-[#111111] font-semibold">{finding.root_cause}</p>
           </div>
 
           {finding.attack_path && finding.attack_path.length > 0 && (
             <div className="space-y-2">
-              <div className="text-caption text-[10.5px]">
+              <div className="text-metadata">
                 ATTACK VECTOR PATHWAY
               </div>
-              <div className="space-y-1.5 p-3 rounded-[10px] bg-white border border-[#111111]/15">
+              <div className="space-y-1.5 p-4 rounded-[14px] bg-white border-2 border-[#111111]">
                 {finding.attack_path.map((step, idx) => (
-                  <div key={idx} className="flex items-start gap-2.5 text-[13px] mono text-[#0A0A0A]">
-                    <span className="font-bold text-[#5E5E5E] tabular-nums">{idx + 1}.</span>
+                  <div key={idx} className="flex items-start gap-2.5 text-[13px] mono text-[#111111]">
+                    <span className="font-bold text-[#525252] tabular-nums">{idx + 1}.</span>
                     <span>{step}</span>
                   </div>
                 ))}
@@ -154,49 +154,49 @@ export default function FindingsPage() {
   const handleNavigate = useMemo(() => (id: string) => navigate(`/findings/${id}`), [navigate]);
 
   return (
-    <div className="max-w-[1280px] mx-auto space-y-7 lg:space-y-10 fade-in">
+    <div className="max-w-[1280px] mx-auto space-y-6 lg:space-y-8 fade-in">
       
-      {/* Header with Summary Chips */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 border-b border-[#111111]/20">
-        <div className="space-y-1">
+      {/* Header with Slim Summary Chips */}
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 border-b-2 border-[#111111]">
+        <div className="space-y-1.5">
           <div className="protocol-tag">zorqen://findings/all</div>
           <h1 className="text-page-title">
             Security Findings
           </h1>
-          <p className="text-body text-[14.5px] text-[#555555]">
+          <p className="text-body text-[14.5px] text-[#525252]">
             <strong className="text-[#111111] tabular-nums">{findings.length}</strong> findings registered across the assessed snapshot.
           </p>
         </div>
 
-        {/* Summary Filter Chips */}
+        {/* Summary Slim Filter Chips */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => setSevFilter('critical')}
-            className="chip sev-critical font-bold hover:scale-105 transition-transform"
+            onClick={() => setSevFilter(sevFilter === 'critical' ? 'all' : 'critical')}
+            className={`chip sev-critical font-bold transition-transform cursor-pointer ${sevFilter === 'critical' ? 'ring-2 ring-[#111111]' : ''}`}
           >
             {counts.critical} CRITICAL
           </button>
           <button
-            onClick={() => setSevFilter('high')}
-            className="chip sev-high font-bold hover:scale-105 transition-transform"
+            onClick={() => setSevFilter(sevFilter === 'high' ? 'all' : 'high')}
+            className={`chip sev-high font-bold transition-transform cursor-pointer ${sevFilter === 'high' ? 'ring-2 ring-[#111111]' : ''}`}
           >
             {counts.high} HIGH
           </button>
           <button
-            onClick={() => setSevFilter('medium')}
-            className="chip sev-medium font-bold hover:scale-105 transition-transform"
+            onClick={() => setSevFilter(sevFilter === 'medium' ? 'all' : 'medium')}
+            className={`chip sev-medium font-bold transition-transform cursor-pointer ${sevFilter === 'medium' ? 'ring-2 ring-[#111111]' : ''}`}
           >
             {counts.medium} MEDIUM
           </button>
           <button
-            onClick={() => setSevFilter('low')}
-            className="chip sev-low font-bold hover:scale-105 transition-transform"
+            onClick={() => setSevFilter(sevFilter === 'low' ? 'all' : 'low')}
+            className={`chip sev-low font-bold transition-transform cursor-pointer ${sevFilter === 'low' ? 'ring-2 ring-[#111111]' : ''}`}
           >
             {counts.low} LOW
           </button>
           <button
-            onClick={() => setSevFilter('resolved')}
-            className="chip ok font-bold hover:scale-105 transition-transform"
+            onClick={() => setSevFilter(sevFilter === 'resolved' ? 'all' : 'resolved')}
+            className={`chip ok font-bold transition-transform cursor-pointer ${sevFilter === 'resolved' ? 'ring-2 ring-[#111111]' : ''}`}
           >
             {counts.resolved} RESOLVED
           </button>
@@ -205,41 +205,41 @@ export default function FindingsPage() {
 
       {/* Sticky Filter Bar with Search Input & Controls */}
       <div className="sticky top-[72px] z-20 bg-[#ECEAE4] pt-2 pb-3 space-y-3">
-        {/* Segmented Controls */}
+        {/* Slim Segmented Controls */}
         <div className="flex items-center gap-2 overflow-x-auto scroll-thin pb-1">
           <button
             onClick={() => setSevFilter('all')}
-            className={`btn btn-xs text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'all' ? 'bg-[#111111] text-white' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'all' ? 'bg-[#111111] text-white' : 'bg-white text-[#111111]'}`}
           >
             ALL ({counts.all})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'critical' ? 'all' : 'critical')}
-            className={`btn btn-xs text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'critical' ? 'sev-critical' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'critical' ? 'sev-critical' : 'bg-white text-[#111111]'}`}
           >
             CRITICAL ({counts.critical})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'high' ? 'all' : 'high')}
-            className={`btn btn-xs text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'high' ? 'sev-high' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'high' ? 'sev-high' : 'bg-white text-[#111111]'}`}
           >
             HIGH ({counts.high})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'medium' ? 'all' : 'medium')}
-            className={`btn btn-xs text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'medium' ? 'sev-medium' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'medium' ? 'sev-medium' : 'bg-white text-[#111111]'}`}
           >
             MEDIUM ({counts.medium})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'low' ? 'all' : 'low')}
-            className={`btn btn-xs text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'low' ? 'sev-low' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'low' ? 'sev-low' : 'bg-white text-[#111111]'}`}
           >
             LOW ({counts.low})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'resolved' ? 'all' : 'resolved')}
-            className={`btn btn-xs text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'resolved' ? 'bg-[#C7F11A] text-[#111111]' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'resolved' ? 'bg-[#C8F31D] text-[#111111]' : 'bg-white text-[#111111]'}`}
           >
             RESOLVED ({counts.resolved})
           </button>
@@ -248,35 +248,33 @@ export default function FindingsPage() {
         {/* Integrated Search Input + Status Dropdown */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-4 top-4 text-[#111111]" />
+            <Search className="w-[18px] h-[18px] absolute left-4 top-3.5 text-[#111111] stroke-[2px]" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search findings by title, file path, CWE or endpoint…"
-              className="w-full h-[48px] min-h-[44px] pl-11 pr-8 bg-white border-2 border-[#111111] rounded-[10px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#555555] outline-none focus:ring-2 focus:ring-[#111111] shadow-hard-sm"
+              className="w-full h-[48px] min-h-[44px] pl-11 pr-10 bg-white border-2 border-[#111111] rounded-[14px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#525252] outline-none focus:ring-2 focus:ring-[#111111] shadow-hard-sm"
             />
             {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-3 text-[#555555] min-h-[44px] min-w-[44px] flex items-center justify-center">
-                <X className="w-4 h-4" />
+              <button onClick={() => setQuery('')} className="absolute right-3 top-3 text-[#525252] min-h-[44px] min-w-[44px] flex items-center justify-center">
+                <X className="w-4 h-4 stroke-[2px]" />
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <SlidersHorizontal className="w-4 h-4 text-[#111111] shrink-0" />
+            <SlidersHorizontal className="w-4 h-4 text-[#111111] shrink-0 stroke-[2px]" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-[48px] min-h-[44px] px-4 bg-white border-2 border-[#111111] rounded-[10px] text-[13.5px] font-extrabold text-[#111111] outline-none cursor-pointer shadow-hard-sm"
+              className="h-[48px] rounded-[14px] border-2 border-[#111111] bg-white px-4 font-semibold text-[13.5px] text-[#111111] outline-none shadow-hard-sm"
             >
-              <option value="all">All Statuses</option>
-              <option value="OPEN">Open</option>
-              <option value="REVIEW">Review</option>
-              <option value="FIX_PENDING">Fix Pending</option>
-              <option value="FIX_APPLIED">Fix Applied</option>
-              <option value="VERIFIED">Verified</option>
-              <option value="DISMISSED">Dismissed</option>
+              <option value="all">ALL STATUSES</option>
+              <option value="OPEN">OPEN</option>
+              <option value="FIX_PROPOSED">FIX PROPOSED</option>
+              <option value="VERIFIED">VERIFIED</option>
+              <option value="DISMISSED">DISMISSED</option>
             </select>
           </div>
         </div>
@@ -285,16 +283,16 @@ export default function FindingsPage() {
       {/* Findings List or Useful Verification Empty State */}
       <div className="space-y-4">
         {filteredFindings.length === 0 ? (
-          <div className="p-6 lg:p-8 bg-white border-2 border-[#111111] rounded-[14px] space-y-6 shadow-hard">
+          <div className="p-6 lg:p-8 bg-white border-2 border-[#111111] rounded-[20px] space-y-6 shadow-hard">
             <div className="flex items-center gap-4 text-[#111111]">
-              <div className="w-14 h-14 rounded-full bg-[#C7F11A] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
-                <CheckCircle2 className="w-8 h-8 text-[#111111] stroke-[2.5]" />
+              <div className="w-14 h-14 rounded-full bg-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
+                <CheckCircle2 className="w-7 h-7 text-[#111111] stroke-[2.5]" />
               </div>
               <div>
-                <h3 className="text-card-title text-[22px] lg:text-[26px]">
+                <h3 className="text-card-title text-[20px] lg:text-[24px]">
                   Repository passed validation.
                 </h3>
-                <p className="text-[14.5px] text-[#555555] font-medium leading-relaxed">
+                <p className="text-[14.5px] text-[#525252] font-medium leading-relaxed">
                   All active scan modules returned zero unhandled critical, high, or medium severity vulnerabilities.
                 </p>
               </div>
@@ -302,25 +300,25 @@ export default function FindingsPage() {
 
             {/* Structured Verification Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-              <div className="p-4 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20 space-y-1">
+              <div className="p-4 rounded-[14px] bg-[#F9F8F5] border-2 border-[#111111] space-y-1">
                 <div className="text-metadata text-[11px]">MODULES CHECKED</div>
                 <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">4</div>
-                <div className="text-[12px] text-[#555555] font-medium">AST, AI, Secrets, Sandbox</div>
+                <div className="text-[12px] text-[#525252] font-medium">AST, AI, Secrets, Sandbox</div>
               </div>
 
-              <div className="p-4 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20 space-y-1">
+              <div className="p-4 rounded-[14px] bg-[#F9F8F5] border-2 border-[#111111] space-y-1">
                 <div className="text-metadata text-[11px]">FILES SCANNED</div>
                 <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">153</div>
-                <div className="text-[12px] text-[#555555] font-medium">100% AST call graph covered</div>
+                <div className="text-[12px] text-[#525252] font-medium">100% AST call graph covered</div>
               </div>
 
-              <div className="p-4 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20 space-y-1">
+              <div className="p-4 rounded-[14px] bg-[#F9F8F5] border-2 border-[#111111] space-y-1">
                 <div className="text-metadata text-[11px]">ROUTES ANALYZED</div>
                 <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">42</div>
-                <div className="text-[12px] text-[#555555] font-medium">Endpoints mapped to sinks</div>
+                <div className="text-[12px] text-[#525252] font-medium">Endpoints mapped to sinks</div>
               </div>
 
-              <div className="p-4 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20 space-y-1">
+              <div className="p-4 rounded-[14px] bg-[#F9F8F5] border-2 border-[#111111] space-y-1">
                 <div className="text-metadata text-[11px]">SECRETS FOUND</div>
                 <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">0</div>
                 <div className="text-[12px] font-bold text-[#111111]">Clean baseline verified</div>

@@ -17,12 +17,12 @@ export const MicroStatusCluster: FC<MicroStatusClusterProps> = ({
   const isFailed = status === 'FAILED';
 
   return (
-    <div className={`p-3.5 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-3 text-mono text-[10.5px] ${className}`}>
+    <div className={`p-3.5 rounded-[14px] bg-white border-2 border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-3 text-mono text-[10.5px] ${className}`}>
       <div className="flex items-center gap-4 flex-wrap">
         {/* ENGINE */}
         <div className="flex items-center gap-1.5 font-bold">
-          <span className="text-[#666666] uppercase">ENGINE</span>
-          <span className="text-[#111111] bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111] font-extrabold flex items-center gap-1">
+          <span className="text-[#525252] uppercase">ENGINE</span>
+          <span className="text-[#111111] bg-[#C8F31D] px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] font-extrabold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
             ONLINE
           </span>
@@ -30,9 +30,9 @@ export const MicroStatusCluster: FC<MicroStatusClusterProps> = ({
 
         {/* REPOSITORY */}
         <div className="flex items-center gap-1.5 font-bold">
-          <span className="text-[#666666] uppercase">REPOSITORY</span>
-          <span className={`px-1.5 py-0.5 rounded border border-[#111111] font-extrabold flex items-center gap-1 ${
-            repoConnected || githubConnected ? 'bg-white text-[#111111]' : 'bg-[#FEE2E2] text-[#DC2626]'
+          <span className="text-[#525252] uppercase">REPOSITORY</span>
+          <span className={`px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] font-extrabold flex items-center gap-1 ${
+            repoConnected || githubConnected ? 'bg-[#F7F5F0] text-[#111111]' : 'bg-[#FEE2E2] text-[#DC2626]'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${repoConnected || githubConnected ? 'bg-[#111111]' : 'bg-[#DC2626]'}`} />
             {repoConnected || githubConnected ? 'CONNECTED' : 'DISCONNECTED'}
@@ -41,13 +41,13 @@ export const MicroStatusCluster: FC<MicroStatusClusterProps> = ({
 
         {/* ANALYSIS */}
         <div className="flex items-center gap-1.5 font-bold">
-          <span className="text-[#666666] uppercase">ANALYSIS</span>
-          <span className={`px-1.5 py-0.5 rounded border border-[#111111] font-extrabold flex items-center gap-1 ${
+          <span className="text-[#525252] uppercase">ANALYSIS</span>
+          <span className={`px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] font-extrabold flex items-center gap-1 ${
             isRunning
-              ? 'bg-[#C5F82A] text-[#111111]'
+              ? 'bg-[#C8F31D] text-[#111111]'
               : isFailed
               ? 'bg-[#FEE2E2] text-[#DC2626]'
-              : 'bg-white text-[#111111]'
+              : 'bg-[#F7F5F0] text-[#111111]'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${isFailed ? 'bg-[#DC2626]' : 'bg-[#111111]'}`} />
             {isRunning ? 'ACTIVE' : isFailed ? 'FAILED' : 'COMPLETED'}
@@ -56,8 +56,8 @@ export const MicroStatusCluster: FC<MicroStatusClusterProps> = ({
 
         {/* DATABASE */}
         <div className="flex items-center gap-1.5 font-bold">
-          <span className="text-[#666666] uppercase">DATABASE</span>
-          <span className="text-[#111111] bg-white px-1.5 py-0.5 rounded border border-[#111111] font-extrabold flex items-center gap-1">
+          <span className="text-[#525252] uppercase">DATABASE</span>
+          <span className="text-[#111111] bg-[#F7F5F0] px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] font-extrabold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
             READY
           </span>
@@ -65,8 +65,8 @@ export const MicroStatusCluster: FC<MicroStatusClusterProps> = ({
 
         {/* AI ENGINE */}
         <div className="flex items-center gap-1.5 font-bold">
-          <span className="text-[#666666] uppercase">AI ENGINE</span>
-          <span className="text-[#111111] bg-[#FAFAFA] px-1.5 py-0.5 rounded border border-[#111111] font-extrabold flex items-center gap-1">
+          <span className="text-[#525252] uppercase">AI ENGINE</span>
+          <span className="text-[#111111] bg-[#F7F5F0] px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] font-extrabold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
             {isRunning ? 'PROCESSING' : 'READY'}
           </span>

@@ -15,16 +15,16 @@ export const TechStackSection = memo(function TechStackSection({
   const stackChips = Array.from(new Set(frameworks.filter(f => f && f !== primaryLanguage)));
 
   return (
-    <div className="p-5 rounded-[12px] bg-white border border-[#111111]/20 shadow-hard-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-[#111111]/15 pb-3">
+    <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4">
+      <div className="flex items-center justify-between border-b-2 border-[#111111]/15 pb-3">
         <div className="flex items-center gap-2">
-          <Cpu className="w-4.5 h-4.5 text-[#111111]" />
+          <Cpu className="w-4 h-4 stroke-[2] text-[#111111]" />
           <h3 className="text-metadata text-[11px]">
             DETECTED TECH STACK
           </h3>
         </div>
         {dependenciesCount != null && (
-          <span className="mono text-[11px] font-bold text-[#111111] bg-[#F9F8F5] px-2.5 py-0.5 rounded border border-[#111111]/20">
+          <span className="mono text-[11px] font-bold text-[#111111] bg-[#F7F5F0] px-3 py-1 rounded-full border-[1.5px] border-[#111111]">
             {dependenciesCount} Dependencies Scanned
           </span>
         )}
@@ -33,7 +33,7 @@ export const TechStackSection = memo(function TechStackSection({
       {/* Primary Language & Tech Chips in Responsive Wrap */}
       <div className="flex flex-wrap items-center gap-2.5">
         {/* Primary Language Badge */}
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-[8px] bg-[#C7F11A] border-2 border-[#111111] shadow-hard-sm">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#C8F31D] border-[1.5px] border-[#111111]">
           <span className="mono text-[13px] font-extrabold text-[#111111]">{primaryLanguage}</span>
           <span className="mono text-[10px] font-extrabold text-[#111111]/70 uppercase tracking-wider">(Primary Language)</span>
         </div>
@@ -42,7 +42,7 @@ export const TechStackSection = memo(function TechStackSection({
         {stackChips.map((tech) => (
           <span
             key={tech}
-            className="mono text-[12.5px] font-bold text-[#111111] bg-[#F9F8F5] border border-[#111111]/20 px-3 py-1.5 rounded-[8px]"
+            className="mono text-[12.5px] font-bold text-[#111111] bg-[#F7F5F0] border-[1.5px] border-[#111111] px-3 py-1.5 rounded-full"
           >
             {tech}
           </span>

@@ -201,47 +201,54 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
       aria-label="Command palette"
     >
       <div className="cmd-box border-2 border-[#111111] shadow-hard-lg" onKeyDown={handleKey}>
-        {/* Search Input */}
-        <div className="flex items-center gap-3 px-4 py-1 border-b-2 border-[#111111] bg-white">
-          <Search className="w-5 h-5 shrink-0 text-[#0A0A0A]" />
+        {/* Search Input Bar */}
+        <div className="flex items-center gap-3 px-4 py-2 border-b-2 border-[#111111] bg-white">
+          <Search className="w-5 h-5 shrink-0 text-[#111111] stroke-[2px]" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full h-[52px] bg-transparent border-none outline-none font-sans text-[15px] font-semibold text-[#0A0A0A] placeholder-[#6B6B6B]"
+            className="w-full h-[52px] bg-transparent border-none outline-none font-sans text-[15px] font-semibold text-[#111111] placeholder-[#525252]"
             placeholder="Search repositories, findings, actions, AI prompts…"
             aria-label="Command search"
           />
-          <kbd className="shrink-0">Esc</kbd>
+          <button
+            onClick={onClose}
+            className="sm:hidden w-8 h-8 rounded-[8px] bg-[#F9F8F5] border-1.5 border-[#111111] flex items-center justify-center text-[#111111] shrink-0"
+            aria-label="Close"
+          >
+            <span className="mono text-[11px] font-bold">✕</span>
+          </button>
+          <kbd className="shrink-0 hidden sm:inline-flex">Esc</kbd>
         </div>
 
         {/* Category Quick Chips */}
         {!query && (
-          <div className="px-4 py-2 bg-[#FAFAFA] border-b border-[#111111]/15 flex items-center gap-2 overflow-x-auto scroll-thin">
-            <span className="mono text-[10px] font-extrabold text-[#6B6B6B] uppercase tracking-wider shrink-0">
-              Categories:
+          <div className="px-4 py-2.5 bg-[#F9F8F5] border-b-2 border-[#111111]/20 flex items-center gap-2 overflow-x-auto scroll-thin">
+            <span className="mono text-[10.5px] font-extrabold text-[#525252] uppercase tracking-wider shrink-0">
+              FILTER:
             </span>
             <button
               onClick={() => setQuery('Repositories')}
-              className="mono text-[11px] font-bold bg-white text-[#0A0A0A] px-2.5 py-1 rounded-[6px] border border-[#111111]/20 hover:border-[#111111] shrink-0"
+              className="mono text-[11px] font-bold bg-white text-[#111111] px-3 py-1 rounded-full border-1.5 border-[#111111] hover:bg-[#ECEAE4] transition-colors shrink-0"
             >
               Repositories
             </button>
             <button
               onClick={() => setQuery('Findings')}
-              className="mono text-[11px] font-bold bg-white text-[#0A0A0A] px-2.5 py-1 rounded-[6px] border border-[#111111]/20 hover:border-[#111111] shrink-0"
+              className="mono text-[11px] font-bold bg-white text-[#111111] px-3 py-1 rounded-full border-1.5 border-[#111111] hover:bg-[#ECEAE4] transition-colors shrink-0"
             >
               Findings
             </button>
             <button
               onClick={() => setQuery('Actions')}
-              className="mono text-[11px] font-bold bg-white text-[#0A0A0A] px-2.5 py-1 rounded-[6px] border border-[#111111]/20 hover:border-[#111111] shrink-0"
+              className="mono text-[11px] font-bold bg-white text-[#111111] px-3 py-1 rounded-full border-1.5 border-[#111111] hover:bg-[#ECEAE4] transition-colors shrink-0"
             >
               Actions
             </button>
             <button
               onClick={() => setQuery('Ask ZORQEN')}
-              className="mono text-[11px] font-bold bg-[#C8FF2E] text-[#111111] px-2.5 py-1 rounded-[6px] border border-[#111111] shrink-0"
+              className="mono text-[11px] font-bold bg-[#C8F31D] text-[#111111] px-3 py-1 rounded-full border-1.5 border-[#111111] shrink-0"
             >
               Ask ZORQEN
             </button>
@@ -249,15 +256,15 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
         )}
 
         {/* Scrollable Command List */}
-        <div className="max-h-[380px] overflow-y-auto scroll-thin pb-2">
+        <div className="max-h-[420px] overflow-y-auto scroll-thin pb-2">
           {filtered.length === 0 && (
-            <div className="px-4 py-8 text-center mono text-[12px] text-[#6B6B6B]">
+            <div className="px-4 py-12 text-center mono text-[13px] text-[#525252]">
               No commands match “{query}”
             </div>
           )}
           {Object.entries(groups).map(([group, items]) => (
             <div key={group}>
-              <div className="mono text-[10.5px] font-extrabold tracking-[0.16em] uppercase text-[#6B6B6B] px-4 py-2 bg-[#FAFAFA]">
+              <div className="mono text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#525252] px-4 py-2 bg-[#F9F8F5] border-y border-[#111111]/15">
                 {group}
               </div>
               {items.map((item) => {
@@ -266,23 +273,23 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
                 return (
                   <div
                     key={item.id}
-                    className={`flex items-center justify-between px-4 py-3 cursor-pointer text-[14px] font-semibold transition-all border-l-4 ${
+                    className={`flex items-center justify-between px-4 py-3.5 min-h-[52px] cursor-pointer text-[14px] font-semibold transition-all border-l-4 ${
                       isActive
-                        ? 'bg-[#FAFAFA] text-[#0A0A0A] border-l-[#111111] font-bold'
-                        : 'text-[#333333] border-l-transparent hover:bg-[#FAFAFA]'
+                        ? 'bg-[#F9F8F5] text-[#111111] border-l-[#111111] font-bold'
+                        : 'text-[#333333] border-l-transparent hover:bg-[#F9F8F5]'
                     }`}
                     onClick={() => item.action()}
                     onMouseEnter={() => setActiveIdx(idx)}
                     role="option"
                     aria-selected={isActive}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`${isActive ? 'text-[#111111]' : 'text-[#6B6B6B]'}`}>
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <span className={`w-5 h-5 flex items-center justify-center shrink-0 ${isActive ? 'text-[#111111]' : 'text-[#525252]'}`}>
                         {item.icon}
                       </span>
                       <span className="truncate">{item.label}</span>
                       {item.description && (
-                        <span className="mono text-[11px] text-[#6B6B6B] truncate">— {item.description}</span>
+                        <span className="mono text-[11.5px] text-[#525252] truncate font-normal">— {item.description}</span>
                       )}
                     </div>
                     {item.shortcut && <kbd className="ml-2 shrink-0">{item.shortcut}</kbd>}
@@ -294,14 +301,14 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
         </div>
 
         {/* Footer Shortcut Bar */}
-        <div className="flex items-center gap-4 px-4 py-2.5 bg-[#FAFAFA] border-t-2 border-[#111111]">
-          <span className="mono text-[10px] text-[#6B6B6B] flex items-center gap-1">
+        <div className="flex items-center gap-4 px-4 py-2.5 bg-[#F9F8F5] border-t-2 border-[#111111]">
+          <span className="mono text-[11px] text-[#525252] flex items-center gap-1.5 font-medium">
             <kbd>↑↓</kbd> navigate
           </span>
-          <span className="mono text-[10px] text-[#6B6B6B] flex items-center gap-1">
+          <span className="mono text-[11px] text-[#525252] flex items-center gap-1.5 font-medium">
             <kbd>↵</kbd> select
           </span>
-          <span className="mono text-[10px] text-[#6B6B6B] flex items-center gap-1">
+          <span className="mono text-[11px] text-[#525252] flex items-center gap-1.5 font-medium">
             <kbd>Esc</kbd> close
           </span>
         </div>

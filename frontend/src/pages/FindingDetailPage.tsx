@@ -49,7 +49,7 @@ export default function FindingDetailPage() {
       </div>
 
       {/* Forensic Investigation Header Card */}
-      <div className="p-5 sm:p-7 rounded-[18px] bg-white border-2 border-[#111111] shadow-hard space-y-4">
+      <div className="p-6 sm:p-7 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
             <SevBadge sev={finding.severity} />
@@ -57,7 +57,7 @@ export default function FindingDetailPage() {
               {finding.title.toUpperCase()}
             </h1>
             <span className="chip mono font-bold text-[11px]">{finding.cwe_id}</span>
-            <span className="mono text-[12px] font-extrabold px-2.5 py-1 rounded border border-[#111111] bg-[#C8FF2E] text-[#111111] tabular-nums">
+            <span className="mono text-[12px] font-extrabold px-3 py-1 rounded-full border-[1.5px] border-[#111111] bg-[#C8F31D] text-[#111111] tabular-nums">
               {finding.confidence_pct}% CONFIDENCE
             </span>
             <ValidationBadge v={finding.validation} />
@@ -69,14 +69,14 @@ export default function FindingDetailPage() {
               onClick={() => navigate(`/remediation/${finding.id}`)}
               className="btn btn-accent px-6 py-2.5 text-[13.5px] font-extrabold w-full sm:w-auto justify-center min-h-[44px]"
             >
-              <GitPullRequest className="w-4 h-4 text-[#111111]" />
+              <GitPullRequest className="w-[18px] h-[18px] stroke-[2] text-[#111111]" />
               <span>Review Patch Proposal →</span>
             </button>
           )}
         </div>
 
-        <div className="mono text-[12.5px] font-semibold p-3.5 rounded-[10px] border border-[#111111]/20 bg-[#FAFAFA] text-[#0A0A0A] flex items-center gap-2 flex-wrap break-all tabular-nums">
-          <FileCode className="w-4 h-4 text-[#0A0A0A] shrink-0" />
+        <div className="mono text-[12.5px] font-semibold p-3.5 rounded-[14px] border-2 border-[#111111] bg-[#F7F5F0] text-[#0A0A0A] flex items-center gap-2 flex-wrap break-all tabular-nums">
+          <FileCode className="w-4 h-4 stroke-[2] text-[#0A0A0A] shrink-0" />
           <span className="font-extrabold">{finding.file_path}:{finding.line_number}</span>
           {finding.endpoint && (
             <>
@@ -104,7 +104,7 @@ export default function FindingDetailPage() {
             </span>
           </div>
 
-          <div className="rounded-[16px] border-2 border-[#111111] bg-white shadow-hard overflow-hidden">
+          <div className="rounded-[20px] border-2 border-[#111111] bg-white shadow-hard overflow-hidden">
             <CodeView
               snippet={finding.code.snippet}
               startLine={finding.code.start_line}
@@ -119,41 +119,41 @@ export default function FindingDetailPage() {
         {/* Evidence Matrix & Why It Matters */}
         <div className="space-y-6">
           {/* Why It Matters */}
-          <div className="p-6 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
-            <h3 className="mono text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded border border-[#111111] bg-[#C8FF2E] text-[#111111] inline-block">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <h3 className="mono text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border-[1.5px] border-[#111111] bg-[#C8F31D] text-[#111111] inline-block">
               WHY IT MATTERS
             </h3>
             <p className="text-[14.5px] leading-relaxed font-bold text-[#0A0A0A]">
               {finding.root_cause}
             </p>
-            <p className="text-[13.5px] leading-relaxed font-medium text-[#5E5E5E]">
+            <p className="text-[13.5px] leading-relaxed font-medium text-[#525252]">
               {finding.impact}
             </p>
           </div>
 
           {/* Evidence Matrix */}
-          <div className="p-6 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard space-y-4">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4">
             <h3 className="mono text-[11px] font-extrabold uppercase tracking-wider text-[#0A0A0A]">
               CORROBORATING EVIDENCE MATRIX
             </h3>
 
             <div className="space-y-3">
-              <div className="p-3.5 rounded-[10px] border border-[#111111]/20 bg-[#FAFAFA] space-y-1">
+              <div className="p-4 rounded-[14px] border-2 border-[#111111] bg-[#F7F5F0] space-y-1">
                 <div className="flex items-center gap-2 font-extrabold text-[13px] text-[#0A0A0A]">
-                  <CheckCircle2 className="w-4 h-4 text-[#111111]" />
+                  <CheckCircle2 className="w-4 h-4 stroke-[2] text-[#111111]" />
                   Static Analysis Match
                 </div>
-                <p className="text-[12.5px] text-[#5E5E5E] font-medium leading-snug">
+                <p className="text-[12.5px] text-[#525252] font-medium leading-snug">
                   Semgrep rule <span className="mono text-[11px] font-bold text-[#0A0A0A]">python.sql.injection</span> matched statement at line {finding.line_number}.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-[10px] border border-[#111111]/20 bg-[#FAFAFA] space-y-1">
+              <div className="p-4 rounded-[14px] border-2 border-[#111111] bg-[#F7F5F0] space-y-1">
                 <div className="flex items-center gap-2 font-extrabold text-[13px] text-[#0A0A0A]">
-                  <CheckCircle2 className="w-4 h-4 text-[#111111]" />
+                  <CheckCircle2 className="w-4 h-4 stroke-[2] text-[#111111]" />
                   Runtime Reproduction
                 </div>
-                <p className="text-[12.5px] text-[#5E5E5E] font-medium leading-snug">
+                <p className="text-[12.5px] text-[#525252] font-medium leading-snug">
                   Exploit probe verified via sandboxed container execution probe #0242.
                 </p>
               </div>
@@ -166,14 +166,14 @@ export default function FindingDetailPage() {
       <div className="pt-2">
         <button
           onClick={() => setShowAdvanced((v) => !v)}
-          className="flex items-center justify-between w-full mono text-[12px] font-bold text-[#5E5E5E] hover:text-[#0A0A0A] transition-colors py-2 border-t border-[#111111]/15 group min-h-[44px]"
+          className="flex items-center justify-between w-full mono text-[12px] font-bold text-[#525252] hover:text-[#0A0A0A] transition-colors py-2 border-t-2 border-[#111111] group min-h-[44px]"
         >
           <span>ADVANCED FORENSIC RAW EVIDENCE</span>
-          <ChevronDown className={`w-4 h-4 text-[#6B6B6B] transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-4 h-4 stroke-[2] text-[#525252] transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
         </button>
 
         {showAdvanced && (
-          <div className="mt-3 p-4 rounded-[12px] bg-[#FAFAFA] border border-[#111111]/20 mono text-[11px] text-[#333333] space-y-2 fade-in">
+          <div className="mt-3 p-4 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] mono text-[11px] text-[#333333] space-y-2 fade-in">
             <div>AST Node: FunctionDef login (line {finding.line_number})</div>
             <div>Confidence score: {finding.confidence_pct}%</div>
             <div>Rule ID: {finding.cwe_id}</div>

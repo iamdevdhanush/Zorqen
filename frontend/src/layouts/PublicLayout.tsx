@@ -53,7 +53,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   className={({ isActive }) =>
                     `px-2.5 xl:px-3.5 py-1.5 rounded-md text-[12.5px] font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#111111] ${
                       isActive
-                        ? 'bg-[#C5F82A] text-[#111111] border border-[#111111] shadow-hard-sm'
+                        ? 'bg-[#C8F31D] text-[#111111] border border-[#111111] shadow-hard-sm'
                         : 'text-[#555555] hover:text-[#111111] hover:bg-black/5 border border-transparent'
                     }`
                   }
@@ -67,17 +67,17 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               to="/"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#111111] bg-[#C5F82A] shadow-hard-sm text-[12px] font-bold text-[#111111] hover:bg-[#B4EA1B] transition-all"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-md border-2 border-[#111111] bg-[#C8F31D] shadow-hard-sm text-[12px] font-bold text-[#111111] hover:bg-[#B8E316] transition-all min-h-[44px]"
             >
               <span>Open Console</span>
             </Link>
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="flex lg:hidden items-center justify-center p-2 rounded-md border border-[#111111] bg-white shadow-hard-sm text-[#111111] hover:bg-[#FAFAFA] transition-all"
+              className="flex lg:hidden items-center justify-center p-2 rounded-md border-2 border-[#111111] bg-white shadow-hard-sm text-[#111111] hover:bg-[#FAFAFA] transition-all min-w-[44px] min-h-[44px] cursor-pointer"
               aria-label="Toggle product navigation"
               aria-expanded={mobileOpen}
             >
-              {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {mobileOpen ? <X className="w-5 h-5 stroke-[2]" /> : <Menu className="w-5 h-5 stroke-[2]" />}
             </button>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   className={({ isActive }) =>
                     `px-4 py-2 rounded-md text-[13.5px] font-bold transition-all flex items-center justify-between ${
                       isActive
-                        ? 'bg-[#C5F82A] text-[#111111] border border-[#111111] shadow-hard-sm'
+                        ? 'bg-[#C8F31D] text-[#111111] border border-[#111111] shadow-hard-sm'
                         : 'text-[#333333] hover:bg-black/5 border border-transparent'
                     }`
                   }

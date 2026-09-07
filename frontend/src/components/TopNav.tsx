@@ -98,10 +98,10 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             {/* Search Trigger */}
             <button
               onClick={onOpenCmd}
-              className="flex items-center gap-2 h-[48px] px-4 rounded-[10px] border-2 border-[#111111] bg-[#F9F8F5] shadow-hard-sm text-[13.5px] font-extrabold text-[#111111] hover:bg-white transition-all min-h-[44px] min-w-[44px]"
+              className="flex items-center gap-2 h-[48px] px-4 rounded-[12px] border-2 border-[#111111] bg-[#F9F8F5] shadow-hard-sm text-[13.5px] font-extrabold text-[#111111] hover:bg-white hover:-translate-y-0.5 transition-all min-h-[44px] min-w-[44px]"
               title="Open Command Palette"
             >
-              <Search className="w-4 h-4 shrink-0 text-[#111111]" />
+              <Search className="w-[18px] h-[18px] shrink-0 text-[#111111] stroke-[2px]" />
               <span>Search</span>
               <kbd className="ml-1 leading-none text-[10px] hidden lg:inline-flex">{IS_MAC ? '⌘K' : 'Ctrl K'}</kbd>
             </button>
@@ -109,87 +109,87 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             {/* Ask ZORQEN Copilot Button */}
             <button
               onClick={() => { closeMobileMenu(); setCopilotOpen(!copilotOpen); }}
-              className={`flex items-center gap-2 h-[48px] min-h-[44px] min-w-[44px] px-4 rounded-[10px] text-[13.5px] font-extrabold border-2 border-[#111111] transition-all ${
+              className={`flex items-center gap-2 h-[48px] min-h-[44px] min-w-[44px] px-4 rounded-[12px] text-[13.5px] font-extrabold border-2 border-[#111111] transition-all hover:-translate-y-0.5 ${
                 copilotOpen
                   ? 'bg-[#111111] text-white shadow-hard-lime'
-                  : 'bg-white text-[#111111] shadow-hard-sm hover:bg-[#C7F11A]'
+                  : 'bg-white text-[#111111] shadow-hard-sm hover:bg-[#C8F31D]'
               }`}
             >
-              <Bot className={`w-4 h-4 shrink-0 ${copilotOpen ? 'text-[#C7F11A]' : 'text-[#111111]'}`} />
+              <Bot className={`w-[18px] h-[18px] shrink-0 stroke-[2px] ${copilotOpen ? 'text-[#C8F31D]' : 'text-[#111111]'}`} />
               <span>Ask ZORQEN</span>
             </button>
 
-            {/* Desktop Account Dropdown (320px width) */}
+            {/* Desktop Account Dropdown (264px width) */}
             <Dropdown
               align="right"
               trigger={(open) => (
                 <div
-                  className={`flex items-center gap-2.5 px-3.5 h-[48px] min-h-[44px] min-w-[44px] rounded-[10px] border-2 border-[#111111] transition-all cursor-pointer select-none shadow-hard-sm ${
-                    open ? 'bg-[#C7F11A] text-[#111111]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'
+                  className={`flex items-center gap-2.5 px-3 h-[48px] min-h-[44px] min-w-[44px] rounded-[12px] border-2 border-[#111111] transition-all cursor-pointer select-none shadow-hard-sm hover:-translate-y-0.5 ${
+                    open ? 'bg-[#C8F31D] text-[#111111]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'
                   }`}
                   title="Account Menu"
                   aria-label="Open Account Menu"
                 >
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="w-6 h-6 rounded-full border border-[#111111]/30 object-cover shrink-0" />
+                    <img src={avatarUrl} alt="" className="w-7 h-7 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-[#111111] text-[#C7F11A] flex items-center justify-center shrink-0">
-                      <GithubIcon className="w-3.5 h-3.5 text-[#C7F11A]" />
+                    <div className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] flex items-center justify-center shrink-0">
+                      <GithubIcon className="w-4 h-4 text-[#C8F31D]" />
                     </div>
                   )}
-                  <span className="text-[13.5px] font-extrabold max-w-[120px] truncate">
+                  <span className="text-[13.5px] font-extrabold max-w-[110px] truncate">
                     {displayName}
                   </span>
                 </div>
               )}
             >
               {(close) => (
-                <div className="w-[320px] font-sans overflow-hidden bg-white border-2 border-[#111111] rounded-[14px] shadow-hard-lg" onClick={(e) => e.stopPropagation()}>
-                  <div className="p-4 bg-[#F9F8F5] border-b-2 border-[#111111] space-y-3">
+                <div className="w-[264px] font-sans overflow-hidden bg-white border-2 border-[#111111] rounded-[20px] shadow-hard-lg" onClick={(e) => e.stopPropagation()}>
+                  <div className="p-3.5 bg-[#F9F8F5] border-b-2 border-[#111111]">
                     <div className="flex items-center gap-3">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="" className="w-11 h-11 rounded-full border-2 border-[#111111] object-cover shrink-0" />
+                        <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                       ) : (
-                        <div className="w-11 h-11 rounded-full bg-[#111111] text-[#C7F11A] border-2 border-[#111111] flex items-center justify-center shrink-0">
-                          <GithubIcon className="w-5 h-5 text-[#C7F11A]" />
+                        <div className="w-10 h-10 rounded-full bg-[#111111] text-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shrink-0">
+                          <GithubIcon className="w-5 h-5 text-[#C8F31D]" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1 leading-snug">
-                        <div className="font-extrabold text-[15px] text-[#111111] truncate">
+                        <div className="font-extrabold text-[14px] text-[#111111] truncate">
                           {displayName}
                         </div>
-                        <div className="mono text-[12px] font-bold text-[#555555] truncate">
+                        <div className="mono text-[11.5px] font-bold text-[#525252] truncate">
                           {displayHandle}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-2 space-y-1 bg-white border-b-2 border-[#111111]/15">
+                  <div className="p-2 space-y-1 bg-white border-b-2 border-[#111111]">
                     <a
                       href={profileUrl}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => close()}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-[8px] text-[13px] font-bold text-[#111111] hover:bg-[#F9F8F5] transition-all min-h-[44px]"
+                      className="flex items-center justify-between px-3 py-2 rounded-[10px] text-[13px] font-bold text-[#111111] hover:bg-[#F9F8F5] transition-all min-h-[44px]"
                     >
                       <div className="flex items-center gap-2.5">
                         <GithubIcon className="w-4 h-4 text-[#111111]" />
                         <span>GitHub Profile</span>
                       </div>
-                      <ExternalLink className="w-3.5 h-3.5 text-[#555555]" />
+                      <ExternalLink className="w-3.5 h-3.5 text-[#525252] stroke-[2px]" />
                     </a>
 
                     <button
                       type="button"
                       onClick={() => { close(); navigate('/settings'); }}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-[8px] text-[13px] font-bold text-[#111111] hover:bg-[#F9F8F5] transition-all min-h-[44px]"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-[10px] text-[13px] font-bold text-[#111111] hover:bg-[#F9F8F5] transition-all min-h-[44px]"
                     >
                       <div className="flex items-center gap-2.5">
-                        <UserCheck className="w-4 h-4 text-[#111111]" />
+                        <UserCheck className="w-[18px] h-[18px] text-[#111111] stroke-[2px]" />
                         <span>Account Settings</span>
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#555555]" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[#525252] stroke-[2px]" />
                     </button>
                   </div>
 
@@ -198,16 +198,16 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       <button
                         type="button"
                         onClick={() => { close(); signOut(); }}
-                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-[8px] text-[13px] font-extrabold text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FCA5A5] border border-[#DC2626]/30 transition-all min-h-[44px]"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-[10px] text-[13px] font-extrabold text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FCA5A5] border-2 border-[#DC2626]/30 transition-all min-h-[44px]"
                       >
                         <span>Sign Out</span>
-                        <LogOut className="w-4 h-4" />
+                        <LogOut className="w-4 h-4 stroke-[2px]" />
                       </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => { close(); setGithubModalOpen(true); }}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-[8px] text-[13px] font-extrabold text-[#111111] bg-[#C7F11A] border-2 border-[#111111] hover:bg-[#b8e010] transition-all min-h-[44px]"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[10px] text-[13px] font-extrabold text-[#111111] bg-[#C8F31D] border-2 border-[#111111] hover:bg-[#B8E316] transition-all min-h-[44px]"
                       >
                         <GithubIcon className="w-4 h-4 text-[#111111]" />
                         <span>Connect GitHub Account</span>
@@ -240,21 +240,21 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               title="Ask ZORQEN"
               aria-label="Ask ZORQEN"
             >
-              <Bot className={`w-5 h-5 ${copilotOpen ? 'text-[#C7F11A]' : 'text-[#111111]'}`} />
+              <Bot className={`w-5 h-5 stroke-[2] ${copilotOpen ? 'text-[#C8F31D]' : 'text-[#111111]'}`} />
             </button>
 
             {/* Profile Avatar trigger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center justify-center h-[44px] w-[44px] min-w-[44px] min-h-[44px] rounded-[10px] border-2 border-[#111111] bg-white overflow-hidden shadow-hard-sm"
+              className="flex items-center justify-center h-[44px] w-[44px] min-w-[44px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-white overflow-hidden shadow-hard-sm cursor-pointer"
               title="Profile"
               aria-label="Open profile drawer"
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-[#111111] text-[#C7F11A] flex items-center justify-center">
-                  <GithubIcon className="w-5 h-5 text-[#C7F11A]" />
+                <div className="w-full h-full bg-[#111111] text-[#C8F31D] flex items-center justify-center">
+                  <GithubIcon className="w-5 h-5 text-[#C8F31D]" />
                 </div>
               )}
             </button>
@@ -262,11 +262,11 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             {/* Menu Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="flex items-center justify-center h-[44px] w-[44px] min-w-[44px] min-h-[44px] rounded-[10px] border-2 border-[#111111] bg-[#C7F11A] text-[#111111] shadow-hard-sm transition-all active:translate-y-0.5"
+              className="flex items-center justify-center h-[44px] w-[44px] min-w-[44px] min-h-[44px] rounded-[12px] border-2 border-[#111111] bg-[#C8F31D] hover:bg-[#B8E316] text-[#111111] shadow-hard-sm transition-all active:translate-y-0.5 cursor-pointer"
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6 stroke-[2.5]" /> : <Menu className="w-6 h-6 stroke-[2.5]" />}
+              {mobileMenuOpen ? <X className="w-6 h-6 stroke-[2]" /> : <Menu className="w-6 h-6 stroke-[2]" />}
             </button>
           </div>
 
@@ -284,33 +284,33 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               <div className="w-12 h-1.5 bg-[#111111]/40 rounded-full mx-auto" />
 
               <div className="flex items-center justify-between pb-2 border-b-2 border-[#111111]/20">
-                <span className="mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0A0A0A] bg-[#C8FF2E] px-2.5 py-0.5 rounded-[6px] border border-[#111111]">
+                <span className="mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111] bg-[#C8F31D] px-2.5 py-0.5 rounded-full border-1.5 border-[#111111]">
                   NAVIGATION & PROFILE
                 </span>
                 <button
                   onClick={closeMobileMenu}
-                  className="flex items-center justify-center w-[44px] h-[44px] min-w-[44px] min-h-[44px] rounded-[8px] text-[#0A0A0A] hover:bg-[#EAEAE2] border-2 border-transparent hover:border-[#111111]"
+                  className="flex items-center justify-center w-[44px] h-[44px] min-w-[44px] min-h-[44px] rounded-[10px] text-[#111111] hover:bg-[#EAEAE2] border-2 border-transparent hover:border-[#111111]"
                   aria-label="Close menu"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 stroke-[2px]" />
                 </button>
               </div>
 
               {/* Profile Card */}
-              <div className="flex items-center gap-3 p-4 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard-sm">
+              <div className="flex items-center gap-3 p-4 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard-sm">
                 {profileLoading ? (
                   <div className="w-12 h-12 rounded-full bg-[#EAEAE2] animate-pulse border-2 border-[#111111]" />
                 ) : avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-12 h-12 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-[#111111] text-[#C8FF2E] border-2 border-[#111111] flex items-center justify-center shrink-0">
-                    <GithubIcon className="w-6 h-6 text-[#C8FF2E]" />
+                  <div className="w-12 h-12 rounded-full bg-[#111111] text-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shrink-0">
+                    <GithubIcon className="w-6 h-6 text-[#C8F31D]" />
                   </div>
                 )}
 
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-[16px] font-extrabold text-[#0A0A0A] truncate leading-snug">{displayName}</h2>
-                  <div className="mono text-[12px] font-bold text-[#5E5E5E] truncate">{displayHandle}</div>
+                  <h2 className="text-[16px] font-extrabold text-[#111111] truncate leading-snug">{displayName}</h2>
+                  <div className="mono text-[12px] font-bold text-[#525252] truncate">{displayHandle}</div>
                 </div>
 
                 <a
@@ -318,7 +318,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                   target="_blank"
                   rel="noreferrer"
                   onClick={closeMobileMenu}
-                  className="mono text-[11px] font-bold text-[#0A0A0A] bg-[#FAFAFA] px-2.5 py-1 rounded-[8px] border border-[#111111] shrink-0"
+                  className="mono text-[11px] font-bold text-[#111111] bg-[#FAFAFA] px-3 py-1.5 rounded-full border-1.5 border-[#111111] shrink-0"
                 >
                   Profile
                 </a>
@@ -335,13 +335,13 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                     className={({ isActive }) =>
                       `px-4 h-[48px] min-h-[44px] rounded-[12px] text-[15px] font-extrabold transition-all flex items-center justify-between ${
                         isActive
-                          ? 'bg-[#C8FF2E] text-[#111111] border-2 border-[#111111] shadow-hard-sm'
-                          : 'bg-white text-[#0A0A0A] border-2 border-[#111111]/15 hover:border-[#111111]'
+                          ? 'bg-[#C8F31D] text-[#111111] border-2 border-[#111111] shadow-hard-sm'
+                          : 'bg-white text-[#111111] border-2 border-[#111111]/20 hover:border-[#111111]'
                       }`
                     }
                   >
                     <span>{item.label}</span>
-                    <ChevronRight className="w-5 h-5 text-[#0A0A0A]" />
+                    <ChevronRight className="w-5 h-5 text-[#111111] stroke-[2px]" />
                   </NavLink>
                 ))}
               </nav>
@@ -355,14 +355,14 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                     setCopilotOpen(!copilotOpen);
                   }}
                   className={`flex items-center justify-between px-4 h-[48px] min-h-[44px] rounded-[12px] border-2 border-[#111111] text-[14px] font-extrabold shadow-hard-sm transition-all ${
-                    copilotOpen ? 'bg-[#111111] text-white' : 'bg-white text-[#0A0A0A] hover:bg-[#C8FF2E]'
+                    copilotOpen ? 'bg-[#111111] text-white' : 'bg-white text-[#111111] hover:bg-[#C8F31D]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Bot className={`w-5 h-5 ${copilotOpen ? 'text-[#C8FF2E]' : 'text-[#0A0A0A]'}`} />
+                    <Bot className={`w-5 h-5 stroke-[2px] ${copilotOpen ? 'text-[#C8F31D]' : 'text-[#111111]'}`} />
                     <span>Ask ZORQEN</span>
                   </div>
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5 stroke-[2px]" />
                 </button>
 
                 <button

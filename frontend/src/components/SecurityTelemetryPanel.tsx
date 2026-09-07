@@ -37,94 +37,94 @@ export const SecurityTelemetryPanel: FC<SecurityTelemetryPanelProps> = ({
     : 88.5;
 
   return (
-    <div className={`p-4 sm:p-5 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3 ${className}`}>
-      <div className="flex items-center justify-between border-b border-[#111111] pb-2.5">
+    <div className={`p-5 sm:p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4 ${className}`}>
+      <div className="flex items-center justify-between border-b-2 border-[#111111] pb-3">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#111111]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#111111]" />
           <span className="mono text-[11px] font-extrabold text-[#111111] uppercase tracking-wider">
             SECURITY TELEMETRY PANEL
           </span>
         </div>
-        <span className="mono text-[10px] text-[#666666] font-bold">
+        <span className="mono text-[10px] text-[#525252] font-bold">
           REAL-TIME INSPECTION
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Metric 1: Files Analyzed */}
-        <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#111111] space-y-1">
-          <div className="mono text-[9.5px] font-extrabold text-[#555555] uppercase tracking-wider">
+        <div className="p-3.5 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1">
+          <div className="mono text-[9.5px] font-extrabold text-[#525252] uppercase tracking-wider">
             FILES ANALYZED
           </div>
           <div className="mono text-[17px] font-extrabold text-[#111111] leading-tight">
             {totalFiles > 0 ? totalFiles.toLocaleString() : '—'}
           </div>
-          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111] inline-block">
+          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C8F31D] px-2 py-0.5 rounded-full border-[1.5px] border-[#111111] inline-block">
             {totalFiles > 0 ? 'INDEXED' : 'SCANNING'}
           </div>
         </div>
 
         {/* Metric 2: Dependencies */}
-        <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#111111] space-y-1">
-          <div className="mono text-[9.5px] font-extrabold text-[#555555] uppercase tracking-wider">
+        <div className="p-3.5 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1">
+          <div className="mono text-[9.5px] font-extrabold text-[#525252] uppercase tracking-wider">
             DEPENDENCIES
           </div>
           <div className="mono text-[17px] font-extrabold text-[#111111] leading-tight">
             {dependencies > 0 ? dependencies : '—'}
           </div>
-          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111] inline-block">
+          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C8F31D] px-2 py-0.5 rounded-full border-[1.5px] border-[#111111] inline-block">
             {dependencies > 0 ? 'SCANNED' : 'RESOLVING'}
           </div>
         </div>
 
         {/* Metric 3: Entry Points */}
-        <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#111111] space-y-1">
-          <div className="mono text-[9.5px] font-extrabold text-[#555555] uppercase tracking-wider">
+        <div className="p-3.5 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1">
+          <div className="mono text-[9.5px] font-extrabold text-[#525252] uppercase tracking-wider">
             ENTRY POINTS
           </div>
           <div className="mono text-[17px] font-extrabold text-[#111111] leading-tight">
             {entryPoints > 0 ? entryPoints : '—'}
           </div>
-          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111] inline-block">
+          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C8F31D] px-2 py-0.5 rounded-full border-[1.5px] border-[#111111] inline-block">
             {entryPoints > 0 ? 'MAPPED' : 'ANALYZING'}
           </div>
         </div>
 
         {/* Metric 4: Patterns Detected */}
-        <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#111111] space-y-1">
-          <div className="mono text-[9.5px] font-extrabold text-[#555555] uppercase tracking-wider">
+        <div className="p-3.5 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1">
+          <div className="mono text-[9.5px] font-extrabold text-[#525252] uppercase tracking-wider">
             PATTERNS DETECTED
           </div>
           <div className="mono text-[17px] font-extrabold text-[#111111] leading-tight">
             {patternsDetected}
           </div>
-          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#FAFAFA] border border-[#111111] px-1.5 py-0.5 rounded inline-block">
+          <div className="mono text-[9px] font-extrabold text-[#111111] bg-white border-[1.5px] border-[#111111] px-2 py-0.5 rounded-full inline-block">
             EVALUATED
           </div>
         </div>
 
         {/* Metric 5: Threat Paths */}
-        <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#111111] space-y-1">
-          <div className="mono text-[9.5px] font-extrabold text-[#555555] uppercase tracking-wider">
+        <div className="p-3.5 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1">
+          <div className="mono text-[9.5px] font-extrabold text-[#525252] uppercase tracking-wider">
             THREAT PATHS
           </div>
           <div className="mono text-[17px] font-extrabold text-[#111111] leading-tight">
             {threatPaths}
           </div>
-          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#FAFAFA] border border-[#111111] px-1.5 py-0.5 rounded inline-block">
+          <div className="mono text-[9px] font-extrabold text-[#111111] bg-white border-[1.5px] border-[#111111] px-2 py-0.5 rounded-full inline-block">
             CORRELATED
           </div>
         </div>
 
         {/* Metric 6: Confidence / Posture Score */}
-        <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#111111] space-y-1">
-          <div className="mono text-[9.5px] font-extrabold text-[#555555] uppercase tracking-wider">
+        <div className="p-3.5 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] space-y-1">
+          <div className="mono text-[9.5px] font-extrabold text-[#525252] uppercase tracking-wider">
             CONFIDENCE
           </div>
           <div className="mono text-[17px] font-extrabold text-[#111111] leading-tight">
             {avgConfidence}%
           </div>
-          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C5F82A] px-1.5 py-0.5 rounded border border-[#111111] inline-block">
+          <div className="mono text-[9px] font-extrabold text-[#111111] bg-[#C8F31D] px-2 py-0.5 rounded-full border-[1.5px] border-[#111111] inline-block">
             VALIDATED
           </div>
         </div>

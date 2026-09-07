@@ -62,27 +62,27 @@ export default function ZorqenChecksSection() {
       </div>
 
       {/* 3-Column Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CHECKS_DATA.map((item, idx) => {
           const Icon = item.icon;
           return (
             <div
               key={idx}
-              className="p-4.5 rounded-[12px] bg-white border border-[#111111]/20 shadow-hard-sm space-y-2.5 transition-all duration-150 interactive-card"
+              className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg interactive-card"
             >
               <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-[8px] bg-[#C7F11A] border-2 border-[#111111] flex items-center justify-center text-[#111111]">
-                  <Icon className="w-4 h-4" strokeWidth={2.2} />
+                <div className="w-10 h-10 rounded-[12px] bg-[#C8F31D] border-2 border-[#111111] flex items-center justify-center text-[#111111] shadow-hard-sm">
+                  <Icon className="w-5 h-5 stroke-[2]" />
                 </div>
-                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#F9F8F5] px-2 py-0.5 rounded border border-[#111111]/30">
+                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#F7F5F0] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111]">
                   {item.num}
                 </span>
               </div>
               <div>
                 <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight">{item.title}</h3>
-                <div className="mono text-[10.5px] text-[#555555] font-semibold">{item.subtitle}</div>
+                <div className="mono text-[11px] text-[#525252] font-semibold">{item.subtitle}</div>
               </div>
-              <p className="text-[13px] text-[#333333] leading-snug font-normal line-clamp-2">{item.desc}</p>
+              <p className="text-[13px] text-[#525252] leading-relaxed font-medium line-clamp-2">{item.desc}</p>
             </div>
           );
         })}

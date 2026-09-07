@@ -37,12 +37,12 @@ export const PipelineSystemStatus: FC<PipelineSystemStatusProps> = ({
               key={step.id || idx}
               className={`p-3.5 rounded-[14px] text-left space-y-2 transition-all relative overflow-hidden ${
                 isRun
-                  ? 'border-2 border-[#111111] bg-[#C8FF2E] shadow-hard-sm'
+                  ? 'border-2 border-[#111111] bg-[#C8F31D] shadow-hard-sm'
                   : isDone
                   ? 'border-2 border-[#111111] bg-white shadow-hard-sm'
                   : isFailed
                   ? 'border-2 border-[#111111] bg-[#FEE2E2]'
-                  : 'border-1.5 border-[#111111]/30 bg-[#FAFAFA]'
+                  : 'border-2 border-[#111111]/20 bg-[#F7F5F0]'
               }`}
             >
               <div className="flex items-center justify-between">

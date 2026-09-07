@@ -72,11 +72,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto p-3.5 rounded-[12px] border-2 border-[#111111] shadow-hard-lg flex items-center justify-between gap-3 transition-all duration-200 ${
+              className={`pointer-events-auto p-4 rounded-[14px] border-2 border-[#111111] shadow-hard-lg flex items-center justify-between gap-3 transition-all duration-200 ${
                 t.exiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0 slide-up'
               } ${
                 isSuccess
-                  ? 'bg-[#C8FF2E] text-[#111111]'
+                  ? 'bg-[#C8F31D] text-[#111111]'
                   : isError
                   ? 'bg-[#FEE2E2] text-[#DC2626]'
                   : isWarn
@@ -87,23 +87,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 {isSuccess ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#111111] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 stroke-[2] text-[#111111] shrink-0" />
                 ) : isError ? (
-                  <ShieldAlert className="w-4 h-4 text-[#DC2626] shrink-0" />
+                  <ShieldAlert className="w-4 h-4 stroke-[2] text-[#DC2626] shrink-0" />
                 ) : isWarn ? (
-                  <AlertTriangle className="w-4 h-4 text-[#B45309] shrink-0" />
+                  <AlertTriangle className="w-4 h-4 stroke-[2] text-[#B45309] shrink-0" />
                 ) : (
-                  <Info className="w-4 h-4 text-[#0A0A0A] shrink-0" />
+                  <Info className="w-4 h-4 stroke-[2] text-[#0A0A0A] shrink-0" />
                 )}
                 <span className="mono text-[12px] font-bold leading-snug truncate">{t.message}</span>
               </div>
 
               <button
                 onClick={() => dismiss(t.id)}
-                className="w-6 h-6 rounded-[4px] flex items-center justify-center hover:bg-black/10 transition-colors shrink-0"
+                className="w-7 h-7 rounded-[6px] flex items-center justify-center hover:bg-black/10 transition-colors shrink-0 cursor-pointer"
                 aria-label="Dismiss notification"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4 stroke-[2]" />
               </button>
             </div>
           );

@@ -43,7 +43,7 @@ function SkeletonTree() {
         { indent: 4, width: 'w-40', isDir: false },
       ].map((item, idx) => (
         <div key={idx} className="flex items-center gap-2.5 animate-pulse" style={{ paddingLeft: `${item.indent * 3}px` }}>
-          <div className={`w-4 h-4 rounded bg-[#111111]/15 ${item.isDir ? 'bg-[#C8FF2E]' : ''}`} />
+          <div className={`w-4 h-4 rounded bg-[#111111]/15 ${item.isDir ? 'bg-[#C8F31D]' : ''}`} />
           <div className={`h-3.5 bg-[#111111]/15 rounded ${item.width}`} />
         </div>
       ))}
@@ -171,30 +171,30 @@ export default function RepositoryDetailPage() {
       </div>
 
       {/* Target Repository Hero */}
-      <div className="bg-white border border-[#111111]/20 rounded-[14px] p-6 lg:p-8 shadow-hard-sm space-y-6">
+      <div className="bg-white border-2 border-[#111111] rounded-[20px] p-6 lg:p-8 shadow-hard space-y-6">
         
         {/* Repository Name & Protocol */}
         <div className="space-y-2">
           <div className="protocol-tag">zorqen://repository/{repo.owner}/{repo.name}</div>
-          <h1 className="text-page-title text-[32px] lg:text-[44px] truncate">
+          <h1 className="text-page-title text-[32px] lg:text-[40px] truncate">
             {repo.owner}/{repo.name}
           </h1>
 
           {/* Metadata Badges */}
           <div className="flex items-center gap-2 text-[13px] font-bold text-[#111111] flex-wrap">
-            <span className="mono bg-[#F9F8F5] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] uppercase text-[11px]">
+            <span className="mono bg-[#F7F5F0] border-[1.5px] border-[#111111] px-2.5 py-0.5 rounded-full uppercase text-[11px]">
               {repo.private ? 'PRIVATE' : 'PUBLIC'}
             </span>
             <span className="text-[#111111]/30">•</span>
-            <span className="mono bg-[#F9F8F5] border border-[#111111]/20 px-2.5 py-0.5 rounded-[6px] text-[11px]">
+            <span className="mono bg-[#F7F5F0] border-[1.5px] border-[#111111] px-2.5 py-0.5 rounded-full text-[11px]">
               {repo.language || 'Python'}
             </span>
             <span className="text-[#111111]/30">•</span>
-            <span className="mono text-[12px] text-[#555555] font-semibold tabular-nums">
+            <span className="mono text-[12px] text-[#525252] font-semibold tabular-nums">
               branch: <strong className="text-[#111111]">{detail?.defaultBranch ?? repo.defaultBranch}</strong>
             </span>
             <span className="text-[#111111]/30">•</span>
-            <span className="mono text-[12px] text-[#555555] font-semibold tabular-nums">
+            <span className="mono text-[12px] text-[#525252] font-semibold tabular-nums">
               commit: <strong className="text-[#111111]">{(detail?.headCommit ?? repo.commit ?? '').slice(0, 7) || 'HEAD'}</strong>
             </span>
           </div>
@@ -208,14 +208,14 @@ export default function RepositoryDetailPage() {
               disabled={running}
               className="btn btn-accent px-8 h-[48px] text-[15px] font-extrabold shadow-hard flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px]"
             >
-              <Play className="w-4.5 h-4.5 fill-[#111111] text-[#111111]" />
+              <Play className="w-[18px] h-[18px] stroke-[2] fill-[#111111] text-[#111111]" />
               <span>{running ? 'Assessment Running…' : 'Run Security Assessment'}</span>
-              <ArrowRight className="w-4.5 h-4.5 text-[#111111]" />
+              <ArrowRight className="w-[18px] h-[18px] stroke-[2] text-[#111111]" />
             </button>
           </div>
 
           {/* Status beneath CTA (non-button indicator) */}
-          <div className="p-3.5 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20">
+          <div className="p-4 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111]">
             <AssessmentStateCard run={currentAssessment} />
           </div>
         </div>
@@ -272,13 +272,13 @@ export default function RepositoryDetailPage() {
         <div className="col-span-12 lg:col-span-8 space-y-6">
           
           {/* Repository Tree Explorer */}
-          <div className="bg-white border border-[#111111]/20 rounded-[12px] overflow-hidden shadow-hard-sm">
-            <div className="px-5 py-3.5 bg-[#F9F8F5] border-b border-[#111111]/20 flex items-center justify-between">
+          <div className="bg-white border-2 border-[#111111] rounded-[20px] overflow-hidden shadow-hard">
+            <div className="px-6 py-4 bg-[#F7F5F0] border-b-2 border-[#111111] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FolderTree className="w-4 h-4 text-[#111111]" />
+                <FolderTree className="w-4 h-4 stroke-[2] text-[#111111]" />
                 <span className="font-extrabold text-[14px] text-[#111111]">Repository Explorer</span>
               </div>
-              <span className="mono text-[11px] font-semibold text-[#555555]">
+              <span className="mono text-[11px] font-semibold text-[#525252]">
                 {detail ? `${detail.fileCount} files · HEAD` : 'Indexing tree…'}
               </span>
             </div>
@@ -287,12 +287,12 @@ export default function RepositoryDetailPage() {
               <SkeletonTree />
             ) : detailError ? (
               <div className="p-6 space-y-4 text-center bg-white">
-                <div className="w-10 h-10 rounded-full bg-[#F9F8F5] border border-[#111111] flex items-center justify-center mx-auto text-[#111111]">
-                  <FolderTree className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-full bg-[#F7F5F0] border-2 border-[#111111] flex items-center justify-center mx-auto text-[#111111]">
+                  <FolderTree className="w-5 h-5 stroke-[2]" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-[15px] font-extrabold text-[#111111]">Repository Tree Metadata Pending</div>
-                  <div className="text-body text-[13px] text-[#555555] max-w-[400px] mx-auto">
+                  <div className="text-body text-[13px] text-[#525252] max-w-[400px] mx-auto">
                     Last sync time: 5m ago · Reconnect or refresh metadata to fetch the latest AST call graph.
                   </div>
                 </div>
@@ -318,49 +318,49 @@ export default function RepositoryDetailPage() {
           </div>
 
           {/* Files with Findings Table */}
-          <div className="bg-white border border-[#111111]/20 rounded-[12px] overflow-hidden shadow-hard-sm">
-            <div className="px-5 py-3.5 bg-[#F9F8F5] border-b border-[#111111]/20 flex items-center justify-between">
+          <div className="bg-white border-2 border-[#111111] rounded-[20px] overflow-hidden shadow-hard">
+            <div className="px-6 py-4 bg-[#F7F5F0] border-b-2 border-[#111111] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#111111]" />
+                <ShieldCheck className="w-4 h-4 stroke-[2] text-[#111111]" />
                 <span className="font-extrabold text-[14px] text-[#111111]">Files with Findings</span>
               </div>
-              <span className="mono text-[11px] font-semibold text-[#555555] tabular-nums">
+              <span className="mono text-[11px] font-semibold text-[#525252] tabular-nums">
                 {findings.length} registered
               </span>
             </div>
 
             {findings.length === 0 ? (
-              <div className="p-6 text-[13.5px] text-[#555555] font-medium mono">
+              <div className="p-6 text-[13.5px] text-[#525252] font-medium mono">
                 Operational baseline: 0 unhandled findings registered for this repository snapshot.
               </div>
             ) : (
               <div className="overflow-x-auto scroll-thin">
                 <table className="w-full text-left border-collapse text-[13px]">
                   <thead>
-                    <tr className="border-b border-[#111111]/20 bg-[#F9F8F5] mono text-[10.5px] text-[#555555] uppercase font-bold tracking-[0.1em]">
-                      <th className="py-3 px-5">File Path</th>
-                      <th className="py-3 px-5">Severity</th>
-                      <th className="py-3 px-5">Rule / CWE</th>
-                      <th className="py-3 px-5 text-right">Status</th>
+                    <tr className="border-b-2 border-[#111111] bg-[#F7F5F0] mono text-[10.5px] text-[#525252] uppercase font-bold tracking-[0.1em]">
+                      <th className="py-3.5 px-6">File Path</th>
+                      <th className="py-3.5 px-6">Severity</th>
+                      <th className="py-3.5 px-6">Rule / CWE</th>
+                      <th className="py-3.5 px-6 text-right">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#111111]/10 font-medium">
+                  <tbody className="divide-y-2 divide-[#111111]/10 font-medium">
                     {findings.map((f) => (
                       <tr
                         key={f.id}
                         onClick={() => navigate(`/findings/${f.id}`)}
-                        className="hover:bg-[#F9F8F5] transition-all cursor-pointer group"
+                        className="hover:bg-[#F7F5F0] transition-colors cursor-pointer group"
                       >
-                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#555555] font-medium truncate max-w-[280px]">
+                        <td className="py-3.5 px-6 mono text-[11.5px] text-[#525252] font-medium truncate max-w-[280px]">
                           <strong className="text-[#111111] font-bold">{f.file_path}</strong>:{f.line_number}
                         </td>
-                        <td className="py-3.5 px-5">
+                        <td className="py-3.5 px-6">
                           <SevBadge sev={f.severity} />
                         </td>
-                        <td className="py-3.5 px-5 mono text-[11.5px] text-[#555555]">
+                        <td className="py-3.5 px-6 mono text-[11.5px] text-[#525252]">
                           {f.cwe_id}
                         </td>
-                        <td className="py-3.5 px-5 text-right">
+                        <td className="py-3.5 px-6 text-right">
                           <StatusBadge s={f.status} />
                         </td>
                       </tr>
@@ -374,15 +374,15 @@ export default function RepositoryDetailPage() {
 
         {/* Right Sidebar Metadata */}
         <div className="col-span-12 lg:col-span-4 space-y-6 sticky top-[92px]">
-          <div className="bg-white border border-[#111111]/20 rounded-[12px] p-5 space-y-5 shadow-hard-sm">
+          <div className="bg-white border-2 border-[#111111] rounded-[20px] p-6 space-y-6 shadow-hard">
             <div className="space-y-2">
               <div className="text-metadata">POSTURE SUMMARY</div>
-              <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-[#F9F8F5] border border-[#111111]/20">
+              <div className="flex items-center justify-between p-4 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111]">
                 <div>
                   <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">
-                    {lastScore ?? '94'}<span className="text-[12px] text-[#555555] font-bold">/100</span>
+                    {lastScore ?? '94'}<span className="text-[12px] text-[#525252] font-bold">/100</span>
                   </div>
-                  <div className="mono text-[11px] font-semibold text-[#555555]">Validation Score</div>
+                  <div className="mono text-[11px] font-semibold text-[#525252]">Validation Score</div>
                 </div>
                 {riskBand && (
                   <span className={`chip text-[10px] uppercase font-bold ${riskBand === 'HIGH RISK' ? 'sev-critical' : riskBand === 'MODERATE RISK' ? 'sev-high' : 'ok'}`}>
@@ -392,7 +392,7 @@ export default function RepositoryDetailPage() {
               </div>
             </div>
 
-            <div className="h-[1px] bg-[#111111]/15 w-full" />
+            <div className="h-[2px] bg-[#111111] w-full" />
 
             <div className="space-y-2">
               <div className="text-metadata">QUICK ACTIONS</div>

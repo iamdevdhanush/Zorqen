@@ -37,7 +37,7 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
   // If no run loaded yet
   if (!run) {
     return (
-      <div className={`p-8 text-center text-[#666666] mono text-[13px] bg-white border border-[#111111] rounded-xl shadow-hard ${className}`}>
+      <div className={`p-8 text-center text-[#525252] mono text-[13px] bg-white border-2 border-[#111111] rounded-[20px] shadow-hard ${className}`}>
         No active security assessment loaded.
       </div>
     );
@@ -52,8 +52,8 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
   return (
     <div className={`space-y-6 fade-in ${className}`}>
       {/* Product-Specific Status Header */}
-      <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#111111] pb-4">
+      <div className="p-6 sm:p-7 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#111111] pb-4">
           <div className="space-y-1">
             <div className="protocol-tag">zorqen://security-operation/{run.id.replace('#', '')}</div>
             <div className="flex items-center gap-3 flex-wrap pt-1">
@@ -61,16 +61,16 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
                 SECURITY VALIDATION OPERATION {run.id}
               </h1>
               {isCompleted ? (
-                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C5F82A] px-2.5 py-0.5 rounded border border-[#111111]">
+                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111]">
                   ✓ VALIDATION COMPLETE
                 </span>
               ) : (
-                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C5F82A] px-2.5 py-0.5 rounded border border-[#111111] animate-pulse">
+                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111] animate-pulse">
                   ● ACTIVE ANALYSIS
                 </span>
               )}
             </div>
-            <div className="mono text-[12.5px] text-[#4A4A4A] flex items-center gap-2 flex-wrap">
+            <div className="mono text-[12.5px] text-[#525252] flex items-center gap-2 flex-wrap">
               <span className="font-extrabold text-[#111111]">{run.repo}</span>
               <span>•</span>
               <span className="font-bold text-[#111111]">{run.branch}</span>
@@ -80,10 +80,10 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
           </div>
 
           <div className="text-right space-y-1">
-            <div className="mono text-[10px] font-extrabold text-[#666666] uppercase tracking-wider">
+            <div className="mono text-[10px] font-extrabold text-[#525252] uppercase tracking-wider">
               ACTIVE STAGE DESCRIPTION
             </div>
-            <div className="mono text-[12px] font-extrabold text-[#111111] bg-[#FAFAFA] px-3 py-1 rounded border border-[#111111]">
+            <div className="mono text-[12px] font-extrabold text-[#111111] bg-[#F7F5F0] px-3 py-1.5 rounded-[10px] border-2 border-[#111111]">
               {isCompleted
                 ? 'COMPLETED · All security vectors validated'
                 : activeStep
@@ -95,8 +95,8 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
 
         {/* Live Pipeline Progress */}
         {!isCompleted && (
-          <div className="pt-4 border-t border-[#111111] space-y-2">
-            <div className="flex items-center justify-between mono text-[11px] font-bold text-[#4A4A4A]">
+          <div className="pt-4 border-t-2 border-[#111111] space-y-2">
+            <div className="flex items-center justify-between mono text-[11px] font-bold text-[#525252]">
               <span className="uppercase tracking-wider">
                 {run.currentStage || activeStep?.label || 'PIPELINE EXECUTION'}
               </span>
@@ -104,9 +104,9 @@ export const AssessmentOperationConsole: FC<AssessmentOperationConsoleProps> = (
                 {run.progress !== undefined && run.progress !== null ? `${run.progress}%` : 'INITIALIZING'}
               </span>
             </div>
-            <div className="h-3 bg-white border border-[#111111] rounded-sm overflow-hidden shadow-hard">
+            <div className="h-3 bg-[#F7F5F0] border-2 border-[#111111] rounded-[6px] overflow-hidden shadow-hard p-0.5">
               <div
-                className="h-full bg-[#C5F82A] border-r border-[#111111] transition-all duration-500"
+                className="h-full bg-[#C8F31D] rounded-[2px] transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, run.progress ?? 0))}%` }}
               />
             </div>

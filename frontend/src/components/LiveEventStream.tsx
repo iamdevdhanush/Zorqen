@@ -16,21 +16,21 @@ export const LiveEventStream: FC<LiveEventStreamProps> = ({
   const displayLogs = logs.slice(-maxEvents);
 
   return (
-    <div className={`p-4 sm:p-5 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3 ${className}`}>
-      <div className="flex items-center justify-between border-b border-[#111111] pb-2.5">
+    <div className={`p-5 sm:p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4 ${className}`}>
+      <div className="flex items-center justify-between border-b-2 border-[#111111] pb-3">
         <div className="flex items-center gap-2">
           <span className="mono text-[11px] font-extrabold text-[#111111] uppercase tracking-wider">
             LIVE ANALYSIS SECURITY EVENT STREAM
           </span>
         </div>
-        <div className="mono text-[10px] font-extrabold text-[#111111] bg-[#C5F82A] px-2 py-0.5 rounded border border-[#111111]">
+        <div className="mono text-[10px] font-extrabold text-[#111111] bg-[#C8F31D] px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111]">
           {logs.length} EVENTS LOGGED
         </div>
       </div>
 
       <div className="space-y-1.5 font-mono text-[11.5px]">
         {displayLogs.length === 0 ? (
-          <div className="p-4 text-center text-[#666666] text-[11px]">
+          <div className="p-4 text-center text-[#525252] text-[11px]">
             Waiting for validation pipeline security events…
           </div>
         ) : (
@@ -42,18 +42,18 @@ export const LiveEventStream: FC<LiveEventStreamProps> = ({
             return (
               <div
                 key={idx}
-                className={`p-2.5 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
+                className={`p-2.5 rounded-[10px] border-2 flex items-center justify-between gap-3 transition-colors ${
                   isErr
                     ? 'bg-[#FEE2E2] border-[#111111] text-[#DC2626]'
                     : isWarn
                     ? 'bg-[#FEF3C7] border-[#111111] text-[#B45309]'
                     : isOk
                     ? 'bg-white border-[#111111]'
-                    : 'bg-[#FAFAFA] border-[#DCDCD5]'
+                    : 'bg-[#F7F5F0] border-[#111111]/20'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <span className="text-[#666666] text-[10.5px] font-semibold shrink-0">
+                  <span className="text-[#525252] text-[10.5px] font-semibold shrink-0">
                     {log.time || '—'}
                   </span>
                   
@@ -67,7 +67,7 @@ export const LiveEventStream: FC<LiveEventStreamProps> = ({
                     <span className="text-[#111111] font-bold shrink-0">●</span>
                   )}
 
-                  <span className="font-extrabold text-[#111111] uppercase shrink-0 text-[10px] bg-[#C5F82A] px-1.5 py-0.2 rounded border border-[#111111]">
+                  <span className="font-extrabold text-[#111111] uppercase shrink-0 text-[10px] bg-[#C8F31D] px-2 py-0.5 rounded-full border-[1.5px] border-[#111111]">
                     {log.source || 'ZORQEN'}
                   </span>
 
@@ -76,7 +76,7 @@ export const LiveEventStream: FC<LiveEventStreamProps> = ({
                   </span>
                 </div>
 
-                <span className="text-[9.5px] font-extrabold uppercase shrink-0 px-1.5 py-0.5 rounded border border-[#111111] bg-white">
+                <span className="text-[9.5px] font-extrabold uppercase shrink-0 px-2.5 py-0.5 rounded-full border-[1.5px] border-[#111111] bg-white">
                   {isOk ? 'COMPLETED' : isErr ? 'FAILED' : isWarn ? 'WARNING' : 'ACTIVE'}
                 </span>
               </div>

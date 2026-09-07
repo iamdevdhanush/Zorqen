@@ -57,7 +57,7 @@ export const ZorqenLogoMark = memo(function ZorqenLogoMark({
         {/* Inner Acid Lime Shield Accent */}
         <path
           d="M 18 12 L 24 14.1 V 19.8 C 24 23.8 18 26.4 18 26.4 C 18 26.4 12 23.8 12 19.8 V 14.1 Z"
-          fill="#C5F82A"
+          fill="#C8F31D"
           stroke="#111111"
           strokeWidth="1.2"
         />

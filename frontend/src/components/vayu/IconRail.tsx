@@ -75,7 +75,7 @@ export function IconRail({ children }: IconRailProps) {
 
 interface RailIconProps {
   view: RailView;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number.5 }>;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
   label: string;
 }
 

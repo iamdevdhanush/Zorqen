@@ -58,16 +58,16 @@ export const ThreatGraph = memo(function ThreatGraph({
   ];
 
   return (
-    <div className={`p-5 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard-sm space-y-4 ${className}`}>
+    <div className={`p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#111111]/15 pb-3">
+      <div className="flex items-center justify-between border-b-2 border-[#111111]/15 pb-3">
         <div className="flex items-center gap-2.5">
-          <Terminal className="w-5 h-5 text-[#111111]" />
+          <Terminal className="w-5 h-5 stroke-[2] text-[#111111]" />
           <h3 className="mono text-[12px] sm:text-[13px] font-extrabold text-[#0A0A0A] uppercase tracking-[0.14em]">
             AI THREAT GRAPH &amp; PATH TRACE
           </h3>
         </div>
-        <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C8FF2E] px-2.5 py-0.5 rounded border border-[#111111]">
+        <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111]">
           EXPLOIT PATHWAY
         </span>
       </div>
@@ -79,12 +79,12 @@ export const ThreatGraph = memo(function ThreatGraph({
             <div key={node.step} className="flex items-center gap-3">
               {/* Node Card */}
               <div
-                className={`p-3.5 rounded-[12px] border-2 transition-all min-w-[140px] space-y-1 ${
+                className={`p-4 rounded-[14px] border-2 transition-all min-w-[140px] space-y-1 ${
                   node.critical
                     ? 'bg-[#FEE2E2] border-[#111111] text-[#DC2626]'
                     : node.verified
-                    ? 'bg-[#C8FF2E] border-[#111111] text-[#111111]'
-                    : 'bg-[#FAFAFA] border-[#111111]/20 text-[#0A0A0A]'
+                    ? 'bg-[#C8F31D] border-[#111111] text-[#111111]'
+                    : 'bg-[#F7F5F0] border-[#111111]/20 text-[#0A0A0A]'
                 }`}
               >
                 <div className="flex items-center justify-between">

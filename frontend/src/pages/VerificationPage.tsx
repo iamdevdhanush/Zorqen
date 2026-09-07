@@ -49,24 +49,24 @@ export default function VerificationPage() {
       </div>
 
       {/* SANDBOX UNAVAILABLE NOTICE */}
-      <div className="p-5 sm:p-8 rounded-xl bg-[#FAFAFA] border-2 border-[#DCDCD5] space-y-4">
+      <div className="p-6 sm:p-8 rounded-[20px] bg-[#F7F5F0] border-2 border-[#111111] space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#FEF3C7] border border-[#B45309] flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-[#B45309]" />
+          <div className="w-10 h-10 rounded-[12px] bg-[#FEF3C7] border-2 border-[#B45309] flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 stroke-[2] text-[#B45309]" />
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">SANDBOX VALIDATION UNAVAILABLE</h2>
-            <p className="mono text-[11px] text-[#666666] font-bold mt-0.5">Runtime exploit verification requires sandbox infrastructure</p>
+            <p className="mono text-[11px] text-[#525252] font-bold mt-0.5">Runtime exploit verification requires sandbox infrastructure</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-white border border-[#DCDCD5] space-y-3">
+        <div className="p-5 rounded-[14px] bg-white border-2 border-[#111111] space-y-3">
           <p className="text-[13px] text-[#333333] font-medium leading-relaxed">
             Sandbox-based exploit reproduction is not currently available for this finding. 
             Runtime verification requires an isolated container environment to safely execute 
             exploit probes against the assessed codebase.
           </p>
-          <p className="text-[12.5px] text-[#555555] font-medium leading-relaxed">
+          <p className="text-[12.5px] text-[#525252] font-medium leading-relaxed">
             The finding below was identified through <span className="font-bold text-[#111111]">static analysis</span> and 
             <span className="font-bold text-[#111111]"> AI reasoning</span>. Manual verification or sandbox infrastructure 
             is required to confirm exploitability at runtime.
@@ -77,14 +77,14 @@ export default function VerificationPage() {
       {/* STATIC ANALYSIS EVIDENCE */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="w-5 h-5 text-[#111111]" />
+          <ShieldAlert className="w-5 h-5 stroke-[2] text-[#111111]" />
           <h2 className="text-lg sm:text-xl font-extrabold text-[#111111] tracking-tight">STATIC ANALYSIS EVIDENCE</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* File Location */}
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               FILE LOCATION
             </div>
             <div className="space-y-2">
@@ -103,21 +103,21 @@ export default function VerificationPage() {
           </div>
 
           {/* Confidence & Classification */}
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               CONFIDENCE & CLASSIFICATION
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[12px] text-[#555555]">Confidence:</span>
+                <span className="text-[12px] text-[#525252]">Confidence:</span>
                 <span className="mono text-[12px] font-bold text-[#111111]">{finding.confidence_pct}%</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] text-[#555555]">Source:</span>
+                <span className="text-[12px] text-[#525252]">Source:</span>
                 <span className="mono text-[12px] font-bold text-[#111111]">{finding.source_tool}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] text-[#555555]">Status:</span>
+                <span className="text-[12px] text-[#525252]">Status:</span>
                 <span className="mono text-[12px] font-bold text-[#111111]">{finding.status}</span>
               </div>
             </div>
@@ -126,8 +126,8 @@ export default function VerificationPage() {
 
         {/* Root Cause */}
         {finding.root_cause && (
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               ROOT CAUSE
             </div>
             <p className="text-[13px] text-[#333333] font-medium leading-relaxed">
@@ -138,8 +138,8 @@ export default function VerificationPage() {
 
         {/* Impact */}
         {finding.impact && (
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               IMPACT
             </div>
             <p className="text-[13px] text-[#333333] font-medium leading-relaxed">
@@ -150,14 +150,14 @@ export default function VerificationPage() {
 
         {/* Attack Path */}
         {finding.attack_path && finding.attack_path.length > 0 && (
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               ATTACK PATH
             </div>
             <div className="space-y-2">
               {finding.attack_path.map((step, idx) => (
                 <div key={idx} className="flex items-start gap-3">
-                  <span className="mono text-[11px] font-bold text-[#C5F82A] bg-[#111111] px-1.5 py-0.5 rounded shrink-0">
+                  <span className="mono text-[11px] font-bold text-[#C8F31D] bg-[#111111] px-2 py-0.5 rounded-full border-[1.5px] border-[#111111] shrink-0">
                     {idx + 1}
                   </span>
                   <span className="text-[12.5px] text-[#333333] font-medium leading-relaxed">{step}</span>
@@ -169,11 +169,11 @@ export default function VerificationPage() {
 
         {/* Evidence */}
         {finding.evidence && (
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               EVIDENCE
             </div>
-            <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#DCDCD5]">
+            <div className="p-4 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111]">
               <pre className="mono text-[11.5px] text-[#333333] whitespace-pre-wrap break-words leading-relaxed">
                 {typeof finding.evidence === 'string' 
                   ? finding.evidence 
@@ -185,12 +185,12 @@ export default function VerificationPage() {
 
         {/* Code Snippet */}
         {finding.code && (
-          <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard space-y-3">
-            <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">
+          <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3">
+            <div className="mono text-[10.5px] font-bold text-[#525252] uppercase tracking-wider">
               AFFECTED CODE
             </div>
-            <div className="p-3 rounded-lg bg-[#1A1A1A] border border-[#333333] overflow-x-auto">
-              <pre className="mono text-[11.5px] text-[#C5F82A] whitespace-pre-wrap break-words leading-relaxed">
+            <div className="p-4 rounded-[14px] bg-[#111111] border-2 border-[#111111] overflow-x-auto">
+              <pre className="mono text-[11.5px] text-[#C8F31D] whitespace-pre-wrap break-words leading-relaxed">
                 {finding.code.snippet || 'No code snippet available'}
               </pre>
             </div>
@@ -199,7 +199,7 @@ export default function VerificationPage() {
       </div>
 
       {/* ACTIONS */}
-      <div className="p-4 sm:p-6 rounded-xl bg-white border border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-4">
+      <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="mono text-[10.5px] font-bold text-[#4A4A4A] uppercase tracking-wider">NEXT STEPS</div>
           <p className="text-[12.5px] text-[#555555] font-medium">

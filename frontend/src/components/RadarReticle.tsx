@@ -13,7 +13,7 @@ export const RadarReticle: FC<RadarReticleProps> = ({
 }) => {
   return (
     <div
-      className={`relative flex items-center justify-center p-5 rounded-[18px] bg-white border-2 border-[#111111] shadow-hard ${className}`}
+      className={`relative flex items-center justify-center p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard ${className}`}
       aria-label="Security Scanning Reticle"
     >
       <svg
@@ -97,7 +97,7 @@ export const RadarReticle: FC<RadarReticleProps> = ({
             />
             <path
               d="M 60 60 L 60 8 A 52 52 0 0 1 100 32 Z"
-              fill="#C8FF2E"
+              fill="#C8F31D"
               fillOpacity="0.35"
             />
           </g>
@@ -106,8 +106,8 @@ export const RadarReticle: FC<RadarReticleProps> = ({
         {/* Active Scanning Surface Nodes (Lime Signal Pulse) */}
         {active ? (
           <g className="animate-signal-pulse">
-            <circle cx="82" cy="38" r="5" fill="#C8FF2E" stroke="#111111" strokeWidth="2" />
-            <circle cx="36" cy="80" r="4" fill="#C8FF2E" stroke="#111111" strokeWidth="1.5" />
+            <circle cx="82" cy="38" r="5" fill="#C8F31D" stroke="#111111" strokeWidth="2" />
+            <circle cx="36" cy="80" r="4" fill="#C8F31D" stroke="#111111" strokeWidth="1.5" />
             <circle cx="75" cy="85" r="3.5" fill="#111111" />
           </g>
         ) : (
@@ -120,7 +120,7 @@ export const RadarReticle: FC<RadarReticleProps> = ({
 
       {/* Reticle Status Label */}
       <div className="absolute bottom-3 left-0 right-0 text-center">
-        <span className="mono text-[10px] font-extrabold text-[#111111] uppercase tracking-[0.18em] bg-[#C8FF2E] px-2 py-0.5 rounded-[6px] border border-[#111111]">
+        <span className="mono text-[10px] font-extrabold text-[#111111] uppercase tracking-[0.18em] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111]">
           {statusLabel}
         </span>
       </div>

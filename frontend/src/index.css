@@ -14,12 +14,12 @@
   --color-hover: #F2F0E9;       /* Warm hover fill */
   --color-active: #E6E4DC;      /* Active selection fill */
   --color-line: #111111;        /* Strong 2px dark border */
-  --color-line-subtle: rgba(17, 17, 17, 0.18); /* Subtle container border */
+  --color-line-subtle: rgba(17, 17, 17, 0.25); /* Subtle container border */
   --color-ink: #111111;         /* Primary text */
   --color-ink-2: #333333;       /* Body text */
-  --color-ink-3: #555555;       /* Muted secondary text */
-  --color-accent: #C7F11A;      /* Lime Accent */
-  --color-accent-hover: #B4DD14;
+  --color-ink-3: #525252;       /* High contrast secondary text (AA compliant) */
+  --color-accent: #C8F31D;      /* Neon Lime Accent */
+  --color-accent-hover: #B8E316;
   --color-critical: #DC2626;    /* Red */
   --color-high: #EA580C;        /* Orange */
   --color-medium: #D97706;      /* Amber */
@@ -53,13 +53,13 @@ svg {
 }
 
 ::selection {
-  background: #C7F11A;
+  background: #C8F31D;
   color: #111111;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #111111; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #111111; border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #333333; }
 
 .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -71,64 +71,65 @@ svg {
 
 /* ── Typography Hierarchy ─────────────────────────────────────────────── */
 .text-hero {
-  font-size: 40px;
-  line-height: 48px;
+  font-size: 38px;
+  line-height: 44px;
   font-weight: 900;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: #111111;
 }
 @media (min-width: 1024px) {
   .text-hero {
-    font-size: 64px;
-    line-height: 72px;
+    font-size: 56px;
+    line-height: 64px;
+    letter-spacing: -0.025em;
   }
 }
 
 .text-page-title {
-  font-size: 32px;
-  line-height: 40px;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: #111111;
-}
-@media (min-width: 1024px) {
-  .text-page-title {
-    font-size: 48px;
-    line-height: 56px;
-  }
-}
-
-.text-section-title {
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 30px;
+  line-height: 36px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #111111;
 }
+@media (min-width: 1024px) {
+  .text-page-title {
+    font-size: 42px;
+    line-height: 48px;
+  }
+}
 
-.text-card-title {
-  font-size: 20px;
+.text-section-title {
+  font-size: 22px;
   line-height: 28px;
   font-weight: 800;
   letter-spacing: -0.015em;
   color: #111111;
 }
 
+.text-card-title {
+  font-size: 19px;
+  line-height: 26px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: #111111;
+}
+
 .text-body {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 15px;
+  line-height: 23px;
   font-weight: 400;
   color: #333333;
 }
 
 .text-metadata {
   font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 18px;
-  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555555;
+  color: #525252;
 }
 
 /* ── Elevation & Brutalist Offset Shadows ────────────────────────────── */
@@ -142,35 +143,31 @@ svg {
   box-shadow: 5px 5px 0px #111111;
 }
 .shadow-hard-lime {
-  box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C7F11A;
+  box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C8F31D;
 }
 
-/* ── Container & Card System ─────────────────────────────────────────── */
+/* ── Container & Card System (20px Radius, 2px Border, 24px Padding) ── */
 .panel, .card-primary {
   background-color: var(--color-panel);
-  border: 1px solid rgba(17, 17, 17, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
-}
-
-@media (min-width: 1024px) {
-  .panel, .card-primary { padding: 24px; }
+  border: 2px solid #111111;
+  border-radius: 20px;
+  padding: 24px;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease;
 }
 
 @media (hover: hover) and (min-width: 768px) {
   .interactive-card:hover, .card-primary.interactive:hover {
     border-color: #111111;
     transform: translateY(-2px);
-    box-shadow: 3px 3px 0px #111111;
+    box-shadow: 4px 4px 0px #111111;
   }
 }
 
 .panel-subtle, .card-secondary {
   background-color: var(--color-panel);
-  border: 1px solid rgba(17, 17, 17, 0.15);
-  border-radius: 10px;
-  padding: 16px;
+  border: 2px solid #111111;
+  border-radius: 20px;
+  padding: 20px;
 }
 
 .panel-head {
@@ -178,11 +175,11 @@ svg {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 20px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.2);
+  padding: 16px 24px;
+  border-bottom: 2px solid #111111;
   background-color: #F9F8F5;
-  border-radius: 10px 10px 0 0;
-  min-height: 44px;
+  border-radius: 18px 18px 0 0;
+  min-height: 48px;
 }
 
 .panel-head-title {
@@ -196,13 +193,10 @@ svg {
   gap: 8px;
 }
 
-.panel-body { padding: 20px; }
-@media (min-width: 1024px) {
-  .panel-body { padding: 24px; }
-}
+.panel-body { padding: 24px; }
 .panel-body-flush { padding: 0; }
 
-/* ── Standardized Button System (Min height 48px, Touch 44x44px) ──────── */
+/* ── Standardized Button System (12px Radius, 2px Border, Min touch 44px) ─ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -216,15 +210,21 @@ svg {
   min-height: 44px;
   min-width: 44px;
   padding: 0 20px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 2px solid #111111;
   background-color: #FFFFFF;
   color: var(--color-ink);
   cursor: pointer;
   user-select: none;
   box-shadow: 3px 3px 0px #111111;
-  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background-color 180ms ease, border-color 180ms ease, box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2px;
 }
 
 @media (hover: hover) and (min-width: 768px) {
@@ -252,9 +252,9 @@ svg {
   pointer-events: none;
 }
 
-/* Primary CTA: Lime Background */
+/* Primary CTA: Neon Lime Background */
 .btn-primary, .btn-accent {
-  background-color: #C7F11A;
+  background-color: #C8F31D;
   color: #111111;
   border: 2px solid #111111;
   font-weight: 800;
@@ -263,7 +263,7 @@ svg {
 
 @media (hover: hover) and (min-width: 768px) {
   .btn-primary:hover, .btn-accent:hover {
-    background-color: #b8e010;
+    background-color: #B8E316;
     border-color: #111111;
     color: #111111;
     transform: translateY(-2px);
@@ -274,7 +274,7 @@ svg {
 /* Secondary CTA: White Background */
 .btn-secondary {
   background-color: #FFFFFF;
-  color: #0A0A0A;
+  color: #111111;
   border: 2px solid #111111;
   font-weight: 800;
   box-shadow: 3px 3px 0px #111111;
@@ -287,17 +287,17 @@ svg {
   box-shadow: 4px 4px 0px #111111;
 }
 
-/* Ghost Button: Borderless */
+/* Ghost Button: Borderless with minimum touch */
 .btn-ghost {
   background-color: transparent;
-  color: #0A0A0A;
+  color: #111111;
   border: 2px solid transparent;
   font-weight: 700;
   box-shadow: none;
 }
 
 .btn-ghost:hover {
-  background-color: rgba(17, 17, 17, 0.05);
+  background-color: rgba(17, 17, 17, 0.06);
   border-color: transparent;
   transform: none;
 }
@@ -307,37 +307,39 @@ svg {
   min-height: 40px;
   padding: 0 14px;
   font-size: 13px;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 2px 2px 0px #111111;
 }
 
 .btn-xs {
   height: 36px;
   min-height: 36px;
-  padding: 0 10px;
+  padding: 0 12px;
   font-size: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 2px 2px 0px #111111;
 }
 
-/* ── Micro-Chips & Badges ────────────────────────────────────────────── */
+/* ── Micro-Chips & Pills (Full Radius, 1.5px Border) ─────────────────── */
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 9999px;
   font-size: 11px;
   font-family: var(--font-mono);
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   line-height: 1.4;
   border: 1.5px solid #111111;
   background: #FFFFFF;
   color: var(--color-ink);
+  white-space: nowrap;
 }
 
 .chip.ok {
-  background: #C7F11A;
+  background: #C8F31D;
   border-color: #111111;
   color: #111111;
 }
@@ -382,18 +384,18 @@ svg {
   font-weight: 800;
 }
 
-/* ── Protocol Micro-Tag ───────────────────────────────────────────────── */
+/* ── Protocol Micro-Tag (Full Radius, 1.5px Border) ─────────────────── */
 .protocol-tag {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-ink);
-  background: #C7F11A;
+  color: #111111;
+  background: #C8F31D;
   border: 1.5px solid #111111;
-  padding: 3px 10px;
-  border-radius: 8px;
+  padding: 3px 12px;
+  border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -407,40 +409,40 @@ svg {
   background: #111111;
 }
 
-/* ── Form Inputs ──────────────────────────────────────────────────────── */
+/* ── Form Inputs (14px Radius, 2px Border) ────────────────────────────── */
 .input, .select {
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   height: 48px;
   padding: 0 16px;
-  border-radius: 10px;
+  border-radius: 14px;
   border: 2px solid #111111;
   background: #FFFFFF;
   color: var(--color-ink);
   outline: none;
   box-shadow: 2px 2px 0px #111111;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .input:focus, .select:focus {
   border-color: #111111;
-  box-shadow: 0 0 0 2px #C7F11A;
+  box-shadow: 0 0 0 2px #C8F31D;
 }
 
 .input::placeholder { color: var(--color-ink-3); font-weight: 400; }
 
 /* ── Interactive Cards Micro-Interactions ──────────────────────────────── */
 .interactive-card {
-  transition: transform 120ms ease,
-              box-shadow 120ms ease,
-              border-color 120ms ease;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms ease;
 }
 @media (hover: hover) and (min-width: 768px) {
   .interactive-card:hover {
     transform: translateY(-2px);
     border-color: #111111;
-    box-shadow: 3px 3px 0px #111111;
+    box-shadow: 4px 4px 0px #111111;
   }
 }
 .interactive-card:active {
@@ -448,27 +450,80 @@ svg {
   box-shadow: 1px 1px 0px #111111;
 }
 
-/* ── Command Palette & Backdrop Overlays ───────────────────────────────── */
+/* ── Data Tables (16px Icons, Crisp Borders, Tabular Figures) ─────────── */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+.data-table th {
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #525252;
+  border-bottom: 2px solid #111111;
+  background-color: #F9F8F5;
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+  vertical-align: middle;
+  font-size: 13.5px;
+  transition: background-color 180ms ease;
+}
+.data-table td svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2px;
+}
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+.data-table tbody tr:hover {
+  background-color: #F9F8F5;
+}
+
+/* ── Command Palette & Backdrop Overlays (24px Radius) ─────────────────── */
 .cmd-backdrop, .modal-backdrop {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(10, 10, 10, 0.7);
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(2px);
   display: flex; align-items: flex-start; justify-content: center;
-  padding-top: 12vh;
-  padding-left: 20px; padding-right: 20px;
+  padding-top: 10vh;
+  padding-left: 16px; padding-right: 16px;
 }
 
 .modal-backdrop {
   align-items: center;
-  padding-top: 20px;
+  padding-top: 16px;
 }
 
 .cmd-box, .modal-box {
   width: 100%; max-width: 600px;
   background: #FFFFFF;
   border: 2px solid #111111;
-  border-radius: 14px;
-  box-shadow: 5px 5px 0px #111111;
+  border-radius: 24px;
+  box-shadow: 6px 6px 0px #111111;
   overflow: hidden;
+}
+
+@media (max-width: 639px) {
+  .cmd-backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+  .cmd-box {
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+  }
 }
 
 kbd {
@@ -476,11 +531,12 @@ kbd {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-ink);
-  background: #C7F11A;
+  background: #F9F8F5;
   border: 1.5px solid #111111;
   border-radius: 6px;
   padding: 2px 6px;
   font-weight: 800;
+  box-shadow: 1px 1px 0px #111111;
 }
 
 /* ── Security Scan Visual Animations ───────────────────────────────────── */

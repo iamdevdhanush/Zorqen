@@ -48,13 +48,13 @@ export const BottomOperationDock = memo(function BottomOperationDock({
           {/* Left: Status Badge & Timers */}
           <div className="flex items-center gap-3 min-w-0">
             {isCompleted ? (
-              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-white shrink-0 flex items-center gap-1.5">
+              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111] shrink-0 flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
                 COMPLETE
               </span>
             ) : isScanning ? (
               <div className="flex items-center gap-2.5 shrink-0">
-                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-white shrink-0 flex items-center gap-1.5 tabular-nums">
+                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111] shrink-0 flex items-center gap-1.5 tabular-nums">
                   <span className="w-2 h-2 rounded-full bg-[#111111] animate-ping" />
                   ● LIVE
                 </span>
@@ -63,7 +63,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
                 </span>
               </div>
             ) : (
-              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded-[4px] border border-white shrink-0">
+              <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111] shrink-0">
                 ● LIVE
               </span>
             )}
@@ -73,7 +73,7 @@ export const BottomOperationDock = memo(function BottomOperationDock({
               <div className="hidden sm:flex items-center gap-2 mono text-[12px] text-zinc-300 font-bold tabular-nums">
                 <span className="text-zinc-400">•</span>
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-[#C7F11A]" />
+                  <Clock className="w-3.5 h-3.5 stroke-[2] text-[#C8F31D]" />
                   Elapsed: <strong className="text-white">{formattedElapsed}</strong>
                 </span>
                 <span className="hidden md:inline text-zinc-400">• ETA: {formattedEta}</span>
@@ -86,8 +86,8 @@ export const BottomOperationDock = memo(function BottomOperationDock({
             <span className="mono text-[11px] text-zinc-300 font-bold max-w-[120px] sm:max-w-[200px] truncate">
               {repoName || run.repo}
             </span>
-            <div className="w-7 h-7 rounded-[6px] bg-white/10 flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-colors">
-              <ChevronUp className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-[8px] bg-white/10 flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-colors">
+              <ChevronUp className="w-4 h-4 stroke-[2]" />
             </div>
           </div>
         </div>
@@ -98,17 +98,17 @@ export const BottomOperationDock = memo(function BottomOperationDock({
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-[#0A0A0A]/80 backdrop-blur-sm fade-in">
           {/* Modal Container */}
           <div
-            className="relative z-10 w-full max-w-[1280px] mx-auto h-[92vh] max-h-[92vh] overflow-y-auto bg-[#ECEAE4] border-t-2 border-[#111111] rounded-t-[20px] shadow-hard-lg p-5 lg:p-7 space-y-6 slide-up"
+            className="relative z-10 w-full max-w-[1280px] mx-auto h-[92vh] max-h-[92vh] overflow-y-auto bg-[#ECEAE4] border-t-2 border-x-2 border-[#111111] rounded-t-[24px] shadow-hard-lg p-5 lg:p-7 space-y-6 slide-up"
             style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }}
           >
             {/* Sticky Header Bar */}
             <div className="sticky top-0 z-20 bg-[#ECEAE4] pb-3 border-b-2 border-[#111111] flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-[8px] bg-[#111111] text-[#C7F11A] flex items-center justify-center shrink-0">
-                  <Terminal className="w-4.5 h-4.5" />
+                <div className="w-10 h-10 rounded-[10px] bg-[#111111] text-[#C8F31D] flex items-center justify-center shrink-0 border-2 border-[#111111]">
+                  <Terminal className="w-5 h-5 stroke-[2]" />
                 </div>
                 <div>
-                  <div className="mono text-[11px] font-extrabold text-[#111111] bg-[#C7F11A] px-2.5 py-0.5 rounded border border-[#111111] inline-block">
+                  <div className="mono text-[11px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111] inline-block">
                     {runNumber} LIVE OPERATION CONSOLE
                   </div>
                   <div className="mono text-[13px] font-extrabold text-[#111111] mt-0.5 tabular-nums">
@@ -119,10 +119,10 @@ export const BottomOperationDock = memo(function BottomOperationDock({
 
               <button
                 onClick={() => setExpanded(false)}
-                className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] bg-white border-2 border-[#111111] text-[#111111] hover:bg-[#C7F11A] transition-all shadow-hard-sm"
+                className="flex items-center justify-center w-[44px] h-[44px] rounded-[12px] bg-white border-2 border-[#111111] text-[#111111] hover:bg-[#C8F31D] transition-all shadow-hard-sm cursor-pointer"
                 aria-label="Close operation console"
               >
-                <X className="w-5 h-5 stroke-[2.5]" />
+                <X className="w-5 h-5 stroke-[2]" />
               </button>
             </div>
 

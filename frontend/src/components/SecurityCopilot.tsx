@@ -143,60 +143,64 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
 
   return (
     <div
-      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-hard-lg bg-[#111111] text-[#ECEBE6] border-l border-[#222222] slide-right w-full sm:w-[420px] sm:max-w-[420px]"
+      className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-hard-lg bg-[#111111] text-[#ECEBE6] border-l-2 border-[#222222] slide-right w-full sm:w-[460px] sm:max-w-[460px]"
     >
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3.5 border-b border-[#222222] bg-[#161616]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded bg-[#222222] border border-[#333333] flex items-center justify-center text-[#C8FF2E]">
-            <Terminal className="w-3.5 h-3.5" />
+      <header className="flex items-center justify-between px-5 py-4 border-b-2 border-[#222222] bg-[#161616]">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-[8px] bg-[#222222] border-2 border-[#333333] flex items-center justify-center text-[#C8F31D]">
+            <Terminal className="w-4 h-4 stroke-[2px]" />
           </div>
           <div>
-            <div className="font-extrabold text-[13px] text-white leading-none flex items-center gap-2">
+            <div className="font-extrabold text-[14px] text-white leading-none flex items-center gap-2">
               <span>Ask ZORQEN</span>
-              <span className="flex items-center gap-1 text-[9.5px] font-mono text-[#C8FF2E] bg-[#222222] px-1.5 py-0.5 rounded border border-[#333333]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#C8FF2E] animate-pulse" />
+              <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#C8F31D] bg-[#222222] px-2 py-0.5 rounded-full border border-[#333333]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C8F31D] animate-pulse" />
                 <span>LIVE ANALYST</span>
               </span>
             </div>
-            <div className="mono text-[10px] text-[#A0A0A0] font-semibold mt-1 flex items-center gap-2">
-              <span>Repo: <strong className="text-[#C8FF2E]">{currentRepo?.name || 'Zorqen'}</strong></span>
+            <div className="mono text-[11px] text-[#A0A0A0] font-semibold mt-1 flex items-center gap-2">
+              <span>Repo: <strong className="text-[#C8F31D]">{currentRepo?.name || 'Zorqen'}</strong></span>
               <span>•</span>
               <span>Scan: <strong className="text-zinc-300">{currentAssessment?.id || 'RUN-143'}</strong></span>
             </div>
           </div>
         </div>
-        <button onClick={onClose} className="p-1 text-zinc-400 hover:text-white transition-colors" aria-label="Close">
-          <X className="w-4 h-4" />
+        <button
+          onClick={onClose}
+          className="w-[44px] h-[44px] min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-white rounded-[8px] hover:bg-[#222222] transition-colors"
+          aria-label="Close Ask ZORQEN"
+        >
+          <X className="w-5 h-5 stroke-[2px]" />
         </button>
       </header>
 
       {finding && (
-        <div className="px-4 py-2 border-b border-[#222222] mono text-[10.5px] font-bold bg-[#C8FF2E] text-[#111111]">
+        <div className="px-5 py-2.5 border-b-2 border-[#222222] mono text-[11px] font-bold bg-[#C8F31D] text-[#111111]">
           TARGET: {finding.id} • {finding.title}
         </div>
       )}
 
       {/* Messages Terminal Output Feed */}
-      <div className="flex-1 overflow-y-auto scroll-thin p-4 space-y-3 font-mono text-[12px] bg-[#0B0B0B]">
+      <div className="flex-1 overflow-y-auto scroll-thin p-5 space-y-4 font-mono text-[12.5px] bg-[#0B0B0B]">
         {messages.map((m, i) => (
-          <div key={i} className="space-y-1.5 border-b border-[#1A1A1A] pb-3">
-            <div className="flex items-center gap-2 text-[10.5px] font-bold">
-              <span className={m.role === 'user' ? 'text-zinc-400' : 'text-[#C8FF2E]'}>
+          <div key={i} className="space-y-2 border-b border-[#1E1E1E] pb-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold">
+              <span className={m.role === 'user' ? 'text-zinc-400' : 'text-[#C8F31D]'}>
                 {m.role === 'user' ? '$ user_query' : '● zorqen_agent'}
               </span>
             </div>
-            <div className="leading-relaxed text-[#ECEBE6] whitespace-pre-wrap pl-2 border-l border-[#222222]">
+            <div className="leading-relaxed text-[#ECEBE6] whitespace-pre-wrap pl-3 border-l-2 border-[#262626]">
               {m.content}
             </div>
             {m.role === 'assistant' && m.sources && m.sources.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1 pl-2">
+              <div className="flex flex-wrap gap-1.5 pt-2 pl-3">
                 {m.sources.map((s, j) => (
                   <button
                     key={j}
                     onClick={() => openSource(s)}
                     title={s.title ?? s.name ?? s.file}
-                    className="mono text-[9.5px] font-bold px-2 py-0.5 rounded border border-[#333333] bg-[#161616] text-[#C8FF2E] hover:border-[#C8FF2E] transition-colors"
+                    className="mono text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#333333] bg-[#161616] text-[#C8F31D] hover:border-[#C8F31D] transition-colors"
                   >
                     {sourceLabel(s)}
                   </button>
@@ -207,46 +211,50 @@ const SecurityCopilot = memo(function SecurityCopilot({ assessmentId, onClose }:
         ))}
 
         {loading && (
-          <div className="flex items-center gap-2 text-[#C8FF2E] mono text-[11.5px] pt-1">
-            <span className="w-1.5 h-3.5 bg-[#C8FF2E] animate-pulse inline-block" />
-            <span>Parsing main.py &amp; reasoning against repository evidence…</span>
+          <div className="flex items-center gap-2 text-[#C8F31D] mono text-[12px] pt-2 pl-1">
+            <span className="w-2 h-4 bg-[#C8F31D] animate-pulse inline-block" />
+            <span>Reasoning across repository AST &amp; sandbox telemetry…</span>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
       {messages.length <= 1 && (
-        <div className="p-3 border-t border-[#222222] bg-[#161616] space-y-1.5">
-          <div className="mono text-[9.5px] text-zinc-400 uppercase font-bold mb-1">RECOMMENDED INVESTIGATIONS</div>
-          {questions.map((q) => (
-            <button
-              key={q}
-              onClick={() => send(q)}
-              className="block w-full text-left text-[12px] font-mono px-3 py-1.5 rounded border border-[#262626] bg-[#111111] hover:border-[#C8FF2E] text-zinc-200 transition-colors"
-            >
-              &gt; {q}
-            </button>
-          ))}
+        <div className="p-4 border-t-2 border-[#222222] bg-[#161616] space-y-2">
+          <div className="mono text-[10px] text-zinc-400 uppercase font-bold mb-1 tracking-wider">RECOMMENDED INVESTIGATIONS</div>
+          <div className="space-y-1.5">
+            {questions.map((q) => (
+              <button
+                key={q}
+                onClick={() => send(q)}
+                className="w-full text-left text-[12.5px] font-mono px-3.5 py-2.5 rounded-[10px] border border-[#2E2E2E] bg-[#111111] hover:border-[#C8F31D] hover:-translate-y-0.5 text-zinc-200 transition-all cursor-pointer flex items-center justify-between group"
+              >
+                <span>&gt; {q}</span>
+                <span className="text-[#C8F31D] opacity-0 group-hover:opacity-100 transition-opacity">↵</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Terminal Input */}
-      <footer className="p-3.5 border-t border-[#222222] bg-[#161616] space-y-2">
-        <div className="flex gap-2">
+      {/* Sticky Terminal Input Area */}
+      <footer className="sticky bottom-0 p-4 border-t-2 border-[#222222] bg-[#161616] space-y-2">
+        <div className="flex gap-2.5 items-center">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
-            placeholder="Type investigation query…"
-            className="w-full h-[38px] px-3 bg-[#0B0B0B] border border-[#262626] rounded text-[#ECEBE6] text-[12.5px] font-mono outline-none focus:border-[#C8FF2E]"
+            placeholder="Type investigation query or prompt…"
+            className="w-full h-[48px] px-4 bg-[#0B0B0B] border-2 border-[#2E2E2E] rounded-[12px] text-[#ECEBE6] text-[13.5px] font-mono outline-none focus:border-[#C8F31D] transition-colors"
             disabled={loading}
           />
           <button
             onClick={() => send()}
             disabled={!input.trim() || loading}
-            className="px-3 h-[38px] rounded bg-[#C8FF2E] text-[#111111] font-bold text-[12px] hover:bg-[#b5eb1c] transition-colors shrink-0"
+            className="w-[48px] h-[48px] rounded-[12px] bg-[#C8F31D] hover:bg-[#B8E316] text-[#111111] flex items-center justify-center transition-all shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-hard-sm"
+            aria-label="Send query"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
       </footer>

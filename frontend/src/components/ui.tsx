@@ -216,9 +216,9 @@ export function RunStatus({ status }: { status: 'IDLE' | 'RUNNING' | 'COMPLETED'
 
 export function PageHeader({ kicker, title, right }: { kicker?: string; title: ReactNode; right?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#111111]/20 mb-7 lg:mb-10">
-      <div className="space-y-1 min-w-0">
-        {kicker && <div className="text-metadata text-[#555555] mb-1">{kicker}</div>}
+    <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b-2 border-[#111111] mb-6 lg:mb-8">
+      <div className="space-y-1.5 min-w-0">
+        {kicker && <div className="text-metadata mb-1">{kicker}</div>}
         <h1 className="text-page-title">{title}</h1>
       </div>
       {right && <div className="flex items-center gap-3 flex-wrap shrink-0">{right}</div>}
@@ -230,7 +230,7 @@ export function SectionHeader({ icon: Icon, title, right }: { icon?: any; title:
   return (
     <div className="flex items-center justify-between gap-4 mb-6">
       <div className="flex items-center gap-2.5">
-        {Icon && <Icon className="w-5 h-5 text-[#111111]" />}
+        {Icon && <Icon className="w-5 h-5 text-[#111111] stroke-[2px]" />}
         <h2 className="text-section-title">{title}</h2>
       </div>
       {right && <div className="flex items-center gap-2 shrink-0">{right}</div>}
@@ -284,7 +284,7 @@ export function Dropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="block w-full text-left outline-none cursor-pointer"
+        className="block w-full text-left outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[12px]"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -292,8 +292,8 @@ export function Dropdown({
       </button>
       {open && (
         <div
-          className="absolute top-[calc(100%+8px)] z-50 bg-white border-2 border-[#111111] rounded-[18px] shadow-hard-lg overflow-hidden animate-dropdown-in"
-          style={{ ...(align === 'right' ? { right: 0 } : { left: 0 }), minWidth: 280 }}
+          className="absolute top-[calc(100%+8px)] z-50 bg-white border-2 border-[#111111] rounded-[20px] shadow-hard-lg overflow-hidden animate-dropdown-in"
+          style={{ ...(align === 'right' ? { right: 0 } : { left: 0 }), minWidth: 264 }}
           onClick={(e) => e.stopPropagation()}
         >
           {children(() => setOpen(false))}
