@@ -8,10 +8,10 @@ interface ZorqenLogoMarkProps {
 }
 
 const SIZE_MAP = {
-  sm: 28,
-  md: 36,
-  lg: 48,
-  xl: 64,
+  sm: 26, // Reduced ~8% from 28
+  md: 33, // Reduced ~8% from 36
+  lg: 44, // Reduced ~8% from 48
+  xl: 59, // Reduced ~8% from 64
 };
 
 export const ZorqenLogoMark = memo(function ZorqenLogoMark({
@@ -20,66 +20,78 @@ export const ZorqenLogoMark = memo(function ZorqenLogoMark({
   showText = false,
   textClassName = '',
 }: ZorqenLogoMarkProps) {
-  const pixelSize = typeof size === 'number' ? size : SIZE_MAP[size] || 36;
+  const pixelSize =
+    typeof size === 'number'
+      ? Math.round(size * 0.92) // Reduced ~8% for cleaner balance
+      : SIZE_MAP[size] || 33;
 
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
-      {/* Crisp geometric ZORQEN Emblem */}
+    <div className={`inline-flex items-center gap-3.5 sm:gap-4 select-none ${className}`}>
+      {/* Refined, Minimal European Cybersecurity Geometric Mark */}
       <svg
         width={pixelSize}
         height={pixelSize}
-        viewBox="0 0 40 40"
+        viewBox="0 0 36 36"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0"
+        className="shrink-0 transition-transform duration-200 group-hover:scale-[1.03]"
         shapeRendering="geometricPrecision"
         aria-hidden="true"
       >
-        {/* Outer Shadow Box offset */}
-        <rect x="5" y="5" width="30" height="30" rx="6" fill="#111111" />
-        {/* Main Panel Box */}
-        <rect
-          x="3"
-          y="3"
-          width="30"
-          height="30"
-          rx="6"
-          fill="#FFFFFF"
-          stroke="#111111"
-          strokeWidth="1.75"
-        />
-
-        {/* Shield Outer Path */}
+        {/* Outer Precision Architectural Shield Contour */}
         <path
-          d="M 18 9.5 L 26.5 12.5 V 20.5 C 26.5 26 18 29.5 18 29.5 C 18 29.5 9.5 26 9.5 20.5 V 12.5 Z"
+          d="M 18 2.5 L 31 8.5 V 19 C 31 26.5 18 33.5 18 33.5 C 18 33.5 5 26.5 5 19 V 8.5 L 18 2.5 Z"
           fill="#111111"
         />
-        {/* Inner Acid Lime Shield Accent */}
+        {/* Inner White Frame Inset */}
         <path
-          d="M 18 12 L 24 14.1 V 19.8 C 24 23.8 18 26.4 18 26.4 C 18 26.4 12 23.8 12 19.8 V 14.1 Z"
-          fill="#C8F31D"
-          stroke="#111111"
-          strokeWidth="1.2"
+          d="M 18 5 L 28.5 9.8 V 18 C 28.5 24 18 29.8 18 29.8 C 18 29.8 7.5 24 7.5 18 V 9.8 L 18 5 Z"
+          fill="#FFFFFF"
         />
-        {/* Sharp Security Validation Checkmark */}
+        {/* Left Architectural Facet (Midnight Ink #111111) */}
         <path
-          d="M 15.5 19 L 17.5 21 L 21 16.5"
-          fill="none"
+          d="M 18 6.8 L 9.5 10.8 V 17.5 C 9.5 22.2 18 27.2 18 27.2 V 6.8 Z"
+          fill="#111111"
+        />
+        {/* Right Architectural Facet (Electric Lime Accent #C8F31D) */}
+        <path
+          d="M 18 6.8 L 26.5 10.8 V 17.5 C 26.5 22.2 18 27.2 18 27.2 V 6.8 Z"
+          fill="#C8F31D"
+        />
+        {/* High-Precision Central Dividing Seam */}
+        <line
+          x1="18"
+          y1="6"
+          x2="18"
+          y2="28"
           stroke="#111111"
-          strokeWidth="2.2"
-          strokeLinecap="round"
+          strokeWidth="1.6"
+        />
+        {/* Central Cryptographic Validation Rhombus */}
+        <path
+          d="M 18 13.5 L 21.5 17.5 L 18 21.5 L 14.5 17.5 Z"
+          fill="#FFFFFF"
+          stroke="#111111"
+          strokeWidth="1.6"
           strokeLinejoin="round"
         />
+        {/* Precision Micro Center Point */}
+        <circle cx="18" cy="17.5" r="1.1" fill="#111111" />
       </svg>
 
       {showText && (
-        <div className={`leading-tight flex flex-col justify-center ${textClassName}`}>
-          <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] leading-none flex items-center gap-1.5 font-sans">
-            ZORQEN
-          </div>
-          <div className="font-mono text-[8px] sm:text-[8.5px] font-extrabold tracking-[0.18em] text-[#4A4A4A] uppercase mt-1">
-            SECURITY VALIDATION
-          </div>
+        <div className={`leading-tight flex flex-col justify-center select-none ${textClassName}`}>
+          {/* Brand Name - Elegant italic cursive/serif style (Bodoni Moda / Cormorant Garamond) */}
+          <span
+            className="italic font-semibold text-[19px] sm:text-[21px] tracking-[0.02em] text-[#111111] leading-none select-none font-serif"
+            style={{ fontFamily: 'var(--font-serif-luxury)' }}
+          >
+            Zorqen
+          </span>
+          {/* Italian Descriptor - Exactly preserved as requested */}
+          <span className="font-mono text-[9.5px] sm:text-[10px] font-medium tracking-[0.28em] text-[#525252] uppercase mt-1 sm:mt-1.5 whitespace-nowrap">
+            CONVALIDA DI SICUREZZA
+          </span>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import ZorqenLogoMark from '../components/ZorqenLogoMark';
 
 const PUBLIC_NAV = [
   { to: '/ai-code-security', label: 'AI Code Security', end: true },
@@ -27,21 +28,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)]">
       <header className="sticky top-0 z-40 bg-[#FFFFFF] border-b border-[#111111] px-4 sm:px-6 py-3">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
-          <div className="flex items-center gap-5 lg:gap-8 min-w-0">
-            <Link to="/ai-code-security" className="flex items-center gap-3 group shrink-0 py-0.5">
-              <img
-                src="/logo.png"
-                alt="ZORQEN"
-                className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0 transition-transform group-hover:-translate-y-0.5"
-              />
-              <div className="leading-tight flex flex-col justify-center">
-                <div className="font-extrabold text-[15px] sm:text-[16px] tracking-tight text-[#111111] leading-none flex items-center gap-1.5">
-                  ZORQEN
-                </div>
-                <div className="mono text-[8px] sm:text-[8.5px] font-bold tracking-[0.18em] text-[#666666] uppercase mt-1">
-                  SECURITY VALIDATION
-                </div>
-              </div>
+          <div className="flex items-center gap-6 lg:gap-10 min-w-0">
+            <Link
+              to="/ai-code-security"
+              className="flex items-center group shrink-0 py-1 px-1.5 transition-opacity hover:opacity-90 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[10px]"
+              aria-label="ZORQEN Home"
+            >
+              <ZorqenLogoMark size="md" showText={true} />
             </Link>
 
             <nav className="hidden lg:flex items-center gap-0.5 ml-2" aria-label="ZORQEN product pages">

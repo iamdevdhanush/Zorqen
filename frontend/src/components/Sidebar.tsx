@@ -41,12 +41,12 @@ export default function Sidebar() {
       style={{ width: 220, background: 'var(--color-base)' }}
     >
       {/* Wordmark */}
-      <div className="px-4 pt-[12px] pb-[10px] border-b border-[var(--color-line)]">
-        <div className="mono font-bold text-[13px] tracking-[0.18em]" style={{ color: 'var(--color-ink)' }}>
+      <div className="px-4 pt-[14px] pb-[12px] border-b border-[var(--color-line)]">
+        <div className="font-sans font-extrabold text-[14px] tracking-[0.06em] text-[var(--color-ink)]">
           ZORQEN
         </div>
-        <div className="mono text-[8.5px] tracking-[0.1em] mt-[3px]" style={{ color: 'var(--color-ink-3)' }}>
-          SECURITY VALIDATION
+        <div className="font-mono text-[9.5px] font-medium tracking-[0.28em] text-[var(--color-ink-3)] uppercase mt-1.5 whitespace-nowrap">
+          CONVALIDA DI SICUREZZA
         </div>
       </div>
 

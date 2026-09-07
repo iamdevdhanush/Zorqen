@@ -46,11 +46,12 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
         <div className="max-w-[1280px] w-full mx-auto px-5 lg:px-8 flex items-center justify-between gap-3 sm:gap-4">
           
           {/* Brand Logo & Navigation */}
-          <div className="flex items-center gap-6 lg:gap-8 min-w-0 shrink-0">
+          <div className="flex items-center gap-7 lg:gap-10 min-w-0 shrink-0">
             <NavLink
               to="/"
               onClick={closeMobileMenu}
-              className="flex items-center gap-2.5 group shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[10px]"
+              className="flex items-center group shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[10px] py-1.5 pr-2 transition-opacity hover:opacity-90"
+              aria-label="ZORQEN Home"
             >
               {/* Logo text collapses below 380px screen width */}
               <ZorqenLogoMark size="md" showText={true} textClassName="hidden min-[380px]:flex" />

@@ -78,12 +78,12 @@ export default function ZorqenStartupScreen({ onComplete }: ZorqenStartupScreenP
         </div>
 
         {/* Brand Text */}
-        <div className="space-y-1">
-          <h1 className="font-extrabold text-xl tracking-tight text-[#111111]">
+        <div className="space-y-1.5">
+          <h1 className="font-extrabold text-xl tracking-[0.06em] text-[#111111]">
             ZORQEN
           </h1>
-          <div className="font-mono text-[9px] font-extrabold tracking-[0.2em] text-[#525252] uppercase">
-            SECURITY VALIDATION PLATFORM
+          <div className="font-mono text-[10.5px] font-medium tracking-[0.30em] text-[#525252] uppercase whitespace-nowrap">
+            CONVALIDA DI SICUREZZA
           </div>
         </div>
 
