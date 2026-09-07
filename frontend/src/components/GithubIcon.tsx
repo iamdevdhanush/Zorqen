@@ -3,20 +3,45 @@ import type { CSSProperties } from 'react';
 interface GithubIconProps {
   className?: string;
   style?: CSSProperties;
+  size?: number;
+  'aria-label'?: string;
 }
 
-export default function GithubIcon({ className, style }: GithubIconProps) {
+/**
+ * Official GitHub Mark (simple Octocat silhouette).
+ * Defaults to 20px desktop / 18px mobile, #111111, crisp geometricPrecision.
+ */
+export default function GithubIcon({
+  className = '',
+  style,
+  size,
+  'aria-label': ariaLabel,
+}: GithubIconProps) {
+  const sizeClasses = size
+    ? ''
+    : !className.includes('w-') && !className.includes('h-')
+    ? 'w-[18px] h-[18px] md:w-5 md:h-5'
+    : '';
+
+  const colorClasses = !className.includes('text-') ? 'text-[#111111]' : '';
+
   return (
     <svg
-      className={className}
-      style={style}
+      className={`shrink-0 transition-opacity duration-150 select-none ${sizeClasses} ${colorClasses} ${className}`.trim()}
+      style={{
+        ...(size ? { width: size, height: size } : {}),
+        ...style,
+      }}
       viewBox="0 0 24 24"
       fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
       shapeRendering="geometricPrecision"
-      aria-hidden="true"
+      role={ariaLabel ? 'img' : undefined}
+      aria-label={ariaLabel}
+      aria-hidden={ariaLabel ? undefined : 'true'}
     >
-      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
     </svg>
   );
 }
+

@@ -63,10 +63,8 @@ export default function OverviewPage() {
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); } }}
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 rounded-[20px] bg-white border-2 border-[#111111] hover:border-[#111111] shadow-hard-sm transition-all cursor-pointer select-none"
         >
-          <div className="flex items-center gap-3 text-[14px]">
-            <div className="w-9 h-9 rounded-[10px] bg-[#111111] text-[#C8F31D] flex items-center justify-center shrink-0">
-              <GithubIcon className="w-[18px] h-[18px] text-[#C8F31D]" />
-            </div>
+          <div className="flex items-center gap-4 text-[14px]">
+            <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="font-extrabold text-[#111111]">GitHub Workspace</span>
               <span className="text-[#111111]/30">•</span>

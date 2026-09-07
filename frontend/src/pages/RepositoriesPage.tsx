@@ -30,9 +30,7 @@ const RepositoryCard = memo(function RepositoryCard({
     >
       {/* Left: Monochrome GitHub Icon & Repository Details */}
       <div className="flex items-center gap-4 min-w-0">
-        <div className="w-10 h-10 rounded-[12px] bg-[#F9F8F5] border-2 border-[#111111] text-[#111111] group-hover:bg-[#111111] group-hover:text-[#C8F31D] transition-colors flex items-center justify-center shrink-0">
-          <GithubIcon className="w-5 h-5 text-current" />
-        </div>
+        <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub Repository" />
 
         <div className="space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-2.5 flex-wrap">
