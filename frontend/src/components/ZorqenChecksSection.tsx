@@ -8,6 +8,7 @@ const CHECKS_DATA = [
     title: 'Secret Exposure',
     subtitle: 'Credentials & tokens',
     desc: 'Scans environment configs, committed tokens, and hardcoded API credentials across repo history.',
+    badgeVariant: 'active' as const,
   },
   {
     icon: Lock,
@@ -15,6 +16,7 @@ const CHECKS_DATA = [
     title: 'Broken Access Control',
     subtitle: 'Authorization boundaries',
     desc: 'Maps authorization boundaries across endpoints to prevent unauthorized object reads.',
+    badgeVariant: '' as const,
   },
   {
     icon: Database,
@@ -22,6 +24,7 @@ const CHECKS_DATA = [
     title: 'Injection Paths',
     subtitle: 'Unsafe input → sinks',
     desc: 'Traces unsanitized user inputs into database queries, sub-processes, and dangerous sinks.',
+    badgeVariant: '' as const,
   },
   {
     icon: FileCode,
@@ -29,6 +32,7 @@ const CHECKS_DATA = [
     title: 'Data Leakage',
     subtitle: 'PII & log redaction',
     desc: 'Audits request interceptors and logger output for unredacted PII or auth headers.',
+    badgeVariant: '' as const,
   },
   {
     icon: Zap,
@@ -36,6 +40,7 @@ const CHECKS_DATA = [
     title: 'AI Security Drift',
     subtitle: 'AI code hallucinations',
     desc: 'Flags insecure code patterns commonly introduced by automated AI code generators.',
+    badgeVariant: '' as const,
   },
   {
     icon: Terminal,
@@ -43,50 +48,59 @@ const CHECKS_DATA = [
     title: 'Sandbox Verification',
     subtitle: 'Containerized exploit probes',
     desc: 'Executes automated exploit probes in ephemeral container sandboxes to prove impact.',
+    badgeVariant: 'inverted' as const,
     isValidation: true,
   },
 ];
 
 export default function ZorqenChecksSection() {
   return (
-    <div className="space-y-4">
-      {/* Section Header with Editorial Dot Accent behind heading */}
-      <div className="relative flex items-center justify-between py-1">
+    <div className="space-y-5">
+      {/* Section Header — section-label with divider + editorial dot accent */}
+      <div className="relative">
         <ChecksHeadingDotAccent />
-        
-        <div className="flex items-center gap-2.5 relative z-1">
-          <ShieldCheck className="w-5 h-5 text-[#111111]" />
-          <h2 className="text-section-title">
-            WHAT ZORQEN CHECKS
-          </h2>
+        <div className="relative z-1 flex items-center justify-between gap-4">
+          <div className="section-label">
+            <ShieldCheck className="w-[18px] h-[18px] text-[#111111] shrink-0" aria-hidden="true" />
+            <h2 className="text-[11px] font-extrabold tracking-[0.10em] text-[rgba(17,17,17,0.45)] uppercase leading-none whitespace-nowrap">
+              WHAT ZORQEN CHECKS
+            </h2>
+          </div>
+          <span className="mono text-[11px] font-bold text-[#525252] shrink-0 hidden sm:block">
+            6 Active Modules
+          </span>
         </div>
-        <span className="text-metadata hidden sm:inline relative z-1">
-          6 Active Modules
-        </span>
       </div>
 
-      {/* 3-Column Grid (Clean interior surfaces with NO dots inside cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* 3-Column Grid — clean card surfaces */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
         {CHECKS_DATA.map((item, idx) => {
           const Icon = item.icon;
           return (
             <div
               key={idx}
-              className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-3 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg interactive-card relative overflow-hidden"
+              className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-3.5 interactive-card relative overflow-hidden"
             >
-              <div className="flex items-center justify-between relative z-1">
-                <div className="w-10 h-10 rounded-[12px] bg-[#C8F31D] border-2 border-[#111111] flex items-center justify-center text-[#111111] shadow-hard-sm">
-                  <Icon className="w-5 h-5 stroke-[2]" />
+              {/* Badge row: industrial rounded-square + module number */}
+              <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-[10px] border-2 border-[#111111] flex items-center justify-center shadow-hard-sm ${item.badgeVariant === 'inverted' ? 'bg-[#111111]' : 'bg-[#C8F31D]'}`}>
+                  <Icon className={`w-5 h-5 stroke-[2] ${item.badgeVariant === 'inverted' ? 'text-[#C8F31D]' : 'text-[#111111]'}`} aria-hidden="true" />
                 </div>
-                <span className="mono text-[11px] font-extrabold text-[#111111] bg-[#F7F5F0] px-3 py-0.5 rounded-full border-[1.5px] border-[#111111] shadow-hard-sm">
-                  {item.num}
-                </span>
+                <span className={`module-badge ${item.badgeVariant}`}>{item.num}</span>
               </div>
-              <div className="relative z-1">
-                <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight">{item.title}</h3>
-                <div className="mono text-[11px] text-[#525252] font-semibold">{item.subtitle}</div>
+
+              {/* Title & subtitle */}
+              <div>
+                <h3 className="font-extrabold text-[15.5px] text-[#111111] tracking-tight leading-snug">
+                  {item.title}
+                </h3>
+                <div className="mono text-[11px] text-[#525252] font-semibold mt-0.5">{item.subtitle}</div>
               </div>
-              <p className="text-[13px] text-[#525252] leading-relaxed font-medium line-clamp-2 relative z-1">{item.desc}</p>
+
+              {/* Description */}
+              <p className="text-[13px] text-[#525252] leading-relaxed font-medium line-clamp-2">
+                {item.desc}
+              </p>
             </div>
           );
         })}

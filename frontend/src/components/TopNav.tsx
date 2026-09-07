@@ -58,17 +58,17 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             </NavLink>
 
             {/* Desktop Navigation Links (>= md) */}
-            <nav className="hidden md:flex items-center gap-1.5 lg:gap-3" aria-label="Main Navigation">
+            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1" aria-label="Main Navigation">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `relative px-3.5 h-[44px] flex items-center justify-center text-[15px] transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[#111111] rounded-[8px] select-none ${
+                    `relative px-3.5 h-[44px] flex items-center justify-center text-[14.5px] nav-pill-hover outline-none focus-visible:ring-2 focus-visible:ring-[#C8F31D] rounded-[8px] select-none ${
                       isActive
                         ? 'text-[#111111] font-extrabold'
-                        : 'text-[#555555] font-semibold hover:text-[#111111] md:hover:-translate-y-0.5'
+                        : 'text-[#5a5a5a] font-semibold hover:text-[#111111]'
                     }`
                   }
                 >
@@ -78,7 +78,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       {isActive && (
                         <motion.div
                           layoutId="topNavActiveUnderline"
-                          className="absolute bottom-[2px] w-[calc(100%+8px)] left-1/2 -translate-x-1/2 h-[3px] bg-[#111111] rounded-full"
+                          className="absolute bottom-[2px] w-[calc(100%+8px)] left-1/2 -translate-x-1/2 h-[3px] bg-[#C8F31D] rounded-full"
+                          style={{ boxShadow: '0 0 6px rgba(200,243,29,0.6)' }}
                           transition={{
                             type: 'spring',
                             stiffness: 420,
@@ -99,10 +100,10 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             {/* Search Trigger */}
             <button
               onClick={onOpenCmd}
-              className="flex items-center gap-2 h-[48px] px-4 rounded-[12px] border-2 border-[#111111] bg-[#F9F8F5] shadow-hard-sm text-[13.5px] font-extrabold text-[#111111] hover:bg-white hover:-translate-y-0.5 transition-all min-h-[44px] min-w-[44px]"
+              className="group flex items-center gap-2 h-[48px] px-4 rounded-[12px] border-2 border-[#111111] bg-[#F9F8F5] shadow-hard-sm text-[13.5px] font-extrabold text-[#111111] hover:bg-white hover:-translate-y-0.5 hover:shadow-hard transition-all duration-140 min-h-[44px] min-w-[44px]"
               title="Open Command Palette"
             >
-              <Search className="w-[18px] h-[18px] shrink-0 text-[#111111] stroke-[2px]" />
+              <Search className="w-[18px] h-[18px] shrink-0 text-[#111111] stroke-[2px] group-hover:translate-x-0.5 transition-transform duration-140" />
               <span>Search</span>
               <kbd className="ml-1 leading-none text-[10px] hidden lg:inline-flex">{IS_MAC ? '⌘K' : 'Ctrl K'}</kbd>
             </button>
@@ -110,10 +111,10 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
             {/* Ask ZORQEN Copilot Button */}
             <button
               onClick={() => { closeMobileMenu(); setCopilotOpen(!copilotOpen); }}
-              className={`flex items-center gap-2 h-[48px] min-h-[44px] min-w-[44px] px-4 rounded-[12px] text-[13.5px] font-extrabold border-2 border-[#111111] transition-all hover:-translate-y-0.5 ${
+              className={`group flex items-center gap-2 h-[48px] min-h-[44px] min-w-[44px] px-4 rounded-[12px] text-[13.5px] font-extrabold border-2 border-[#111111] transition-all duration-140 hover:-translate-y-0.5 ${
                 copilotOpen
                   ? 'bg-[#111111] text-white shadow-hard-lime'
-                  : 'bg-white text-[#111111] shadow-hard-sm hover:bg-[#C8F31D]'
+                  : 'bg-white text-[#111111] shadow-hard-sm hover:bg-[#C8F31D] hover:shadow-hard'
               }`}
             >
               <Bot className={`w-[18px] h-[18px] shrink-0 stroke-[2px] ${copilotOpen ? 'text-[#C8F31D]' : 'text-[#111111]'}`} />

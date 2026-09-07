@@ -157,42 +157,42 @@ export default function RepositoriesPage() {
         </button>
       </div>
 
-      {/* Increased Breathing Room around GitHub CTA */}
-      <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[14px] font-semibold text-[#333333] shadow-hard-sm my-2">
+      {/* GitHub Workspace Integration Strip */}
+      <div className="p-5 lg:p-6 rounded-[20px] bg-white border-[3px] border-[#111111] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[14px] font-semibold text-[#333333] shadow-hard interactive-card">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <div className="flex items-center gap-4">
-            <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
+          <div className="flex items-center gap-3">
+            <GithubIcon className="w-5 h-5 text-[#111111] shrink-0" aria-label="GitHub" />
             <span className="font-extrabold text-[#111111]">GitHub Workspace</span>
           </div>
-          <span className="hidden sm:inline text-[#111111]/30">•</span>
+          <span className="hidden sm:inline text-[#111111]/25">•</span>
           {githubConnected ? (
-            <span className="text-[#333333]">Connected as <strong className="text-[#111111]">@{user?.github_login || 'iamdevdhanush'}</strong></span>
+            <span className="text-[#525252] font-semibold">Connected as <strong className="text-[#111111]">@{user?.github_login || 'iamdevdhanush'}</strong></span>
           ) : (
-            <span>Not connected</span>
+            <span className="text-[#525252] font-semibold">Not connected</span>
           )}
-          <span className="hidden sm:inline text-[#111111]/30">•</span>
+          <span className="hidden sm:inline text-[#111111]/25">•</span>
           <span className="mono text-[11px] font-extrabold text-[#525252] uppercase tracking-wider">READ-ONLY ACCESS</span>
         </div>
 
         <button
           onClick={() => setGithubModalOpen(true)}
-          className="btn btn-primary btn-sm px-5 text-[13px] font-extrabold inline-flex items-center gap-2 self-start sm:self-auto shadow-hard-sm"
+          className="group btn btn-primary btn-sm px-5 text-[13px] font-extrabold inline-flex items-center gap-2 self-start sm:self-auto shadow-hard-sm hover:shadow-hard hover:-translate-y-0.5"
         >
           <span>Sync Account</span>
-          <ArrowRight className="w-4 h-4 stroke-[2px]" />
+          <ArrowRight className="w-4 h-4 stroke-[2px] group-hover:translate-x-0.5 transition-transform duration-140" />
         </button>
       </div>
 
       {/* Sticky Search Input Bar */}
       <div className="sticky top-[72px] z-20 bg-[var(--color-base)] pt-2 pb-3">
-        <div className="relative">
-          <Search className="w-[18px] h-[18px] absolute left-4 top-3.5 text-[#111111] stroke-[2px]" />
+        <div className="relative group">
+          <Search className="w-[18px] h-[18px] absolute left-4 top-3.5 text-[#525252] stroke-[2px] group-focus-within:text-[#111111] transition-colors duration-140" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search target repositories by name, language, or branch…"
-            className="w-full h-[48px] min-h-[44px] pl-11 pr-24 bg-white border-2 border-[#111111] focus:ring-2 focus:ring-[#111111] rounded-[14px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#525252] outline-none shadow-hard-sm transition-all"
+            className="w-full h-[48px] min-h-[44px] pl-11 pr-24 bg-white border-2 border-[#111111] focus:ring-2 focus:ring-[#C8F31D] focus:ring-offset-1 rounded-[14px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#888] outline-none shadow-hard-sm transition-all duration-140"
           />
           <kbd className="absolute right-4 top-3.5 hidden md:inline-flex">Ctrl K</kbd>
         </div>
@@ -200,7 +200,7 @@ export default function RepositoriesPage() {
 
       {/* Authorized Repositories List */}
       <div className="space-y-4">
-        <div className="text-metadata">
+        <div className="section-label">
           AUTHORIZED REPOSITORIES ({githubConnected && reposLoading && filteredRepos.length === 0 ? '…' : filteredRepos.length})
         </div>
 

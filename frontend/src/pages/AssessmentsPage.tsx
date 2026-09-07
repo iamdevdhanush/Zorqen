@@ -35,10 +35,11 @@ export default function AssessmentsPage() {
           <button
             onClick={() => setModalOpen(true)}
             disabled={!currentRepo || isRunning}
-            className="btn btn-primary px-6 h-[48px] text-[13.5px] font-extrabold shadow-hard min-h-[44px]"
+            className="group btn btn-primary px-6 h-[48px] text-[13.5px] font-extrabold shadow-hard min-h-[44px] hover:shadow-hard-lg hover:-translate-y-0.5"
           >
             <Play className="w-[18px] h-[18px] fill-current" />
             <span>Run Assessment{currentRepo ? ` · ${currentRepo.name}` : ''}</span>
+            <ArrowRight className="w-4 h-4 stroke-[2px] group-hover:translate-x-0.5 transition-transform duration-140" />
           </button>
         }
       />
@@ -73,50 +74,44 @@ export default function AssessmentsPage() {
       )}
 
       {/* ── 2. ANIMATED PIPELINE PROGRESS TIMELINE ──────────────────────── */}
-      <div className="panel p-6 rounded-[20px] border-2 border-[#111111] space-y-4">
-        <div className="flex items-center justify-between border-b-2 border-[#111111] pb-3">
-          <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#111111] animate-pulse" />
-            <span className="text-metadata">ZORQEN VALIDATION PIPELINE SEQUENCE</span>
+      <div className="panel p-6 rounded-[20px] border-2 border-[#111111] space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#111111]">
+          <div className="section-label flex-1">
+            <span className="w-2 h-2 rounded-full bg-[#111111] animate-pulse shrink-0" />
+            ZORQEN VALIDATION PIPELINE SEQUENCE
           </div>
-          <span className="chip ok text-[10px] font-extrabold">
-            7 ACTIVE PHASES
-          </span>
+          <span className="chip ok text-[10px] font-extrabold shrink-0 ml-3">7 ACTIVE PHASES</span>
         </div>
 
         {/* Horizontal responsive step progress track */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-1">
           {PIPELINE_STAGES.map((stage, idx) => {
             const isFinished = run?.status === 'COMPLETED';
-            const isCurrent = isRunning && !isFinished && idx === 3; // simulated or active
+            const isCurrent = isRunning && !isFinished && idx === 3;
             return (
               <div
                 key={stage.step}
-                className={`p-3 rounded-[14px] border-2 transition-all flex flex-col justify-between min-h-[90px] ${
+                className={`p-3.5 rounded-[12px] border-2 transition-all flex flex-col justify-between min-h-[88px] ${
                   isCurrent
                     ? 'bg-[#C8F31D] border-[#111111] shadow-hard-sm animate-pulse'
                     : isFinished
                     ? 'bg-[#F9F8F5] border-[#111111]'
-                    : 'bg-white border-[#111111]/30 hover:border-[#111111]'
+                    : 'bg-white border-[#111111]/25 hover:border-[#111111]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="mono text-[10.5px] font-extrabold text-[#525252]">
-                    PHASE {stage.step}
+                  <span className={`module-badge ${isCurrent ? 'active' : isFinished ? '' : ''}`}>
+                    {stage.step}
                   </span>
                   {isFinished ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] stroke-[2.5]" />
                   ) : (
-                    <span className="w-2 h-2 rounded-full border border-[#111111]" />
+                    <span className="w-2 h-2 rounded-full border border-[#111111]/40" />
                   )}
                 </div>
                 <div className="pt-2">
-                  <div className="text-[12.5px] font-extrabold text-[#111111] leading-tight">
-                    {stage.name}
-                  </div>
-                  <div className="mono text-[10.5px] font-semibold text-[#525252] truncate">
-                    {stage.desc}
-                  </div>
+                  <div className="text-[12px] font-extrabold text-[#111111] leading-tight">{stage.name}</div>
+                  <div className="mono text-[10px] font-semibold text-[#525252] truncate mt-0.5">{stage.desc}</div>
                 </div>
               </div>
             );

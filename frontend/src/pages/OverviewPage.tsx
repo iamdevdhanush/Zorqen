@@ -136,57 +136,57 @@ export default function OverviewPage() {
         {/* ══════════════════════════════════════════════ END HERO ══════ */}
 
         {/* Connected Security Validation Pipeline */}
-        <div className="space-y-4 relative z-1 pb-8 lg:pb-10">
-          <div className="text-metadata">ZORQEN SECURITY VALIDATION PIPELINE</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-5 relative z-1 pb-8 lg:pb-10">
+          <div className="section-label">ZORQEN SECURITY VALIDATION PIPELINE</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
 
-            {/* Module 01 */}
-            <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
+            {/* Module 01 — AST */}
+            <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4 interactive-card">
               <div className="flex items-center justify-between">
-                <span className="w-7 h-7 rounded-full bg-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
-                  01
-                </span>
-                <span className="mono text-[11px] font-bold text-[#525252]">MODULE // AST</span>
+                <div className="w-10 h-10 rounded-[10px] bg-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shadow-hard-sm">
+                  <ShieldCheck className="w-5 h-5 text-[#111111] stroke-[2px]" aria-hidden="true" />
+                </div>
+                <span className="module-badge active">01</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
-                <ShieldCheck className="w-5 h-5 text-[#111111] stroke-[2px]" />
-                Static AST Analysis
-              </h3>
-              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
+              <div>
+                <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight leading-snug">Static AST Analysis</h3>
+                <div className="mono text-[11px] text-[#525252] font-semibold mt-0.5">MODULE // AST</div>
+              </div>
+              <p className="text-[13.5px] text-[#525252] leading-relaxed font-medium">
                 Deep call graph extraction and pattern matching for OWASP vulnerabilities across your codebase.
               </p>
             </div>
 
-            {/* Module 02 */}
-            <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
+            {/* Module 02 — AI Reasoning */}
+            <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4 interactive-card">
               <div className="flex items-center justify-between">
-                <span className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px]">
-                  02
-                </span>
-                <span className="mono text-[11px] font-bold text-[#525252]">MODULE // REASONING</span>
+                <div className="w-10 h-10 rounded-[10px] bg-[#111111] border-2 border-[#111111] flex items-center justify-center shadow-hard-sm">
+                  <Zap className="w-5 h-5 text-[#C8F31D] stroke-[2px]" aria-hidden="true" />
+                </div>
+                <span className="module-badge inverted">02</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
-                <Zap className="w-5 h-5 text-[#111111] stroke-[2px]" />
-                AI Threat Reasoning
-              </h3>
-              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
+              <div>
+                <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight leading-snug">AI Threat Reasoning</h3>
+                <div className="mono text-[11px] text-[#525252] font-semibold mt-0.5">MODULE // REASONING</div>
+              </div>
+              <p className="text-[13.5px] text-[#525252] leading-relaxed font-medium">
                 Autonomous threat vector correlation and confidence scoring derived from repository data flow architecture.
               </p>
             </div>
 
-            {/* Module 03 */}
-            <div className="p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard space-y-4 transition-all duration-180 hover:-translate-y-1 hover:shadow-hard-lg">
+            {/* Module 03 — Sandbox */}
+            <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] shadow-hard space-y-4 interactive-card">
               <div className="flex items-center justify-between">
-                <span className="w-7 h-7 rounded-full bg-[#F9F8F5] border-1.5 border-[#111111] flex items-center justify-center font-mono font-extrabold text-[12px] text-[#111111]">
-                  03
-                </span>
-                <span className="mono text-[11px] font-bold text-[#525252]">MODULE // SANDBOX</span>
+                <div className="w-10 h-10 rounded-[10px] bg-[#F9F8F5] border-2 border-[#111111] flex items-center justify-center shadow-hard-sm">
+                  <Terminal className="w-5 h-5 text-[#111111] stroke-[2px]" aria-hidden="true" />
+                </div>
+                <span className="module-badge">03</span>
               </div>
-              <h3 className="text-card-title flex items-center gap-2 text-[18px]">
-                <Terminal className="w-5 h-5 text-[#111111] stroke-[2px]" />
-                Sandbox Verification
-              </h3>
-              <p className="text-body text-[13.5px] text-[#333333] leading-snug">
+              <div>
+                <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight leading-snug">Sandbox Verification</h3>
+                <div className="mono text-[11px] text-[#525252] font-semibold mt-0.5">MODULE // SANDBOX</div>
+              </div>
+              <p className="text-[13.5px] text-[#525252] leading-relaxed font-medium">
                 Safe isolated container reproduction verifying exploits and generating automated pull request patches.
               </p>
             </div>

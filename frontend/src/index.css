@@ -73,16 +73,16 @@ svg {
 /* ── Typography Hierarchy ─────────────────────────────────────────────── */
 .text-hero {
   font-size: 38px;
-  line-height: 44px;
+  line-height: 0.94;
   font-weight: 900;
   letter-spacing: -0.02em;
   color: #111111;
 }
 @media (min-width: 1024px) {
   .text-hero {
-    font-size: 56px;
-    line-height: 64px;
-    letter-spacing: -0.025em;
+    font-size: clamp(42px, 5vw, 58px);
+    line-height: 0.94;
+    letter-spacing: -0.028em;
   }
 }
 
@@ -143,8 +143,60 @@ svg {
 .shadow-hard-lg {
   box-shadow: 5px 5px 0px #111111;
 }
+.shadow-hard-xl {
+  box-shadow: 7px 7px 0px #111111;
+}
 .shadow-hard-lime {
   box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C8F31D;
+}
+
+/* ── Industrial Module Badge System ──────────────────────────────────── */
+/* Rounded-square (8px radius) badges — replaces full circles on pipeline modules */
+.module-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid #111111;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  background-color: #F9F8F5;
+  color: #111111;
+  box-shadow: 1px 1px 0px #111111;
+  flex-shrink: 0;
+}
+.module-badge.active {
+  background-color: #C8F31D;
+  color: #111111;
+}
+.module-badge.inverted {
+  background-color: #111111;
+  color: #C8F31D;
+}
+
+/* ── Section Label with Thin Divider ─────────────────────────────────── */
+/* Usage: <div className="section-label">PIPELINE TITLE</div> */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(17, 17, 17, 0.45);
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(17, 17, 17, 0.15);
 }
 
 /* ── Container & Card System (20px Radius, 2px Border, 24px Padding) ── */
@@ -244,8 +296,9 @@ svg {
 }
 
 .btn:focus-visible {
-  outline: 2px solid #111111;
-  outline-offset: 2px;
+  outline: 2px solid #C8F31D;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(200, 243, 29, 0.35);
 }
 
 .btn:disabled {
@@ -435,20 +488,29 @@ svg {
 
 /* ── Interactive Cards Micro-Interactions ──────────────────────────────── */
 .interactive-card {
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 180ms ease;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 160ms ease;
 }
 @media (hover: hover) and (min-width: 768px) {
   .interactive-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     border-color: #111111;
-    box-shadow: 4px 4px 0px #111111;
+    box-shadow: 5px 5px 0px #111111;
   }
 }
 .interactive-card:active {
   transform: translate(1px, 1px);
   box-shadow: 1px 1px 0px #111111;
+}
+
+/* ── Navbar Hover Pill Utility ───────────────────────────────────────── */
+.nav-pill-hover {
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.nav-pill-hover:hover {
+  background-color: #F0EEE8;
+  border-radius: 8px;
 }
 
 /* ── Data Tables (16px Icons, Crisp Borders, Tabular Figures) ─────────── */
@@ -551,6 +613,16 @@ kbd {
   50%      { opacity: 1;    transform: scale(1.15); }
 }
 
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 .animate-radar-sweep {
   transform-origin: center;
   animation: radar-sweep 6s linear infinite;
@@ -558,6 +630,14 @@ kbd {
 
 .animate-signal-pulse {
   animation: signal-pulse 2.5s ease-in-out infinite;
+}
+
+.fade-in {
+  animation: fade-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.slide-up {
+  animation: slide-up 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Accessibility: Prefers Reduced Motion ─────────────────────────────── */
@@ -569,7 +649,7 @@ kbd {
     scroll-behavior: auto !important;
     transform: none !important;
   }
-  .animate-radar-sweep, .animate-signal-pulse {
+  .animate-radar-sweep, .animate-signal-pulse, .fade-in, .slide-up {
     animation: none !important;
   }
 }

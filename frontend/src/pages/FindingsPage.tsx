@@ -157,9 +157,9 @@ export default function FindingsPage() {
     <div className="max-w-[1280px] mx-auto space-y-6 lg:space-y-8 fade-in">
       
       {/* Header with Slim Summary Chips */}
-      <div className="flex flex-wrap items-end justify-between gap-4 pb-4 border-b-2 border-[#111111]">
-        <div className="space-y-1.5">
-          <div className="protocol-tag">zorqen://findings/all</div>
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-5 border-b-2 border-[#111111]">
+        <div className="space-y-2">
+          <div className="protocol-tag inline-block">zorqen://findings/all</div>
           <h1 className="text-page-title">
             Security Findings
           </h1>
@@ -168,35 +168,35 @@ export default function FindingsPage() {
           </p>
         </div>
 
-        {/* Summary Slim Filter Chips */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Summary Slim Filter Chips — scrollable on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto scroll-thin pb-1 max-w-full">
           <button
             onClick={() => setSevFilter(sevFilter === 'critical' ? 'all' : 'critical')}
-            className={`chip sev-critical font-bold transition-transform cursor-pointer ${sevFilter === 'critical' ? 'ring-2 ring-[#111111]' : ''}`}
+            className={`chip sev-critical font-bold transition-all cursor-pointer hover:-translate-y-0.5 ${sevFilter === 'critical' ? 'ring-2 ring-[#111111] shadow-hard-sm' : ''}`}
           >
             {counts.critical} CRITICAL
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'high' ? 'all' : 'high')}
-            className={`chip sev-high font-bold transition-transform cursor-pointer ${sevFilter === 'high' ? 'ring-2 ring-[#111111]' : ''}`}
+            className={`chip sev-high font-bold transition-all cursor-pointer hover:-translate-y-0.5 ${sevFilter === 'high' ? 'ring-2 ring-[#111111] shadow-hard-sm' : ''}`}
           >
             {counts.high} HIGH
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'medium' ? 'all' : 'medium')}
-            className={`chip sev-medium font-bold transition-transform cursor-pointer ${sevFilter === 'medium' ? 'ring-2 ring-[#111111]' : ''}`}
+            className={`chip sev-medium font-bold transition-all cursor-pointer hover:-translate-y-0.5 ${sevFilter === 'medium' ? 'ring-2 ring-[#111111] shadow-hard-sm' : ''}`}
           >
             {counts.medium} MEDIUM
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'low' ? 'all' : 'low')}
-            className={`chip sev-low font-bold transition-transform cursor-pointer ${sevFilter === 'low' ? 'ring-2 ring-[#111111]' : ''}`}
+            className={`chip sev-low font-bold transition-all cursor-pointer hover:-translate-y-0.5 ${sevFilter === 'low' ? 'ring-2 ring-[#111111] shadow-hard-sm' : ''}`}
           >
             {counts.low} LOW
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'resolved' ? 'all' : 'resolved')}
-            className={`chip ok font-bold transition-transform cursor-pointer ${sevFilter === 'resolved' ? 'ring-2 ring-[#111111]' : ''}`}
+            className={`chip ok font-bold transition-all cursor-pointer hover:-translate-y-0.5 ${sevFilter === 'resolved' ? 'ring-2 ring-[#111111] shadow-hard-sm' : ''}`}
           >
             {counts.resolved} RESOLVED
           </button>
@@ -204,42 +204,42 @@ export default function FindingsPage() {
       </div>
 
       {/* Sticky Filter Bar with Search Input & Controls */}
-      <div className="sticky top-[72px] z-20 bg-[#ECEAE4] pt-2 pb-3 space-y-3">
-        {/* Slim Segmented Controls */}
-        <div className="flex items-center gap-2 overflow-x-auto scroll-thin pb-1">
+      <div className="sticky top-[72px] z-20 bg-[#E8E6E1] pt-2 pb-3 space-y-3">
+        {/* Slim Segmented Controls — horizontally scrollable on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto scroll-thin pb-1 -mx-1 px-1">
           <button
             onClick={() => setSevFilter('all')}
-            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'all' ? 'bg-[#111111] text-white' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'all' ? 'bg-[#111111] text-white' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'}`}
           >
             ALL ({counts.all})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'critical' ? 'all' : 'critical')}
-            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'critical' ? 'sev-critical' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'critical' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'}`}
           >
             CRITICAL ({counts.critical})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'high' ? 'all' : 'high')}
-            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'high' ? 'sev-high' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'high' ? 'bg-[#FFEDD5] text-[#C2410C]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'}`}
           >
             HIGH ({counts.high})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'medium' ? 'all' : 'medium')}
-            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'medium' ? 'sev-medium' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'medium' ? 'bg-[#FEF3C7] text-[#B45309]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'}`}
           >
             MEDIUM ({counts.medium})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'low' ? 'all' : 'low')}
-            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'low' ? 'sev-low' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'low' ? 'bg-[#DBEAFE] text-[#1D4ED8]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'}`}
           >
             LOW ({counts.low})
           </button>
           <button
             onClick={() => setSevFilter(sevFilter === 'resolved' ? 'all' : 'resolved')}
-            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'resolved' ? 'bg-[#C8F31D] text-[#111111]' : 'bg-white text-[#111111]'}`}
+            className={`btn btn-xs rounded-full text-[12px] font-extrabold shrink-0 border-2 border-[#111111] shadow-hard-sm ${sevFilter === 'resolved' ? 'bg-[#C8F31D] text-[#111111]' : 'bg-white text-[#111111] hover:bg-[#F9F8F5]'}`}
           >
             RESOLVED ({counts.resolved})
           </button>
@@ -247,28 +247,28 @@ export default function FindingsPage() {
 
         {/* Integrated Search Input + Status Dropdown */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="w-[18px] h-[18px] absolute left-4 top-3.5 text-[#111111] stroke-[2px]" />
+          <div className="relative flex-1 group">
+            <Search className="w-[18px] h-[18px] absolute left-4 top-3.5 text-[#525252] stroke-[2px] group-focus-within:text-[#111111] transition-colors duration-140" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search findings by title, file path, CWE or endpoint…"
-              className="w-full h-[48px] min-h-[44px] pl-11 pr-10 bg-white border-2 border-[#111111] rounded-[14px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#525252] outline-none focus:ring-2 focus:ring-[#111111] shadow-hard-sm"
+              className="w-full h-[48px] min-h-[44px] pl-11 pr-10 bg-white border-2 border-[#111111] rounded-[14px] text-[14.5px] font-semibold text-[#111111] placeholder:text-[#888] outline-none focus:ring-2 focus:ring-[#C8F31D] focus:ring-offset-1 shadow-hard-sm transition-all duration-140"
             />
             {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-3 text-[#525252] min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <button onClick={() => setQuery('')} className="absolute right-3 top-3 text-[#525252] min-h-[44px] min-w-[44px] flex items-center justify-center hover:text-[#111111] transition-colors">
                 <X className="w-4 h-4 stroke-[2px]" />
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <SlidersHorizontal className="w-4 h-4 text-[#111111] shrink-0 stroke-[2px]" />
+            <SlidersHorizontal className="w-4 h-4 text-[#525252] shrink-0 stroke-[2px]" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-[48px] rounded-[14px] border-2 border-[#111111] bg-white px-4 font-semibold text-[13.5px] text-[#111111] outline-none shadow-hard-sm"
+              className="h-[48px] rounded-[14px] border-2 border-[#111111] bg-white px-4 font-semibold text-[13.5px] text-[#111111] outline-none focus:ring-2 focus:ring-[#C8F31D] shadow-hard-sm"
             >
               <option value="all">ALL STATUSES</option>
               <option value="OPEN">OPEN</option>
