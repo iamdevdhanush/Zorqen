@@ -160,10 +160,8 @@ export default function RepositoriesPage() {
       {/* Increased Breathing Room around GitHub CTA */}
       <div className="p-6 rounded-[20px] bg-white border-2 border-[#111111] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[14px] font-semibold text-[#333333] shadow-hard-sm my-2">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[8px] bg-[#111111] text-[#C8F31D] flex items-center justify-center shrink-0">
-              <GithubIcon className="w-4 h-4 text-[#C8F31D]" />
-            </div>
+          <div className="flex items-center gap-4">
+            <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
             <span className="font-extrabold text-[#111111]">GitHub Workspace</span>
           </div>
           <span className="hidden sm:inline text-[#111111]/30">•</span>

@@ -133,8 +133,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="" className="w-7 h-7 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] flex items-center justify-center shrink-0">
-                      <GithubIcon className="w-4 h-4 text-[#C8F31D]" />
+                    <div className="w-7 h-7 rounded-full bg-[#EAEAE2] text-[#111111] border-1.5 border-[#111111] flex items-center justify-center shrink-0">
+                      <GithubIcon className="w-4 h-4 text-[#111111]" aria-label="GitHub" />
                     </div>
                   )}
                   <span className="text-[13.5px] font-extrabold max-w-[110px] truncate">
@@ -150,8 +150,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       {avatarUrl ? (
                         <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-[#111111] text-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shrink-0">
-                          <GithubIcon className="w-5 h-5 text-[#C8F31D]" />
+                        <div className="w-10 h-10 rounded-full bg-[#EAEAE2] text-[#111111] border-2 border-[#111111] flex items-center justify-center shrink-0">
+                          <GithubIcon className="w-5 h-5 text-[#111111]" aria-label="GitHub" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1 leading-snug">
@@ -174,7 +174,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       className="flex items-center justify-between px-3 py-2 rounded-[10px] text-[13px] font-bold text-[#111111] hover:bg-[#F9F8F5] transition-all min-h-[44px]"
                     >
                       <div className="flex items-center gap-2.5">
-                        <GithubIcon className="w-4 h-4 text-[#111111]" />
+                        <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
                         <span>GitHub Profile</span>
                       </div>
                       <ExternalLink className="w-3.5 h-3.5 text-[#525252] stroke-[2px]" />
@@ -209,7 +209,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         onClick={() => { close(); setGithubModalOpen(true); }}
                         className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[10px] text-[13px] font-extrabold text-[#111111] bg-[#C8F31D] border-2 border-[#111111] hover:bg-[#B8E316] transition-all min-h-[44px]"
                       >
-                        <GithubIcon className="w-4 h-4 text-[#111111]" />
+                        <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
                         <span>Connect GitHub Account</span>
                       </button>
                     )}
@@ -253,8 +253,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-[#111111] text-[#C8F31D] flex items-center justify-center">
-                  <GithubIcon className="w-5 h-5 text-[#C8F31D]" />
+                <div className="w-full h-full bg-[#EAEAE2] text-[#111111] flex items-center justify-center">
+                  <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
                 </div>
               )}
             </button>
@@ -303,8 +303,8 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                 ) : avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-12 h-12 rounded-full border-2 border-[#111111] object-cover shrink-0" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-[#111111] text-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shrink-0">
-                    <GithubIcon className="w-6 h-6 text-[#C8F31D]" />
+                  <div className="w-12 h-12 rounded-full bg-[#EAEAE2] text-[#111111] border-2 border-[#111111] flex items-center justify-center shrink-0">
+                    <GithubIcon className="w-6 h-6 text-[#111111]" aria-label="GitHub" />
                   </div>
                 )}
 

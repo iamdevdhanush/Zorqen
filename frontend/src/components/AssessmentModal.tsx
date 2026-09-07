@@ -113,7 +113,7 @@ export default function AssessmentModal({ onClose }: AssessmentModalProps) {
           <div className="p-4 rounded-[16px] bg-white border-2 border-[#111111] shadow-hard-sm space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
-                <GithubIcon className="w-4 h-4 text-[#111111]" />
+                <GithubIcon className="w-4 h-4 text-[#111111]" aria-label="GitHub" />
                 <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-[#525252]">
                   REPOSITORY
                 </span>

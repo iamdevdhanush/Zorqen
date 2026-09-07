@@ -124,8 +124,8 @@ export default function Sidebar() {
                 open ? 'bg-[var(--color-hover)]' : 'hover:bg-[var(--color-hover)]'
               }`}
             >
-              <GithubIcon className="w-[14px] h-[14px] shrink-0" style={{ color: githubConnected ? 'var(--color-accent)' : 'var(--color-ink-3)' }} />
-              <span className="mono text-[10px] flex-1 truncate" style={{ color: githubConnected ? 'var(--color-accent)' : 'var(--color-ink-2)' }}>
+              <GithubIcon className="w-[14px] h-[14px] shrink-0 text-[#111111]" aria-label="GitHub" />
+              <span className="mono text-[10px] flex-1 truncate font-bold text-[#111111]">
                 {githubConnected ? `CONNECTED @${(user?.github_login ?? '').toUpperCase()}` : 'CONNECT GITHUB'}
               </span>
               <ChevronDown className={`w-3 h-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} style={{ color: 'var(--color-ink-3)' }} />
@@ -151,10 +151,9 @@ export default function Sidebar() {
               ) : (
                 <button
                   onClick={() => { close(); connectGithub(); }}
-                  className="w-full text-left flex items-center gap-2 px-3 py-[6px] text-[12px] hover:bg-[var(--color-hover)]"
-                  style={{ color: 'var(--color-ink-2)' }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-[6px] text-[12px] hover:bg-[var(--color-hover)] text-[#111111]"
                 >
-                  <GithubIcon className="w-3 h-3" style={{ color: 'var(--color-ink-3)' }} />
+                  <GithubIcon className="w-3.5 h-3.5 text-[#111111]" aria-label="GitHub" />
                   Connect GitHub
                 </button>
               )}
@@ -212,10 +211,9 @@ export default function Sidebar() {
               ) : (
                 <button
                   onClick={() => { close(); connectGithub(); }}
-                  className="w-full text-left flex items-center gap-2 px-3 py-[5px] text-[12px] hover:bg-[var(--color-hover)]"
-                  style={{ color: 'var(--color-ink-2)' }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-[5px] text-[12px] hover:bg-[var(--color-hover)] text-[#111111]"
                 >
-                  <GithubIcon className="w-3 h-3" style={{ color: 'var(--color-ink-3)' }} /> Connect GitHub
+                  <GithubIcon className="w-3.5 h-3.5 text-[#111111]" aria-label="GitHub" /> Connect GitHub
                 </button>
               )}
             </div>

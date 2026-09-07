@@ -106,7 +106,7 @@ const CommandPalette = memo(function CommandPalette({ onClose }: CommandPaletteP
       id: 'connect-github',
       label: 'Connect GitHub Account',
       description: 'OAuth read-only access',
-      icon: <GithubIcon className="w-4 h-4 text-[#111111]" />,
+      icon: <GithubIcon className="w-4 h-4 text-[#111111]" aria-label="GitHub" />,
       group: 'Actions',
       action: () => {
         connectGithub();

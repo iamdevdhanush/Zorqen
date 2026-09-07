@@ -1,4 +1,4 @@
-import { LogOut, PlugZap, ShieldCheck } from 'lucide-react';
+import { LogOut, ShieldCheck } from 'lucide-react';
 import { KV, KVCol, Panel } from '../components/ui';
 import { useWorkspace } from '../store/WorkspaceContext';
 import { getApiBase } from '../services/api';
@@ -25,7 +25,7 @@ export default function SettingsPage() {
         <div className="p-4 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <GithubIcon className="w-5 h-5 text-[var(--color-ink)] shrink-0" />
+              <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-bold text-[var(--color-ink)]">
                   {githubConnected ? `Connected as @${user?.github_login}` : 'Not connected'}
@@ -40,8 +40,8 @@ export default function SettingsPage() {
             {githubConnected ? (
               <button onClick={disconnectGithub} className="btn btn-sm w-full sm:w-auto justify-center">Disconnect</button>
             ) : (
-              <button onClick={connectGithub} className="btn btn-accent btn-sm w-full sm:w-auto justify-center">
-                <PlugZap className="w-3.5 h-3.5" /> Connect GitHub
+              <button onClick={connectGithub} className="btn btn-accent btn-sm w-full sm:w-auto justify-center flex items-center gap-2">
+                <GithubIcon className="w-4 h-4 text-[#111111]" aria-label="GitHub" /> Connect GitHub
               </button>
             )}
           </div>

@@ -191,7 +191,7 @@ export const MeetDeveloperModal = memo(function MeetDeveloperModal({
               rel="noreferrer"
               className="btn btn-primary h-[44px] min-h-[44px] text-[12.5px] px-2 w-full justify-center shadow-hard-sm no-underline"
             >
-              <GithubIcon className="w-4 h-4 text-[#111111]" />
+              <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
               <span>GitHub</span>
             </a>
             <a

@@ -85,7 +85,7 @@ export default function BannerPage() {
             rel="noreferrer"
             className="btn font-extrabold text-sm sm:text-base px-6 py-3 shadow-hard hover:-translate-y-0.5 transition-transform"
           >
-            <GithubIcon className="w-4 h-4 text-[#111111]" />
+            <GithubIcon className="w-4 h-4 text-[#111111]" aria-label="GitHub" />
             <span>VIEW ON GITHUB</span>
           </a>
         </div>
@@ -268,7 +268,7 @@ export default function BannerPage() {
             rel="noreferrer"
             className="btn btn-sm"
           >
-            <GithubIcon className="w-3.5 h-3.5 text-[#111111]" />
+            <GithubIcon className="w-3.5 h-3.5 text-[#111111]" aria-label="GitHub" />
             <span>GitHub</span>
           </a>
 

@@ -128,7 +128,7 @@ export const EmptyStateView = memo(function EmptyStateView({
               onClick={onAction}
               className="btn btn-accent px-8 h-[48px] text-[14px] font-extrabold gap-2.5 inline-flex shadow-hard-sm min-h-[44px]"
             >
-              <GithubIcon className="w-[18px] h-[18px] text-[#111111]" />
+              <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
               <span>{actionLabel || 'Connect GitHub Account'}</span>
             </button>
           </div>

@@ -111,7 +111,7 @@ export default function TopBar({ onOpenCmd }: TopBarProps) {
             className="w-full text-left flex items-center gap-2 px-3 py-[6px] text-[12px] hover:bg-[var(--color-hover)] transition-colors"
             style={{ color: 'var(--color-ink-2)' }}
           >
-            <GithubIcon className="w-3 h-3" style={{ color: 'var(--color-ink-3)' }} />
+            <GithubIcon className="w-3.5 h-3.5 text-[#111111]" aria-label="GitHub" />
             <span>Browse repositories…</span>
           </button>
         </div>

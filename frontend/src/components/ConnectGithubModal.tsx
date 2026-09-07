@@ -27,10 +27,8 @@ export default function ConnectGithubModal() {
       <div className="w-full max-w-[440px] bg-white border-2 border-[#111111] rounded-[24px] shadow-hard-lg overflow-hidden slide-up">
         {/* Sticky Modal Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b-2 border-[#111111] bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[12px] bg-[#111111] text-[#C8F31D] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
-              <GithubIcon className="w-5 h-5 text-[#C8F31D]" />
-            </div>
+          <div className="flex items-center gap-3.5">
+            <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
             <div>
               <div className="mono text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#525252]">
                 AUTHORIZATION
@@ -62,7 +60,7 @@ export default function ConnectGithubModal() {
             className="w-full h-[48px] px-5 rounded-[12px] bg-[#C8F31D] hover:bg-[#B8E316] border-2 border-[#111111] text-[#111111] font-extrabold text-[15px] flex items-center justify-between transition-all duration-180 group cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111111] shadow-hard hover:-translate-y-0.5 active:translate-y-0 min-h-[44px]"
           >
             <div className="flex items-center gap-2.5">
-              <GithubIcon className="w-5 h-5 text-[#111111]" />
+              <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
               <span>Continue with GitHub</span>
             </div>
             <ArrowRight className="w-5 h-5 stroke-[2] text-[#111111] group-hover:translate-x-1 transition-transform duration-140" />
