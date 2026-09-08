@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  --color-base: #E8E6E1;        /* Warm off-white background */
+  --color-base: #ECE9E3;        /* Warm off-white background */
   --color-panel: #FFFFFF;       /* Crisp white card surface */
   --color-panel-2: #F9F8F5;     /* Secondary light surface */
   --color-hover: #F2F0E9;       /* Warm hover fill */
@@ -640,6 +640,35 @@ kbd {
   animation: slide-up 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ── Ambient Security Network Animations (Linear / Vercel style) ───────── */
+@keyframes ambientFloat {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(2px, -3px, 0);
+  }
+}
+
+@keyframes ambientPulse {
+  0%, 100% {
+    opacity: 0.70;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.ambient-float {
+  animation: ambientFloat 24s ease-in-out infinite;
+}
+
+.ambient-glow-pulse {
+  animation: ambientPulse 4s ease-in-out infinite;
+}
+
 /* ── Accessibility: Prefers Reduced Motion ─────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
@@ -649,7 +678,7 @@ kbd {
     scroll-behavior: auto !important;
     transform: none !important;
   }
-  .animate-radar-sweep, .animate-signal-pulse, .fade-in, .slide-up {
+  .animate-radar-sweep, .animate-signal-pulse, .fade-in, .slide-up, .ambient-float, .ambient-glow-pulse {
     animation: none !important;
   }
 }

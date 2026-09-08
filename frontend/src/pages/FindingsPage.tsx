@@ -204,7 +204,7 @@ export default function FindingsPage() {
       </div>
 
       {/* Sticky Filter Bar with Search Input & Controls */}
-      <div className="sticky top-[72px] z-20 bg-[#E8E6E1] pt-2 pb-3 space-y-3">
+      <div className="sticky top-[72px] z-20 bg-[#ECE9E3] pt-2 pb-3 space-y-3">
         {/* Slim Segmented Controls — horizontally scrollable on mobile */}
         <div className="flex items-center gap-2 overflow-x-auto scroll-thin pb-1 -mx-1 px-1">
           <button

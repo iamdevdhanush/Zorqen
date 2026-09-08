@@ -15,10 +15,7 @@ import GithubIcon from '../components/GithubIcon';
 import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
-import SecurityGridViz from '../components/SecurityGridViz';
 import {
-  HeroDotUpperRight,
-  HeroDotGithubCard,
   HeroDotTransition,
   PageCornerDotAccent,
 } from '../components/SelectiveDotGrid';
@@ -51,50 +48,62 @@ export default function OverviewPage() {
       <div className="relative max-w-[1280px] mx-auto fade-in overflow-hidden">
 
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION — Premium 12-Column Grid (Linear x Vercel x Stripe quality)
-            120px top clearance from navbar, 7 cols left, 5 cols security grid right
+            HERO SECTION — Editorial Minimal Brutalist (Linear x Vercel x Framer)
+            60/40 desktop grid, 70% negative space, single micro-status indicator
         ══════════════════════════════════════════════════════════════════ */}
         <div className="relative pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-12 sm:pb-16 lg:pb-20">
 
-          {/* Selective dot background behind upper-right hero visualization */}
-          <HeroDotUpperRight />
-
-          <div className="grid grid-cols-12 gap-8 lg:gap-12 items-center relative z-1">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start relative z-1">
             
-            {/* ── LEFT PANEL (7 Columns Desktop) ── */}
-            <div className="col-span-12 lg:col-span-7 flex flex-col justify-center">
+            {/* ── LEFT COLUMN (60% Desktop) ── */}
+            <div className="lg:col-span-3 flex flex-col justify-center relative">
 
-              {/* Badge: uppercase, 11px, letter-spacing 0.18em */}
-              <div className="mb-[28px]">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
+              {/* Badge: Protocol tag with subtle dotted accent behind */}
+              <div className="relative z-1 mb-6 sm:mb-7">
+                {/* Subtle dotted texture fading behind the badge only */}
+                <div
+                  aria-hidden="true"
+                  className="dot-accent absolute -top-8 -left-8 w-[220px] h-[110px] pointer-events-none select-none z-0"
+                  style={{
+                    WebkitMaskImage: 'radial-gradient(ellipse at 40% 40%, rgba(0,0,0,0.55) 0%, transparent 68%)',
+                    maskImage: 'radial-gradient(ellipse at 40% 40%, rgba(0,0,0,0.55) 0%, transparent 68%)',
+                  }}
+                />
+
+                <div className="relative z-1 inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
                   <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
                   <span>zorqen://platform/overview</span>
                 </div>
               </div>
 
-              {/* Heading: 72px desktop / 56px tablet / 40px mobile, font-black, line-height 0.9 */}
-              <div className="mb-[30px]">
-                <h1 className="text-[#111111] font-black text-[40px] sm:text-[56px] lg:text-[72px] leading-[0.9] tracking-[-0.03em]">
-                  Autonomous
+              {/* Headline: Optical balance, 900 weight, tight line-height, soft radial fade behind */}
+              <div className="relative z-1 mb-6 sm:mb-7">
+                {/* Very soft radial fade behind the headline */}
+                <div
+                  aria-hidden="true"
+                  className="absolute -top-8 left-0 w-[520px] h-[220px] pointer-events-none select-none z-0"
+                  style={{
+                    background: 'radial-gradient(ellipse at 30% 50%, rgba(200, 243, 29, 0.05) 0%, rgba(17, 17, 17, 0.015) 45%, transparent 70%)',
+                  }}
+                />
+
+                <h1 className="relative z-1 text-[#111111] font-[900] text-[38px] sm:text-[54px] lg:text-[66px] xl:text-[72px] leading-[0.96] tracking-[-0.035em] max-w-[840px]">
+                  Autonomous Security Validation
                   <br />
-                  Security Validation
-                  <br />
-                  <span className="text-[#333333]">for AI-built software.</span>
+                  <span className="text-[#3a3a3a]">for AI-built software.</span>
                 </h1>
               </div>
 
-              {/* Description: 20px desktop / 17px mobile, max-width 540px */}
-              <div className="mb-[40px]">
-                <p className="text-[#2a2a2a] font-medium text-[17px] lg:text-[20px] max-w-[540px] leading-[1.6]">
+              {/* Description: 18px with better readability */}
+              <div className="relative z-1 mb-8 sm:mb-10">
+                <p className="text-[#333333] font-normal text-[16.5px] sm:text-[18px] max-w-[580px] leading-[1.65]">
                   Continuous threat validation and vulnerability remediation for repositories you control.
                   Find it. Fix it. Prove it.
                 </p>
               </div>
 
-              {/* GitHub Workspace Card — integrated cleanly into hero flow */}
-              <div className="relative max-w-[620px]">
-                <HeroDotGithubCard className="top-1/2 -translate-y-1/2 -left-6" />
-
+              {/* GitHub Workspace Card — Directly below, zero dots behind, 1px micro-lift */}
+              <div className="relative z-1 w-full max-w-[620px]">
                 <div
                   onClick={connectGithub}
                   role="button"
@@ -102,7 +111,7 @@ export default function OverviewPage() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
                   }}
-                  className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[24px] bg-white border-[3px] border-[#111111] shadow-hard hover:shadow-hard-lg hover:-translate-y-[2px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[22px] bg-white border-[2.5px] border-[#111111] shadow-[4px_4px_0px_#111111] hover:shadow-[5px_5px_0px_#111111] hover:-translate-y-[1px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
                 >
                   <div className="flex items-center gap-4 text-[14px]">
                     <div className="w-10 h-10 rounded-[12px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
@@ -118,13 +127,13 @@ export default function OverviewPage() {
                             : 'Disconnected'}
                         </span>
                       </div>
-                      <div className="mono text-[11px] font-semibold text-[#666666]">
+                      <div className="mono text-[11px] font-semibold text-[#525252]">
                         READ-ONLY INTEGRATION // ENCRYPTED
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] transition-all duration-150 shrink-0 shadow-hard-sm self-start sm:self-auto">
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] hover:-translate-y-[1px] transition-all duration-150 shrink-0 shadow-hard-sm self-start sm:self-auto">
                     <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
                     <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
                   </div>
@@ -133,9 +142,60 @@ export default function OverviewPage() {
 
             </div>
 
-            {/* ── RIGHT PANEL (5 Columns Desktop) Security Grid Visualization ── */}
-            <div className="col-span-12 lg:col-span-5 relative mt-6 lg:mt-0">
-              <SecurityGridViz />
+            {/* ── RIGHT COLUMN (40% Desktop): 70% Negative Space + Single Floating Micro-Status Card ── */}
+            <div className="hidden lg:flex lg:col-span-2 flex-col items-end pt-2 xl:pt-4 relative select-none">
+              
+              {/* Subtle dotted texture fading behind the micro-card only (with 2-4px parallax feel) */}
+              <div
+                aria-hidden="true"
+                className="dot-accent absolute -top-10 -right-6 w-[280px] h-[250px] z-0 pointer-events-none select-none transition-transform duration-500 hover:translate-x-1 hover:translate-y-1"
+                style={{
+                  WebkitMaskImage: 'radial-gradient(ellipse at 65% 45%, rgba(0,0,0,0.65) 0%, transparent 68%)',
+                  maskImage: 'radial-gradient(ellipse at 65% 45%, rgba(0,0,0,0.65) 0%, transparent 68%)',
+                }}
+              />
+
+              {/* Floating micro-status system indicator card */}
+              <div
+                className="relative z-1 w-[205px] bg-white rounded-[14px] border-2 border-[#111111] p-3.5 shadow-[4px_4px_0px_#111111] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_#111111,0_0_18px_rgba(200,243,29,0.35)] cursor-default group"
+              >
+                {/* Header: Live Validation & status dot */}
+                <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#111111]/12">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
+                    <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-[#111111]">
+                      Live Validation
+                    </span>
+                  </div>
+                  <span className="mono text-[9px] font-bold text-[#525252] px-1 py-0.5 rounded bg-[#F4F2EC] border border-[#111111]/20">
+                    SYS
+                  </span>
+                </div>
+
+                {/* Metric Rows */}
+                <div className="space-y-1.5 mono text-[11px]">
+                  <div className="flex items-center justify-between py-0.5">
+                    <span className="text-[#525252] font-semibold text-[10.5px]">AST</span>
+                    <span className="font-extrabold text-[#111111] text-[10.5px] tracking-wide">ACTIVE</span>
+                  </div>
+                  <div className="flex items-center justify-between py-0.5">
+                    <span className="text-[#525252] font-semibold text-[10.5px]">Sandbox</span>
+                    <span className="font-extrabold text-[#111111] text-[10.5px] tracking-wide">READY</span>
+                  </div>
+                  <div className="flex items-center justify-between py-0.5">
+                    <span className="text-[#525252] font-semibold text-[10.5px]">Secrets</span>
+                    <span className="font-extrabold text-[#111111] text-[10.5px] tabular-nums">0</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1 mt-1 border-t border-[#111111]/10">
+                    <span className="text-[#525252] font-semibold text-[10.5px]">Threat Score</span>
+                    <span className="font-black text-[#111111] px-1.5 py-0.5 rounded bg-[#C8F31D] border border-[#111111] text-[10px] shadow-hard-sm">
+                      A+
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 70% Generous Negative Space Preserved */}
             </div>
 
           </div>
