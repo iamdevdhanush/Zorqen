@@ -15,6 +15,7 @@ import GithubIcon from '../components/GithubIcon';
 import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
+import AmbientSecurityGraph from '../components/AmbientSecurityGraph';
 import {
   HeroDotTransition,
   PageCornerDotAccent,
@@ -53,10 +54,10 @@ export default function OverviewPage() {
         ══════════════════════════════════════════════════════════════════ */}
         <div className="relative pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-12 sm:pb-16 lg:pb-20">
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start relative z-1">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 items-center relative z-1">
             
             {/* ── LEFT COLUMN (60% Desktop) ── */}
-            <div className="lg:col-span-3 flex flex-col justify-center relative">
+            <div className="md:col-span-3 flex flex-col justify-center relative z-10">
 
               {/* Badge: Protocol tag with subtle dotted accent behind */}
               <div className="relative z-1 mb-6 sm:mb-7">
@@ -142,60 +143,9 @@ export default function OverviewPage() {
 
             </div>
 
-            {/* ── RIGHT COLUMN (40% Desktop): 70% Negative Space + Single Floating Micro-Status Card ── */}
-            <div className="hidden lg:flex lg:col-span-2 flex-col items-end pt-2 xl:pt-4 relative select-none">
-              
-              {/* Subtle dotted texture fading behind the micro-card only (with 2-4px parallax feel) */}
-              <div
-                aria-hidden="true"
-                className="dot-accent absolute -top-10 -right-6 w-[280px] h-[250px] z-0 pointer-events-none select-none transition-transform duration-500 hover:translate-x-1 hover:translate-y-1"
-                style={{
-                  WebkitMaskImage: 'radial-gradient(ellipse at 65% 45%, rgba(0,0,0,0.65) 0%, transparent 68%)',
-                  maskImage: 'radial-gradient(ellipse at 65% 45%, rgba(0,0,0,0.65) 0%, transparent 68%)',
-                }}
-              />
-
-              {/* Floating micro-status system indicator card */}
-              <div
-                className="relative z-1 w-[205px] bg-white rounded-[14px] border-2 border-[#111111] p-3.5 shadow-[4px_4px_0px_#111111] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_#111111,0_0_18px_rgba(200,243,29,0.35)] cursor-default group"
-              >
-                {/* Header: Live Validation & status dot */}
-                <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#111111]/12">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
-                    <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-[#111111]">
-                      Live Validation
-                    </span>
-                  </div>
-                  <span className="mono text-[9px] font-bold text-[#525252] px-1 py-0.5 rounded bg-[#F4F2EC] border border-[#111111]/20">
-                    SYS
-                  </span>
-                </div>
-
-                {/* Metric Rows */}
-                <div className="space-y-1.5 mono text-[11px]">
-                  <div className="flex items-center justify-between py-0.5">
-                    <span className="text-[#525252] font-semibold text-[10.5px]">AST</span>
-                    <span className="font-extrabold text-[#111111] text-[10.5px] tracking-wide">ACTIVE</span>
-                  </div>
-                  <div className="flex items-center justify-between py-0.5">
-                    <span className="text-[#525252] font-semibold text-[10.5px]">Sandbox</span>
-                    <span className="font-extrabold text-[#111111] text-[10.5px] tracking-wide">READY</span>
-                  </div>
-                  <div className="flex items-center justify-between py-0.5">
-                    <span className="text-[#525252] font-semibold text-[10.5px]">Secrets</span>
-                    <span className="font-extrabold text-[#111111] text-[10.5px] tabular-nums">0</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1 mt-1 border-t border-[#111111]/10">
-                    <span className="text-[#525252] font-semibold text-[10.5px]">Threat Score</span>
-                    <span className="font-black text-[#111111] px-1.5 py-0.5 rounded bg-[#C8F31D] border border-[#111111] text-[10px] shadow-hard-sm">
-                      A+
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 70% Generous Negative Space Preserved */}
+            {/* ── RIGHT COLUMN: Subtle Ambient Security Visualization (No cards, no boxes, 35-40% width) ── */}
+            <div className="hidden md:flex md:col-span-2 items-center justify-end relative select-none pointer-events-none md:scale-[0.85] md:translate-x-4 lg:scale-100 lg:translate-x-0 origin-right transition-transform duration-300">
+              <AmbientSecurityGraph />
             </div>
 
           </div>

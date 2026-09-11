@@ -661,12 +661,93 @@ kbd {
   }
 }
 
+@keyframes cyberRipple {
+  0% {
+    r: 6;
+    opacity: 0.75;
+    stroke-width: 1.5;
+  }
+  70% {
+    opacity: 0.35;
+    stroke-width: 1;
+  }
+  100% {
+    r: 68;
+    opacity: 0;
+    stroke-width: 0.5;
+  }
+}
+
+@keyframes cyberEdgeFade {
+  0%, 100% {
+    opacity: 0.60;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes cyberEdgeFadeAlt {
+  0%, 100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.60;
+  }
+}
+
+@keyframes cyberNodePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+@keyframes cyberLimeGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(200, 255, 26, 0.45));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(200, 255, 26, 0.75));
+    transform: scale(1.04);
+  }
+}
+
 .ambient-float {
   animation: ambientFloat 24s ease-in-out infinite;
 }
 
 .ambient-glow-pulse {
   animation: ambientPulse 4s ease-in-out infinite;
+}
+
+.animate-cyber-ripple {
+  animation: cyberRipple 3.6s cubic-bezier(0.1, 0.6, 0.3, 1) infinite;
+}
+
+.animate-cyber-edge {
+  animation: cyberEdgeFade 4s ease-in-out infinite;
+}
+
+.animate-cyber-edge-alt {
+  animation: cyberEdgeFadeAlt 5s ease-in-out infinite;
+}
+
+.animate-cyber-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cyberNodePulse 3.5s ease-in-out infinite;
+}
+
+.animate-cyber-lime {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cyberLimeGlow 4s ease-in-out infinite;
 }
 
 /* ── Accessibility: Prefers Reduced Motion ─────────────────────────────── */
@@ -678,7 +759,17 @@ kbd {
     scroll-behavior: auto !important;
     transform: none !important;
   }
-  .animate-radar-sweep, .animate-signal-pulse, .fade-in, .slide-up, .ambient-float, .ambient-glow-pulse {
+  .animate-radar-sweep,
+  .animate-signal-pulse,
+  .fade-in,
+  .slide-up,
+  .ambient-float,
+  .ambient-glow-pulse,
+  .animate-cyber-ripple,
+  .animate-cyber-edge,
+  .animate-cyber-edge-alt,
+  .animate-cyber-node,
+  .animate-cyber-lime {
     animation: none !important;
   }
 }
