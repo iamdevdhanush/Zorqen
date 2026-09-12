@@ -15,7 +15,6 @@ import GithubIcon from '../components/GithubIcon';
 import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
-import AbstractSecurityGeometry from '../components/AbstractSecurityGeometry';
 import {
   PageCornerDotAccent,
 } from '../components/SelectiveDotGrid';
@@ -48,87 +47,80 @@ export default function OverviewPage() {
       <div className="relative max-w-[1440px] mx-auto fade-in overflow-hidden">
 
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION — 2-Column Balanced Editorial Layout (Linear x Vercel)
-            Left 60% (desktop) / 55% (tablet), Right 40% (desktop) / 45% (tablet).
-            Vertically centered. Max 3-line headline. Abstract security geometry at 5-8% opacity.
+            HERO SECTION — Pure Editorial Typography Focus (Linear x Vercel)
+            - Content expands naturally across 780–920px max width.
+            - Headline: 84px desktop, 900 weight, 0.92 line-height, strictly 3 lines.
+            - Zero right-side graphics, radar, dots, widgets, or illustrations.
+            - Generous desktop spacing: 110px top padding, 120px bottom padding.
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="relative pt-6 sm:pt-10 md:pt-12 lg:pt-16 pb-14 sm:pb-18 lg:pb-22 overflow-visible">
+        <div className="relative pt-14 sm:pt-20 md:pt-24 lg:pt-[110px] pb-16 sm:pb-20 md:pb-24 lg:pb-[120px] overflow-visible">
 
-          <div className="grid grid-cols-1 md:grid-cols-20 gap-8 md:gap-8 lg:gap-12 xl:gap-16 items-center relative z-1">
-            
-            {/* ── LEFT COLUMN: 60% Desktop (12/20), 55% Tablet (11/20), 100% Mobile ── */}
-            <div className="col-span-1 md:col-span-11 lg:col-span-12 flex flex-col justify-center relative z-10 w-full">
+          {/* Hero Content Column (780–920px width) with generous whitespace to the right */}
+          <div className="w-full max-w-[880px] flex flex-col justify-center relative z-10">
 
-              {/* Protocol Badge */}
-              <div className="relative z-1 mb-6 sm:mb-7">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
-                  <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
-                  <span>zorqen://platform/overview</span>
-                </div>
+            {/* Protocol Badge */}
+            <div className="relative z-1 mb-7 sm:mb-8">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
+                <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
+                <span>zorqen://platform/overview</span>
               </div>
-
-              {/* Headline: Large, Horizontal, 72–88px desktop, Max 3 Lines */}
-              <div className="relative z-1 mb-6 sm:mb-7">
-                <h1 className="text-[#111111] font-[900] text-[34px] sm:text-[42px] md:text-[38px] lg:text-[54px] xl:text-[72px] 2xl:text-[80px] leading-[0.98] tracking-[-0.035em]">
-                  Autonomous Security Validation
-                  <br />
-                  <span className="text-[#444444] inline-block">for AI-built Software.</span>
-                </h1>
-              </div>
-
-              {/* Supporting Text: Limit width to 600px, high readability, breathing room */}
-              <div className="relative z-1 mb-8 sm:mb-10">
-                <p className="text-[#333333] font-normal text-[16.5px] sm:text-[18px] lg:text-[18.5px] max-w-[600px] leading-[1.65]">
-                  Continuous threat validation and vulnerability remediation for repositories you control.
-                  Find it. Fix it. Prove it.
-                </p>
-              </div>
-
-              {/* GitHub CTA Card: Limited width, 4px border, unified baseline */}
-              <div className="relative z-1 w-full max-w-[600px]">
-                <div
-                  onClick={connectGithub}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
-                  }}
-                  className="w-full flex flex-col md:flex-col xl:flex-row xl:items-center justify-between gap-4 sm:gap-5 p-5 sm:py-6 sm:px-7 rounded-[22px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
-                >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-[14px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
-                      <GithubIcon className="w-6 h-6 text-[#111111]" aria-label="GitHub" />
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                        <span className="font-extrabold text-[#111111] text-[15.5px] tracking-tight">GitHub Workspace</span>
-                        <span className="chip ok text-[10.5px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-                          {githubConnected
-                            ? `@${user?.github_login || 'iamdevdhanush'}`
-                            : 'Disconnected'}
-                        </span>
-                      </div>
-                      <div className="mono text-[11px] font-bold text-[#525252] tracking-wider">
-                        READ-ONLY INTEGRATION // ENCRYPTED
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center xl:shrink-0 w-full xl:w-auto">
-                    <div className="w-full xl:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
-                      <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
-                      <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
             </div>
 
-            {/* ── RIGHT COLUMN: 40% Desktop (8/20), 45% Tablet (9/20) — Minimal Abstract Security Geometry ── */}
-            <div className="hidden md:flex md:col-span-9 lg:col-span-8 items-center justify-center relative select-none pointer-events-none pl-2 lg:pl-6 xl:pl-10">
-              <AbstractSecurityGeometry />
+            {/* Headline: 84px desktop, 900 weight, 0.92 line-height, tight tracking, exactly 3 lines */}
+            <div className="relative z-1 mb-7 sm:mb-8">
+              <h1 className="text-[#111111] font-[900] text-[40px] sm:text-[54px] md:text-[66px] lg:text-[76px] xl:text-[84px] leading-[0.92] tracking-[-0.035em]">
+                Autonomous Security Validation
+                <br />
+                <span className="text-[#444444]">for AI-built Software.</span>
+              </h1>
+            </div>
+
+            {/* Supporting Copy: Max width 620px, highly readable */}
+            <div className="relative z-1 mb-12">
+              <p className="text-[#333333] font-normal text-[17.5px] sm:text-[19px] lg:text-[20px] max-w-[620px] leading-[1.65]">
+                Continuous threat validation and vulnerability remediation for repositories you control.
+                Find it. Fix it. Prove it.
+              </p>
+            </div>
+
+            {/* GitHub CTA Bar: 48px from description (mb-12 = 48px), full-width within content column */}
+            <div className="relative z-1 w-full max-w-[760px]">
+              <div
+                onClick={connectGithub}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
+                }}
+                className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6 sm:py-7 sm:px-8 rounded-[24px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-12 h-12 rounded-[14px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
+                    <GithubIcon className="w-6 h-6 text-[#111111]" aria-label="GitHub" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="font-extrabold text-[#111111] text-[16px] tracking-tight">GitHub Workspace</span>
+                      <span className="chip ok text-[11px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+                        {githubConnected
+                          ? `@${user?.github_login || 'iamdevdhanush'}`
+                          : 'Disconnected'}
+                      </span>
+                    </div>
+                    <div className="mono text-[11px] font-bold text-[#525252] tracking-wider">
+                      READ-ONLY INTEGRATION // ENCRYPTED
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center sm:shrink-0 w-full sm:w-auto">
+                  <div className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3 rounded-[14px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[14px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
+                    <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>
