@@ -15,9 +15,7 @@ import GithubIcon from '../components/GithubIcon';
 import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
-import AmbientSecurityGraph from '../components/AmbientSecurityGraph';
 import {
-  HeroDotTransition,
   PageCornerDotAccent,
 } from '../components/SelectiveDotGrid';
 
@@ -49,62 +47,57 @@ export default function OverviewPage() {
       <div className="relative max-w-[1280px] mx-auto fade-in overflow-hidden">
 
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION — Editorial Minimal Brutalist (Linear x Vercel x Framer)
-            60/40 desktop grid, 70% negative space, single micro-status indicator
+            HERO SECTION — Editorial Brutalist Premium (Typography as Hero)
+            12-column grid: 8 cols left content (~67%), 4 cols negative space.
+            Subtle dot accent ONLY in upper-right corner (5–8% opacity).
+            Zero right-side decorative visual elements.
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="relative pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-12 sm:pb-16 lg:pb-20">
+        <div className="relative pt-10 sm:pt-14 md:pt-18 lg:pt-24 pb-16 sm:pb-20 lg:pb-28 overflow-visible">
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 items-center relative z-1">
+          {/* Subtle black dot pattern ONLY in the upper-right corner behind intentional negative space (5–8% opacity) */}
+          <div
+            aria-hidden="true"
+            className="hidden md:block absolute top-0 right-0 w-[460px] lg:w-[580px] h-[360px] lg:h-[440px] pointer-events-none select-none z-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, rgba(17, 17, 17, 0.07) 1.5px, transparent 1.5px)',
+              backgroundSize: '18px 18px',
+              WebkitMaskImage: 'radial-gradient(ellipse at 80% 20%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 75%)',
+              maskImage: 'radial-gradient(ellipse at 80% 20%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 75%)',
+            }}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 relative z-1 items-start">
             
-            {/* ── LEFT COLUMN (60% Desktop) ── */}
-            <div className="md:col-span-3 flex flex-col justify-center relative z-10">
+            {/* ── LEFT COLUMN: 8 Columns (~65–70% Desktop width), 100% Mobile ── */}
+            <div className="col-span-1 md:col-span-8 flex flex-col justify-center relative z-10 w-full max-w-[680px]">
 
-              {/* Badge: Protocol tag with subtle dotted accent behind */}
-              <div className="relative z-1 mb-6 sm:mb-7">
-                {/* Subtle dotted texture fading behind the badge only */}
-                <div
-                  aria-hidden="true"
-                  className="dot-accent absolute -top-8 -left-8 w-[220px] h-[110px] pointer-events-none select-none z-0"
-                  style={{
-                    WebkitMaskImage: 'radial-gradient(ellipse at 40% 40%, rgba(0,0,0,0.55) 0%, transparent 68%)',
-                    maskImage: 'radial-gradient(ellipse at 40% 40%, rgba(0,0,0,0.55) 0%, transparent 68%)',
-                  }}
-                />
-
-                <div className="relative z-1 inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
+              {/* Protocol Badge: 28px margin to headline */}
+              <div className="relative z-1 mb-[28px]">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
                   <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
                   <span>zorqen://platform/overview</span>
                 </div>
               </div>
 
-              {/* Headline: Optical balance, 900 weight, tight line-height, soft radial fade behind */}
-              <div className="relative z-1 mb-6 sm:mb-7">
-                {/* Very soft radial fade behind the headline */}
-                <div
-                  aria-hidden="true"
-                  className="absolute -top-8 left-0 w-[520px] h-[220px] pointer-events-none select-none z-0"
-                  style={{
-                    background: 'radial-gradient(ellipse at 30% 50%, rgba(200, 243, 29, 0.05) 0%, rgba(17, 17, 17, 0.015) 45%, transparent 70%)',
-                  }}
-                />
-
-                <h1 className="relative z-1 text-[#111111] font-[900] text-[38px] sm:text-[54px] lg:text-[66px] xl:text-[72px] leading-[0.96] tracking-[-0.035em] max-w-[840px]">
+              {/* Headline: Typography is the Hero (88–96px desktop, 64px tablet, 42–48px mobile, 900 weight, 0.9 line-height) */}
+              <div className="relative z-1 mb-[32px]">
+                <h1 className="text-[#111111] font-[900] text-[42px] sm:text-[48px] md:text-[64px] lg:text-[88px] xl:text-[94px] leading-[0.9] tracking-[-0.035em]">
                   Autonomous Security Validation
                   <br />
-                  <span className="text-[#3a3a3a]">for AI-built software.</span>
+                  <span className="text-[#444444]">for AI-built software.</span>
                 </h1>
               </div>
 
-              {/* Description: 18px with better readability */}
-              <div className="relative z-1 mb-8 sm:mb-10">
-                <p className="text-[#333333] font-normal text-[16.5px] sm:text-[18px] max-w-[580px] leading-[1.65]">
+              {/* Description: 32px from headline, 44px to CTA card */}
+              <div className="relative z-1 mb-[44px]">
+                <p className="text-[#333333] font-normal text-[17px] sm:text-[18px] max-w-[640px] leading-[1.6]">
                   Continuous threat validation and vulnerability remediation for repositories you control.
                   Find it. Fix it. Prove it.
                 </p>
               </div>
 
-              {/* GitHub Workspace Card — Directly below, zero dots behind, 1px micro-lift */}
-              <div className="relative z-1 w-full max-w-[620px]">
+              {/* GitHub CTA Card: Full-width beneath description, thick 4px border, large radius, unified baseline */}
+              <div className="relative z-1 w-full max-w-[680px]">
                 <div
                   onClick={connectGithub}
                   role="button"
@@ -112,47 +105,42 @@ export default function OverviewPage() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
                   }}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[22px] bg-white border-[2.5px] border-[#111111] shadow-[4px_4px_0px_#111111] hover:shadow-[5px_5px_0px_#111111] hover:-translate-y-[1px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+                  className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6 sm:py-7 sm:px-8 rounded-[24px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
                 >
-                  <div className="flex items-center gap-4 text-[14px]">
-                    <div className="w-10 h-10 rounded-[12px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
-                      <GithubIcon className="w-5 h-5 text-[#111111]" aria-label="GitHub" />
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 rounded-[14px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
+                      <GithubIcon className="w-6 h-6 text-[#111111]" aria-label="GitHub" />
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <span className="font-extrabold text-[#111111] text-[15px]">GitHub Workspace</span>
-                        <span className="chip ok text-[10.5px] font-bold py-0.5 px-2">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="font-extrabold text-[#111111] text-[16px] tracking-tight">GitHub Workspace</span>
+                        <span className="chip ok text-[11px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
                           {githubConnected
                             ? `@${user?.github_login || 'iamdevdhanush'}`
                             : 'Disconnected'}
                         </span>
                       </div>
-                      <div className="mono text-[11px] font-semibold text-[#525252]">
+                      <div className="mono text-[11px] font-bold text-[#525252] tracking-wider">
                         READ-ONLY INTEGRATION // ENCRYPTED
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] hover:-translate-y-[1px] transition-all duration-150 shrink-0 shadow-hard-sm self-start sm:self-auto">
-                    <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
-                    <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
+                  <div className="flex items-center sm:shrink-0 w-full sm:w-auto">
+                    <div className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3 rounded-[14px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[14px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
+                      <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
+                      <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
+                    </div>
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* ── RIGHT COLUMN: Subtle Ambient Security Visualization (No cards, no boxes, 35-40% width) ── */}
-            <div className="hidden md:flex md:col-span-2 items-center justify-end relative select-none pointer-events-none md:scale-[0.85] md:translate-x-4 lg:scale-100 lg:translate-x-0 origin-right transition-transform duration-300">
-              <AmbientSecurityGraph />
-            </div>
+            {/* ── RIGHT COLUMN: 4 Columns Intentional Negative Space (Desktop only) ── */}
+            <div className="hidden md:block md:col-span-4 relative pointer-events-none" aria-hidden="true" />
 
-          </div>
-
-          {/* Soft transition dots near section boundary */}
-          <div className="relative mt-12 sm:mt-16 flex">
-            <HeroDotTransition />
           </div>
         </div>
         {/* ══════════════════════════════════════════════ END HERO ══════ */}
