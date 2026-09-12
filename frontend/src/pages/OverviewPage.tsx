@@ -45,60 +45,47 @@ export default function OverviewPage() {
   /* ── 1. LANDING PAGE VIEWPORT (When No Active Target Repo Selected) ───── */
   if (!currentRepo) {
     return (
-      <div className="relative max-w-[1280px] mx-auto fade-in overflow-hidden">
+      <div className="relative max-w-[1440px] mx-auto fade-in overflow-hidden">
 
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION — Editorial Brutalist Premium (Typography as Hero)
-            12-column grid: 8 cols left content (~67%), 4 cols negative space.
-            Subtle dot accent ONLY in upper-right corner (5–8% opacity).
-            Zero right-side decorative visual elements.
+            HERO SECTION — 2-Column Balanced Editorial Layout (Linear x Vercel)
+            Left 60% (desktop) / 55% (tablet), Right 40% (desktop) / 45% (tablet).
+            Vertically centered. Max 3-line headline. Abstract security geometry at 5-8% opacity.
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="relative pt-10 sm:pt-14 md:pt-18 lg:pt-24 pb-16 sm:pb-20 lg:pb-28 overflow-visible">
+        <div className="relative pt-6 sm:pt-10 md:pt-12 lg:pt-16 pb-14 sm:pb-18 lg:pb-22 overflow-visible">
 
-          {/* Subtle black dot pattern ONLY in the upper-right corner behind intentional negative space (5–8% opacity) */}
-          <div
-            aria-hidden="true"
-            className="hidden md:block absolute top-0 right-0 w-[460px] lg:w-[580px] h-[360px] lg:h-[440px] pointer-events-none select-none z-0"
-            style={{
-              backgroundImage: 'radial-gradient(circle, rgba(17, 17, 17, 0.07) 1.5px, transparent 1.5px)',
-              backgroundSize: '18px 18px',
-              WebkitMaskImage: 'radial-gradient(ellipse at 80% 20%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 75%)',
-              maskImage: 'radial-gradient(ellipse at 80% 20%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 75%)',
-            }}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 relative z-1 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-20 gap-8 md:gap-8 lg:gap-12 xl:gap-16 items-center relative z-1">
             
-            {/* ── LEFT COLUMN: 8 Columns (~65–70% Desktop width), 100% Mobile ── */}
-            <div className="col-span-1 md:col-span-8 flex flex-col justify-center relative z-10 w-full max-w-[680px]">
+            {/* ── LEFT COLUMN: 60% Desktop (12/20), 55% Tablet (11/20), 100% Mobile ── */}
+            <div className="col-span-1 md:col-span-11 lg:col-span-12 flex flex-col justify-center relative z-10 w-full">
 
-              {/* Protocol Badge: 28px margin to headline */}
-              <div className="relative z-1 mb-[28px]">
+              {/* Protocol Badge */}
+              <div className="relative z-1 mb-6 sm:mb-7">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[8px] bg-white border-2 border-[#111111] shadow-hard-sm mono text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#111111]">
                   <span className="w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111] animate-pulse" />
                   <span>zorqen://platform/overview</span>
                 </div>
               </div>
 
-              {/* Headline: Typography is the Hero (88–96px desktop, 64px tablet, 42–48px mobile, 900 weight, 0.9 line-height) */}
-              <div className="relative z-1 mb-[32px]">
-                <h1 className="text-[#111111] font-[900] text-[42px] sm:text-[48px] md:text-[64px] lg:text-[88px] xl:text-[94px] leading-[0.9] tracking-[-0.035em]">
+              {/* Headline: Large, Horizontal, 72–88px desktop, Max 3 Lines */}
+              <div className="relative z-1 mb-6 sm:mb-7">
+                <h1 className="text-[#111111] font-[900] text-[38px] sm:text-[48px] md:text-[54px] lg:text-[68px] xl:text-[76px] 2xl:text-[82px] leading-[0.98] tracking-[-0.035em]">
                   Autonomous Security Validation
                   <br />
-                  <span className="text-[#444444]">for AI-built software.</span>
+                  <span className="text-[#444444]">for AI-built Software.</span>
                 </h1>
               </div>
 
-              {/* Description: 32px from headline, 44px to CTA card */}
-              <div className="relative z-1 mb-[44px]">
-                <p className="text-[#333333] font-normal text-[17px] sm:text-[18px] max-w-[640px] leading-[1.6]">
+              {/* Supporting Text: Limit width to 600px, high readability, breathing room */}
+              <div className="relative z-1 mb-8 sm:mb-10">
+                <p className="text-[#333333] font-normal text-[16.5px] sm:text-[18px] lg:text-[18.5px] max-w-[600px] leading-[1.65]">
                   Continuous threat validation and vulnerability remediation for repositories you control.
                   Find it. Fix it. Prove it.
                 </p>
               </div>
 
-              {/* GitHub CTA Card: Full-width beneath description, thick 4px border, large radius, unified baseline */}
-              <div className="relative z-1 w-full max-w-[680px]">
+              {/* GitHub CTA Card: Limited width, 4px border, unified baseline */}
+              <div className="relative z-1 w-full max-w-[600px]">
                 <div
                   onClick={connectGithub}
                   role="button"
@@ -106,7 +93,7 @@ export default function OverviewPage() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
                   }}
-                  className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6 sm:py-7 sm:px-8 rounded-[24px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+                  className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-5 sm:py-6 sm:px-7 rounded-[22px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-[14px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
@@ -114,8 +101,8 @@ export default function OverviewPage() {
                     </div>
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="font-extrabold text-[#111111] text-[16px] tracking-tight">GitHub Workspace</span>
-                        <span className="chip ok text-[11px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
+                        <span className="font-extrabold text-[#111111] text-[15.5px] tracking-tight">GitHub Workspace</span>
+                        <span className="chip ok text-[10.5px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
                           {githubConnected
                             ? `@${user?.github_login || 'iamdevdhanush'}`
@@ -129,7 +116,7 @@ export default function OverviewPage() {
                   </div>
 
                   <div className="flex items-center sm:shrink-0 w-full sm:w-auto">
-                    <div className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3 rounded-[14px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[14px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
+                    <div className="w-full sm:w-auto flex items-center justify-center gap-2 px-4.5 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
                       <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
                       <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
                     </div>
@@ -139,8 +126,10 @@ export default function OverviewPage() {
 
             </div>
 
-            {/* ── RIGHT COLUMN: 4 Columns Intentional Negative Space (Desktop only) ── */}
-            <div className="hidden md:block md:col-span-4 relative pointer-events-none" aria-hidden="true" />
+            {/* ── RIGHT COLUMN: 40% Desktop (8/20), 45% Tablet (9/20) — Minimal Abstract Security Geometry ── */}
+            <div className="hidden md:flex md:col-span-9 lg:col-span-8 items-center justify-center relative select-none pointer-events-none pl-2 lg:pl-6 xl:pl-10">
+              <AbstractSecurityGeometry />
+            </div>
 
           </div>
         </div>
