@@ -69,10 +69,10 @@ export default function OverviewPage() {
 
               {/* Headline: Large, Horizontal, 72–88px desktop, Max 3 Lines */}
               <div className="relative z-1 mb-6 sm:mb-7">
-                <h1 className="text-[#111111] font-[900] text-[38px] sm:text-[48px] md:text-[54px] lg:text-[68px] xl:text-[76px] 2xl:text-[82px] leading-[0.98] tracking-[-0.035em]">
+                <h1 className="text-[#111111] font-[900] text-[34px] sm:text-[42px] md:text-[38px] lg:text-[54px] xl:text-[72px] 2xl:text-[80px] leading-[0.98] tracking-[-0.035em]">
                   Autonomous Security Validation
                   <br />
-                  <span className="text-[#444444]">for AI-built Software.</span>
+                  <span className="text-[#444444] inline-block">for AI-built Software.</span>
                 </h1>
               </div>
 
@@ -93,14 +93,14 @@ export default function OverviewPage() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
                   }}
-                  className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-5 sm:py-6 sm:px-7 rounded-[22px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+                  className="w-full flex flex-col md:flex-col xl:flex-row xl:items-center justify-between gap-4 sm:gap-5 p-5 sm:py-6 sm:px-7 rounded-[22px] bg-white border-4 border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-[14px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
                       <GithubIcon className="w-6 h-6 text-[#111111]" aria-label="GitHub" />
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                         <span className="font-extrabold text-[#111111] text-[15.5px] tracking-tight">GitHub Workspace</span>
                         <span className="chip ok text-[10.5px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
@@ -115,8 +115,8 @@ export default function OverviewPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center sm:shrink-0 w-full sm:w-auto">
-                    <div className="w-full sm:w-auto flex items-center justify-center gap-2 px-4.5 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
+                  <div className="flex items-center xl:shrink-0 w-full xl:w-auto">
+                    <div className="w-full xl:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#C8F31D] hover:text-[#111111] font-extrabold text-[13.5px] border-2 border-[#111111] hover:-translate-y-0.5 transition-all duration-150 shrink-0 shadow-hard-sm">
                       <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
                       <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
                     </div>
