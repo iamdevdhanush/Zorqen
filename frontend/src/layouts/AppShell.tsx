@@ -59,9 +59,9 @@ function AppShellInner() {
       {/* Top Header Navigation */}
       <TopNav onOpenCmd={handleOpenCmd} />
 
-      {/* Main Page Area Aligned to 1280px Grid (Desktop: 32px, Tablet: 24px, Mobile: 20px) */}
+      {/* Main Page Area Aligned to 1440px Grid */}
       <main
-        className="flex-1 max-w-[1280px] w-full mx-auto px-5 lg:px-8 py-7 lg:py-10 transition-all"
+        className="flex-1 max-w-[1440px] w-full mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-7 lg:py-10 transition-all"
         style={{
           paddingBottom: isScanning ? 'calc(72px + env(safe-area-inset-bottom))' : 'calc(24px + env(safe-area-inset-bottom))',
         }}
@@ -77,9 +77,9 @@ function AppShellInner() {
         />
       )}
 
-      {/* Footer Aligned to 1280px Grid */}
-      <footer className="border-t border-[#111111]/15 px-5 lg:px-8 py-5 mt-auto bg-[var(--color-base)]">
-        <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[13px] text-[#555555]">
+      {/* Footer Aligned to 1440px Grid */}
+      <footer className="border-t border-[#111111]/15 px-6 sm:px-8 lg:px-12 xl:px-16 py-5 mt-auto bg-[var(--color-base)]">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[13px] text-[#555555]">
           <div className="flex items-center gap-2 flex-wrap font-medium">
             <span className="font-extrabold text-[#111111]">ZORQEN</span>
             <span className="text-[#111111]/30">•</span>

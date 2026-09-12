@@ -15,6 +15,7 @@ import GithubIcon from '../components/GithubIcon';
 import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
+import AbstractSecurityGeometry from '../components/AbstractSecurityGeometry';
 import {
   PageCornerDotAccent,
 } from '../components/SelectiveDotGrid';

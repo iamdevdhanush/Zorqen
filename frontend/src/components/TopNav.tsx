@@ -43,7 +43,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white border-b-2 border-[#111111] h-[72px] flex items-center">
-        <div className="max-w-[1280px] w-full mx-auto px-5 lg:px-8 flex items-center justify-between gap-3 sm:gap-4">
+        <div className="max-w-[1440px] w-full mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between gap-3 sm:gap-4">
           
           {/* Brand Logo & Navigation */}
           <div className="flex items-center gap-7 lg:gap-10 min-w-0 shrink-0">
