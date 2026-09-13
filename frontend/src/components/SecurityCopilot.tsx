@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUp, X } from 'lucide-react';
 import { useWorkspaceData, useFinding } from '../store/WorkspaceContext';
@@ -47,7 +48,7 @@ function sourceLabel(s: CopilotSource): string {
 /** Render body text with Inter and monospace only for code blocks/file paths/commands */
 function renderMessageText(content: string) {
   const codeBlockRegex = /```([\s\S]*?)```|`([^`]+)`/g;
-  const parts: (string | JSX.Element)[] = [];
+  const parts: ReactNode[] = [];
   let lastIndex = 0;
   let match;
 
