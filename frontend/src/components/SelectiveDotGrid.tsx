@@ -109,3 +109,36 @@ export function EmptyStateIllustrationDotAccent({ className = '' }: { className?
     />
   );
 }
+
+/**
+ * Faint Dotted Texture (6–8% Opacity) — Top Right Corner
+ */
+export function HeroCornerDotsTopRight({ className = '' }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`hero-corner-dots absolute top-0 right-0 w-[280px] sm:w-[380px] lg:w-[480px] h-[240px] sm:h-[320px] lg:h-[400px] z-0 pointer-events-none select-none ${className}`}
+      style={{
+        WebkitMaskImage: 'radial-gradient(ellipse at 100% 0%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 38%, transparent 72%)',
+        maskImage: 'radial-gradient(ellipse at 100% 0%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 38%, transparent 72%)',
+      }}
+    />
+  );
+}
+
+/**
+ * Faint Dotted Texture (6–8% Opacity) — Bottom Left Corner
+ */
+export function HeroCornerDotsBottomLeft({ className = '' }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`hero-corner-dots absolute bottom-0 left-0 w-[240px] sm:w-[320px] lg:w-[420px] h-[200px] sm:h-[260px] lg:h-[340px] z-0 pointer-events-none select-none ${className}`}
+      style={{
+        WebkitMaskImage: 'radial-gradient(ellipse at 0% 100%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 38%, transparent 72%)',
+        maskImage: 'radial-gradient(ellipse at 0% 100%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 38%, transparent 72%)',
+      }}
+    />
+  );
+}
+

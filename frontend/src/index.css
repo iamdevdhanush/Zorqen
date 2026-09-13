@@ -791,3 +791,17 @@ kbd {
     background-size: 12px 12px;
   }
 }
+
+/* ── Faint Dotted Texture (6–8% Opacity) for Hero Corners ─── */
+.hero-corner-dots {
+  background-image: radial-gradient(circle, rgba(17, 17, 17, 0.07) 1.25px, transparent 1.25px);
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .hero-corner-dots {
+    background-image: radial-gradient(circle, rgba(17, 17, 17, 0.07) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+}

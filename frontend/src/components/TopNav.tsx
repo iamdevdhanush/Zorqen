@@ -78,13 +78,11 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                       {isActive && (
                         <motion.div
                           layoutId="topNavActiveUnderline"
-                          className="absolute bottom-[2px] w-[calc(100%+6px)] left-1/2 -translate-x-1/2 h-[4px] bg-[#C8F31D] rounded-full border border-[#111111]/20"
+                          className="absolute bottom-[2px] w-[calc(100%+6px)] left-1/2 -translate-x-1/2 h-[3px] bg-[#C8F31D] rounded-full border border-[#111111]/20"
                           style={{ boxShadow: '0 0 8px rgba(200,243,29,0.7)' }}
                           transition={{
-                            type: 'spring',
-                            stiffness: 420,
-                            damping: 32,
-                            mass: 0.7,
+                            duration: 0.2,
+                            ease: [0.16, 1, 0.3, 1],
                           }}
                         />
                       )}
