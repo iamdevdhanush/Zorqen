@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowUp, X } from 'lucide-react';
 import { useWorkspaceData, useFinding } from '../store/WorkspaceContext';
 import { copilotChat, type CopilotChatContext, type CopilotSource } from '../services/api';
 import type { Finding } from '../lib/types';
@@ -10,71 +11,77 @@ interface Message {
   sources?: CopilotSource[];
 }
 
-const ERROR_MESSAGE = 'Investigation telemetry offline. Please retry command.';
-
+const ERROR_MESSAGE = 'Unable to reach the security analyst. Please try again.';
 const MAX_HISTORY = 8;
 
 function starterQuestions(page: string, finding?: Finding): string[] {
   if (page.startsWith('/findings/') && finding) {
     return [
-      `why is ${finding.id} dangerous`,
-      'show evidence',
-      'sandbox validation',
-      'remediation diff',
-    ];
-  }
-  if (page.startsWith('/repos/')) {
-    return [
-      'current posture',
-      'highest risk',
-      'vulnerable routes',
-      'secrets found',
-    ];
-  }
-  if (page.startsWith('/assessments/')) {
-    return [
-      'highest risk',
-      'vulnerable routes',
-      'critical findings',
-      'sandbox status',
+      'Explain this vulnerability',
+      'Review authentication flow',
+      'Show exploitability evidence',
+      'How to remediate this finding',
     ];
   }
   return [
-    'current posture',
-    'highest risk',
-    'vulnerable routes',
-    'secrets found',
+    'Current security posture',
+    'Highest-risk findings',
+    'Review authentication flow',
+    'Explain this vulnerability',
   ];
 }
 
 function sourceLabel(s: CopilotSource): string {
   switch (s.type) {
     case 'finding':
-      return s.id ?? 'FINDING';
+      return s.id ?? 'Finding';
     case 'assessment':
-      return s.id ?? 'ASSESSMENT';
+      return s.id ?? 'Assessment';
     case 'repository':
-      return s.name ?? 'REPO';
+      return s.name ?? 'Repo';
     case 'source':
       return `${s.file ?? 'source'}${s.line ? `:${s.line}` : ''}`;
   }
 }
 
-/** Security keyword highlighter for assistant output */
-const KEYWORD_REGEX = /(High confidence|Critical|High risk|High|Moderate risk|Moderate|Medium|Low risk|Low|Validated|Confirmed|Remediation|Exploitable|Vulnerabilit(?:y|ies)|AST|Sandbox|Patch(?:es)?|Secrets?|SQL Injection|OWASP|Read-only|Isolated|Zero-day|Verified|Passed)/gi;
+/** Render body text with Inter and monospace only for code blocks/file paths/commands */
+function renderMessageText(content: string) {
+  const codeBlockRegex = /```([\s\S]*?)```|`([^`]+)`/g;
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  let match;
 
-function renderKeywordText(text: string) {
-  const parts = text.split(KEYWORD_REGEX);
-  return parts.map((part, idx) => {
-    if (KEYWORD_REGEX.test(part)) {
-      return (
-        <span key={idx} className="text-[#C8F31D] font-bold">
-          {part}
-        </span>
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(content.substring(lastIndex, match.index));
+    }
+    if (match[1] !== undefined) {
+      parts.push(
+        <pre
+          key={match.index}
+          className="my-2 p-3 rounded-[10px] bg-[#111111] text-[#ECEBE6] font-mono text-[12px] overflow-x-auto leading-[1.5]"
+        >
+          <code>{match[1].trim()}</code>
+        </pre>
+      );
+    } else if (match[2] !== undefined) {
+      parts.push(
+        <code
+          key={match.index}
+          className="font-mono text-[12px] bg-[#EAE8E0] text-[#111111] px-1.5 py-0.5 rounded-[5px] border border-[#DCDAD2]"
+        >
+          {match[2]}
+        </code>
       );
     }
-    return part;
-  });
+    lastIndex = codeBlockRegex.lastIndex;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push(content.substring(lastIndex));
+  }
+
+  return parts;
 }
 
 const SecurityCopilot = memo(function SecurityCopilot({
@@ -90,19 +97,18 @@ const SecurityCopilot = memo(function SecurityCopilot({
   const findingId = page.startsWith('/findings/') ? page.split('/findings/')[1] : undefined;
   const finding = useFinding(findingId as string | undefined);
 
-  // Terminal conversation feed begins clean with zero bloated intro cards
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input automatically on drawer open
+  // Auto-focus input on drawer open
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Keyboard shortcut: Escape closes Ask ZORQEN
+  // Escape key closes drawer
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -111,7 +117,7 @@ const SecurityCopilot = memo(function SecurityCopilot({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Smooth auto-scroll
+  // Scroll to bottom on new messages or loading
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
@@ -165,7 +171,7 @@ const SecurityCopilot = memo(function SecurityCopilot({
         ?.response?.data?.detail;
       const msgText =
         detail?.message ||
-        (detail?.code ? `Investigation error (${detail.code}). Please re-run command.` : ERROR_MESSAGE);
+        (detail?.code ? `Investigation error (${detail.code}). Please try again.` : ERROR_MESSAGE);
       setMessages((m) => [...m, { role: 'assistant', content: msgText, sources: [] }]);
     } finally {
       setLoading(false);
@@ -174,208 +180,210 @@ const SecurityCopilot = memo(function SecurityCopilot({
   };
 
   const questions = starterQuestions(page, finding);
-  const repoName = (currentRepo?.name || 'ZORQEN').toUpperCase();
+  const repoName = currentRepo?.name || 'ZORQEN';
   const runId = currentAssessment?.id || 'RUN-143';
 
   return (
     <>
-      {/* Optional backdrop on mobile viewports */}
+      {/* Soft Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 top-[72px] bg-black/40 z-40 sm:hidden transition-opacity"
+        className="fixed inset-0 bg-black/15 z-40 transition-opacity duration-200"
         aria-hidden="true"
       />
 
-      {/* Security Investigation Terminal Drawer */}
+      {/* Premium Enterprise AI Assistant Sidebar */}
       <aside
-        className="fixed top-[72px] right-0 bottom-0 z-50 flex flex-col w-full sm:w-[440px] bg-[#0A0A0A] text-[#ECEBE6] border-l-[3px] border-[#111111] shadow-hard-lg overflow-hidden transition-all duration-200 select-text"
-        aria-label="Security Investigation Terminal"
+        className="fixed inset-y-0 right-0 z-50 flex flex-col w-full sm:w-[400px] bg-[#F8F7F2] text-[#111111] border-l border-[#E5E5E5] rounded-l-[28px] overflow-hidden transition-all duration-200 ease-out select-text"
+        style={{
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.08)',
+        }}
+        aria-label="Ask ZORQEN Security Assistant"
       >
-        {/* ═════ 1. Command Terminal Header ═════ */}
-        <header className="px-4 py-3 border-b-[3px] border-[#111111] bg-[#0E0E0E] shrink-0 space-y-2.5">
-          {/* Top row: > ASK ZORQEN & [LIVE ANALYST] */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-[#C8F31D] font-mono text-[20px] font-black leading-none select-none">
-                &gt;
-              </span>
-              <h2 className="text-[20px] font-bold tracking-tight text-white uppercase font-sans leading-none">
-                ASK ZORQEN
+        {/* ═════ Header ═════ */}
+        <header className="px-6 pt-5 pb-4 border-b border-[#E5E5E5] bg-[#F8F7F2] shrink-0 space-y-2.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-0.5">
+              <h2 className="text-[18px] font-bold text-[#111111] tracking-tight font-sans">
+                Ask ZORQEN
               </h2>
+              <div className="text-[13px] text-[#666666] font-normal font-sans">
+                Live Security Analyst
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="mono text-[11px] font-bold text-[#C8F31D] tracking-widest flex items-center gap-1.5 select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#C8F31D] animate-pulse" />
-                <span>[LIVE ANALYST]</span>
+            <div className="flex items-center gap-2.5">
+              {/* Compact Status Chip */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C8F31D]/20 border border-[#C8F31D]/40 text-[#111111] text-[12px] font-medium font-sans select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse" />
+                <span>Ready</span>
               </div>
+
+              {/* Ghost Close Button */}
               <button
                 onClick={onClose}
-                className="mono text-[13px] font-bold text-zinc-400 hover:text-white hover:bg-[#1C1C1C] w-7 h-7 flex items-center justify-center border border-[#333333] transition-colors cursor-pointer select-none"
-                title="Close terminal (Esc)"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#777777] hover:text-[#111111] hover:bg-black/5 transition-colors cursor-pointer"
+                title="Close (Esc)"
                 aria-label="Close Ask ZORQEN"
               >
-                ×
+                <X className="w-4 h-4 stroke-[2]" />
               </button>
             </div>
           </div>
 
-          {/* Second row: Monospace Metadata */}
-          <div className="mono text-[12px] text-zinc-400 font-medium flex items-center gap-2 sm:gap-2.5 flex-wrap border-t border-[#1E1E1E] pt-2 select-none">
-            <span>
-              Repo: <strong className="text-[#ECEBE6] font-bold">{repoName}</strong>
-            </span>
-            <span className="text-zinc-600">//</span>
-            <span>
-              Run: <strong className="text-[#ECEBE6] font-bold">{runId}</strong>
-            </span>
-            <span className="text-zinc-600">//</span>
-            <span className="text-zinc-400">
-              Mode: <strong className="text-[#C8F31D] font-bold">READ ONLY</strong>
-            </span>
+          {/* Metadata: Repo • Run • Read-only in one clean row */}
+          <div className="text-[12px] text-[#777777] font-medium font-sans flex items-center gap-1.5 flex-wrap select-none">
+            <span>{repoName}</span>
+            <span className="text-[#BBBBBB]">•</span>
+            <span className="font-mono text-[11.5px]">{runId}</span>
+            <span className="text-[#BBBBBB]">•</span>
+            <span>Read-only</span>
           </div>
         </header>
 
-        {/* Active Target Banner (if viewing specific finding) */}
-        {finding && (
-          <div className="px-4 py-2 border-b border-[#222222] mono text-[11px] font-bold bg-[#141414] text-[#C8F31D] flex items-center justify-between shrink-0">
-            <span className="truncate">TARGET: {finding.id} // {finding.title}</span>
-            <span className="text-[10px] text-zinc-500 uppercase shrink-0">FOCUSED</span>
-          </div>
-        )}
-
-        {/* ═════ 2. Conversation Area ═════ */}
-        <div className="flex-1 overflow-y-auto scroll-thin p-4 space-y-4 font-mono text-[13px] bg-[#070707]">
-          {/* Ready Banner */}
-          <div className="space-y-2 pb-2">
-            <div className="mono text-[12px] font-bold text-[#C8F31D] tracking-wider flex items-center gap-2 select-none">
-              <span>&gt;</span>
-              <span>READY FOR SECURITY INVESTIGATION.</span>
-            </div>
-            <div className="border-b border-[#222222]" />
-          </div>
-
-          {/* Initial Suggested Command Chips (Visible before inquiry) */}
+        {/* ═════ Conversation Area ═════ */}
+        <div className="flex-1 overflow-y-auto scroll-thin px-5 py-5 space-y-4 font-sans bg-[#F8F7F2]">
+          {/* Empty State */}
           {messages.length === 0 && (
-            <div className="space-y-2.5 pt-1">
-              <div className="mono text-[11px] font-bold text-zinc-500 uppercase tracking-widest select-none">
-                SUGGESTED COMMANDS
+            <div className="flex flex-col items-center text-center pt-8 pb-4 px-2 space-y-4">
+              {/* Small ZORQEN Badge */}
+              <div className="w-10 h-10 rounded-full bg-[#111111] text-[#C8F31D] flex items-center justify-center text-[15px] font-bold shadow-sm">
+                Z
               </div>
-              <div className="flex flex-wrap gap-2">
-                {questions.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => send(q)}
-                    className="mono text-[12px] font-bold px-3 py-1.5 border-2 border-[#262626] bg-[#121212] text-[#ECEBE6] hover:bg-[#C8F31D] hover:text-[#111111] hover:border-[#C8F31D] transition-colors cursor-pointer select-none"
-                  >
-                    $ {q}
-                  </button>
-                ))}
+
+              {/* Title & Description */}
+              <div className="space-y-1.5 max-w-[300px]">
+                <h3 className="text-[17px] sm:text-[18px] font-bold text-[#111111] tracking-tight font-sans">
+                  Start a security investigation
+                </h3>
+                <p className="text-[13.5px] text-[#666666] leading-relaxed font-sans">
+                  Ask about risks, attack paths, vulnerable files, or remediation.
+                </p>
+              </div>
+
+              {/* Suggested Prompts */}
+              <div className="w-full pt-4 space-y-2 text-left">
+                <div className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider px-1 font-sans select-none">
+                  Suggested prompts
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {questions.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => send(q)}
+                      className="w-full sm:w-auto text-left rounded-[14px] bg-white border border-[#E5E5E5] px-3.5 py-2.5 text-[13px] font-medium text-[#222222] hover:border-[#111111] hover:bg-[#F2F0E8] hover:-translate-y-[2px] transition-all duration-150 shadow-xs cursor-pointer font-sans"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Message Stream */}
+          {/* Messages Stream */}
           {messages.map((m, i) => (
             <div key={i} className="space-y-2">
               {m.role === 'user' ? (
-                /* User command block: right-aligned, dark gray bg, 2px border, no bubble */
-                <div className="flex justify-end">
-                  <div className="bg-[#181818] border-2 border-[#333333] px-3.5 py-2.5 text-left font-mono text-[13.5px] text-[#ECEBE6] max-w-[90%] shadow-hard-sm">
-                    <span className="text-[#C8F31D] font-bold mr-2">$</span>
-                    <span>{m.content}</span>
+                /* User Message: Light gray bubble, right aligned, rounded pill corners */
+                <div className="flex justify-end animate-fadeIn">
+                  <div className="bg-[#ECEAE3] text-[#111111] px-4 py-2.5 rounded-[20px] rounded-br-[4px] text-[14px] leading-[1.5] max-w-[85%] font-sans shadow-xs">
+                    {m.content}
                   </div>
                 </div>
               ) : (
-                /* Assistant message: plain text on black, prefixed with > zorqen_agent, lime keywords */
-                <div className="space-y-1.5 animate-terminal-fade">
-                  <div className="mono text-[12px] font-bold text-[#C8F31D] tracking-wider select-none">
-                    &gt; zorqen_agent
+                /* Assistant Message: White card, 16px radius, subtle border, left lime accent, Z avatar */
+                <div className="flex items-start gap-3 animate-fadeIn">
+                  <div className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] flex items-center justify-center text-[12px] font-bold shrink-0 mt-1 shadow-xs select-none">
+                    Z
                   </div>
-                  <div className="text-[15px] sm:text-[16px] leading-[1.65] text-[#ECEBE6] font-sans whitespace-pre-wrap pl-3 border-l-2 border-[#222222]">
-                    {renderKeywordText(m.content)}
-                  </div>
-                  {m.sources && m.sources.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1.5 pl-3">
-                      {m.sources.map((s, j) => (
-                        <button
-                          key={j}
-                          onClick={() => openSource(s)}
-                          title={s.title ?? s.name ?? s.file}
-                          className="mono text-[11px] font-bold px-2 py-0.5 border border-[#333333] bg-[#121212] text-[#C8F31D] hover:bg-[#C8F31D] hover:text-[#111111] hover:border-[#C8F31D] transition-colors cursor-pointer"
-                        >
-                          {sourceLabel(s)}
-                        </button>
-                      ))}
+
+                  <div className="flex-1 bg-white rounded-[16px] border border-[#E5E5E5] border-l-4 border-l-[#C8F31D] p-3.5 sm:p-4 shadow-sm space-y-2.5">
+                    <div className="text-[14.5px] leading-[1.6] text-[#222222] font-sans whitespace-pre-wrap">
+                      {renderMessageText(m.content)}
                     </div>
-                  )}
+
+                    {m.sources && m.sources.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-[#F2F1EC]">
+                        {m.sources.map((s, j) => (
+                          <button
+                            key={j}
+                            onClick={() => openSource(s)}
+                            title={s.title ?? s.name ?? s.file}
+                            className="mono text-[11px] font-medium px-2 py-0.5 rounded-[6px] border border-[#E0DFD8] bg-[#F9F8F5] text-[#444444] hover:border-[#111111] hover:text-[#111111] hover:bg-white transition-all duration-150 cursor-pointer"
+                          >
+                            {sourceLabel(s)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           ))}
 
-          {/* Loading Telemetry State */}
+          {/* Typing Indicator with 3 Animated Dots */}
           {loading && (
-            <div className="flex items-center gap-2 text-[#C8F31D] mono text-[12px] pl-1 animate-pulse select-none">
-              <span className="w-2 h-3.5 bg-[#C8F31D] inline-block" />
-              <span>&gt; zorqen_agent analyzing AST telemetry...</span>
+            <div className="flex items-start gap-3 animate-fadeIn">
+              <div className="w-7 h-7 rounded-full bg-[#111111] text-[#C8F31D] flex items-center justify-center text-[12px] font-bold shrink-0 mt-1 shadow-xs">
+                Z
+              </div>
+              <div className="bg-white rounded-[16px] border border-[#E5E5E5] border-l-4 border-l-[#C8F31D] px-4 py-3 shadow-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#888888] animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#888888] animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#888888] animate-bounce" />
+              </div>
             </div>
           )}
 
           <div ref={bottomRef} />
         </div>
 
-        {/* Subsequent Command Chips (compact bar when messages are present) */}
+        {/* Compact Suggested Prompts when conversation has messages */}
         {messages.length > 0 && !loading && (
-          <div className="px-4 py-2 border-t border-[#1C1C1C] bg-[#0E0E0E] shrink-0 flex items-center gap-2 overflow-x-auto scroll-thin">
-            <span className="mono text-[10px] font-bold text-zinc-600 uppercase shrink-0 select-none">QUICK:</span>
+          <div className="px-5 py-2 bg-[#F8F7F2] shrink-0 flex items-center gap-1.5 overflow-x-auto scroll-thin border-t border-[#EAE8E0]">
             {questions.slice(0, 3).map((q) => (
               <button
                 key={q}
                 type="button"
                 onClick={() => send(q)}
-                className="mono text-[11px] font-bold px-2.5 py-1 border border-[#262626] bg-[#141414] text-zinc-300 hover:bg-[#C8F31D] hover:text-[#111111] hover:border-[#C8F31D] transition-colors shrink-0 cursor-pointer select-none"
+                className="rounded-full bg-white border border-[#E5E5E5] px-3 py-1 text-[12px] font-medium text-[#444444] hover:border-[#111111] hover:text-[#111111] hover:bg-[#F2F0E8] transition-all duration-150 shrink-0 cursor-pointer shadow-xs font-sans"
               >
-                $ {q}
+                {q}
               </button>
             ))}
           </div>
         )}
 
-        {/* ═════ 3. Terminal Command Bar Input ═════ */}
-        <footer className="p-4 border-t-[3px] border-[#111111] bg-[#0E0E0E] shrink-0">
+        {/* ═════ Input Area: 52px Rounded Input, Lime Glow on Focus, Circular Send Button ═════ */}
+        <footer className="p-4 border-t border-[#E5E5E5] bg-[#F8F7F2] shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               send();
             }}
-            className="flex items-center bg-[#000000] border-2 border-[#262626] focus-within:border-[#C8F31D] h-[48px] px-3.5 transition-colors group"
+            className="flex items-center bg-white border border-[#E0DFD8] rounded-[26px] h-[52px] pl-4 pr-2 shadow-xs focus-within:border-[#C8F31D] focus-within:shadow-[0_0_0_3px_rgba(200,243,29,0.35)] transition-all duration-150"
           >
-            {/* Left Prompt Indicator $ */}
-            <span className="mono text-[#C8F31D] font-bold text-[15px] select-none mr-2.5">
-              $
-            </span>
-
-            {/* Center Terminal Input */}
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type investigation command..."
+              placeholder="Ask about findings, CVEs, or attack paths..."
               disabled={loading}
-              className="flex-1 bg-transparent text-[#ECEBE6] font-mono text-[13.5px] sm:text-[14px] outline-none placeholder:text-zinc-600 caret-[#C8F31D]"
+              className="flex-1 bg-transparent text-[#111111] text-[13.5px] sm:text-[14px] font-sans outline-none placeholder:text-[#888888]"
             />
 
-            {/* Right Command Submit Arrow */}
+            {/* Black circular button with white arrow */}
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              aria-label="Execute investigation command"
-              className="text-[#C8F31D] hover:text-white disabled:text-zinc-700 text-[18px] font-bold px-1.5 py-1 transition-all cursor-pointer disabled:cursor-not-allowed group-hover:translate-x-0.5"
+              aria-label="Send message"
+              className="w-9 h-9 rounded-full bg-[#111111] text-white flex items-center justify-center hover:bg-[#222222] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 shrink-0 cursor-pointer shadow-sm ml-2"
             >
-              ➜
+              <ArrowUp className="w-4 h-4 stroke-[2.5]" />
             </button>
           </form>
         </footer>
