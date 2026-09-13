@@ -16,7 +16,8 @@ import ZorqenChecksSection from '../components/ZorqenChecksSection';
 import AttackMapModule from '../components/AttackMapModule';
 import TechStackSection from '../components/TechStackSection';
 import {
-  PageCornerDotAccent,
+  HeroCornerDotsTopRight,
+  HeroCornerDotsBottomLeft,
 } from '../components/SelectiveDotGrid';
 
 export default function OverviewPage() {
@@ -47,45 +48,53 @@ export default function OverviewPage() {
       <div className="relative max-w-[1440px] mx-auto fade-in overflow-hidden">
 
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION — Premium Enterprise Security UI (Linear x Vercel x Stripe)
-            - Single-column left-aligned layout, max 760px content width.
-            - Natural whitespace on the right (zero graphics, radar, dots, widgets).
-            - Headline: clamp(56px, 7vw, 88px) desktop, 64px tablet, 46px mobile, 900 weight, 0.92 leading, -0.06em tracking.
-            - Second line in #3E3E3E dark charcoal.
-            - 72px top, 64px bottom, 32px gap between content groups.
-            - 96px GitHub connection card with lime arrow hover and 3px border.
+            HERO SECTION — Premium SaaS Spacing & Minimalist Brutalist Design
+            - Spacious, left-aligned layout: 66% width on desktop (62–68% spec)
+            - Clean negative whitespace on the right (zero widgets, graphics, or floating cards)
+            - 120px top padding below navbar
+            - Headline in 2–3 lines (max-width: 780px), clamp(64px, 6vw, 96px), line-height 0.92, weight 900
+            - 36px space between badge and heading
+            - 28px space between heading and body text (22px, line-height 1.5)
+            - 48px space before GitHub card
+            - GitHub card: 24–28px padding, 44px icon container, generous status pill spacing
+            - CTA button: lifts 2px on hover, translates arrow by 4px
+            - Faint dotted textures only in top-right and bottom-left corners at 6–8% opacity
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="relative pt-[72px] pb-[64px] overflow-visible">
+        <div className="relative -mt-7 lg:-mt-10 pt-[72px] sm:pt-[96px] lg:pt-[120px] pb-[64px] overflow-visible">
 
-          {/* Hero Content Column: Max-width 760px, left-aligned, spacious right whitespace */}
-          <div className="w-full max-w-[760px] flex flex-col justify-center relative z-10 text-left">
+          {/* Faint Dotted Textures: Top-right and bottom-left corners only (6–8% opacity) */}
+          <HeroCornerDotsTopRight />
+          <HeroCornerDotsBottomLeft />
 
-            {/* Command Badge: Terminal label feel, wider, stronger lime dot */}
-            <div className="relative z-1 mb-[32px]">
+          {/* Hero Content Column: 62–68% width on desktop, left-aligned, generous negative space on the right */}
+          <div className="w-full lg:w-[66%] max-w-[960px] flex flex-col justify-center relative z-10 text-left">
+
+            {/* Command Badge: 36px space to heading */}
+            <div className="relative z-1 mb-[36px]">
               <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-[10px] bg-white border-[2.5px] border-[#111111] shadow-hard-sm mono text-[11.5px] font-extrabold uppercase tracking-[0.2em] text-[#111111]">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#C8F31D] border border-[#111111] shadow-[0_0_8px_rgba(200,243,29,0.85)] animate-pulse" />
                 <span>zorqen://platform/overview</span>
               </div>
             </div>
 
-            {/* Headline: clamp(56px, 7vw, 88px) desktop, 64px tablet, 46px mobile, 900 weight, 0.92 line-height, -0.06em tracking */}
-            <div className="relative z-1 mb-[32px]">
-              <h1 className="text-[#111111] font-[900] text-[44px] sm:text-[50px] md:text-[64px] lg:text-[clamp(56px,7vw,88px)] leading-[0.92] tracking-[-0.06em]">
+            {/* Headline: 2–3 lines, max-width 780px, clamp(64px, 6vw, 96px), line-height 0.92, weight 900, 28px space to body */}
+            <div className="relative z-1 mb-[28px]">
+              <h1 className="text-[#111111] font-[900] text-[40px] sm:text-[52px] md:text-[66px] lg:text-[clamp(64px,6vw,96px)] leading-[0.92] tracking-[-0.055em] max-w-[780px]">
                 Autonomous Security Validation
                 <br />
                 <span className="text-[#3E3E3E]">for AI-built software.</span>
               </h1>
             </div>
 
-            {/* Subtitle: Max width 620px, 28px line-height, medium weight */}
-            <div className="relative z-1 mb-[32px]">
-              <p className="text-[#333333] font-medium text-[17.5px] sm:text-[18px] max-w-[620px] leading-[28px]">
+            {/* Body Text: 22px, line-height 1.5, 48px space before GitHub card */}
+            <div className="relative z-1 mb-[48px]">
+              <p className="text-[#333333] font-medium text-[17px] sm:text-[19px] lg:text-[22px] leading-[1.5] max-w-[700px]">
                 Continuous threat validation and vulnerability remediation for repositories you control. Find it. Fix it. Prove it.
               </p>
             </div>
 
-            {/* GitHub Connection Card: 96px height, 3px border, thick rounded corners, aligned baseline */}
-            <div className="relative z-1 w-full max-w-[760px]">
+            {/* GitHub Connection Card: 24–28px padding, 3px thick black border, offset shadow, 44px icon container */}
+            <div className="relative z-1 w-full max-w-[780px]">
               <div
                 onClick={connectGithub}
                 role="button"
@@ -93,20 +102,24 @@ export default function OverviewPage() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); connectGithub(); }
                 }}
-                className="group/card w-full min-h-[92px] sm:h-[96px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:px-7 sm:py-0 rounded-[22px] bg-white border-[3px] border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] hover:-translate-y-[1.5px] active:translate-y-0 transition-all duration-150 cursor-pointer select-none"
+                className="group/card w-full flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-[24px] lg:p-[28px] rounded-[22px] bg-white border-[3px] border-[#111111] shadow-[5px_5px_0px_#111111] hover:shadow-[7px_7px_0px_#111111] transition-all duration-200 cursor-pointer select-none"
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-12 h-12 rounded-[14px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
-                    <GithubIcon className="w-6 h-6 text-[#111111]" aria-label="GitHub" />
+                <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+                  {/* GitHub Icon Container: 44px */}
+                  <div className="w-[44px] h-[44px] rounded-[12px] bg-[#F4F2EC] border-2 border-[#111111] flex items-center justify-center shrink-0 shadow-hard-sm">
+                    <GithubIcon className="w-5 h-5 text-[#111111]" aria-label="GitHub" />
                   </div>
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                      <span className="font-extrabold text-[#111111] text-[16px] tracking-tight">GitHub Workspace</span>
-                      <span className="chip ok text-[11px] font-bold py-0.5 px-2.5 inline-flex items-center gap-1.5 border-1.5 border-[#111111]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-                        {githubConnected
-                          ? `@${user?.github_login || 'iamdevdhanush'}`
-                          : 'Disconnected'}
+                  <div className="min-w-0 space-y-2">
+                    {/* Status Pill & Labels with Generous Spacing */}
+                    <div className="flex items-center gap-4 sm:gap-5 flex-wrap">
+                      <span className="font-extrabold text-[#111111] text-[16px] sm:text-[17px] tracking-tight">GitHub Workspace</span>
+                      <span className="chip ok text-[11.5px] font-bold py-1 px-3 inline-flex items-center gap-2 border-1.5 border-[#111111] rounded-full">
+                        <span className="w-2 h-2 rounded-full bg-[#111111]" />
+                        <span>
+                          {githubConnected
+                            ? `@${user?.github_login || 'iamdevdhanush'}`
+                            : 'Disconnected'}
+                        </span>
                       </span>
                     </div>
                     <div className="mono text-[11px] font-semibold text-[#737373] tracking-wider">
@@ -115,10 +128,11 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center sm:shrink-0 w-full sm:w-auto">
-                  <div className="group/btn w-full sm:w-auto h-[48px] px-6 flex items-center justify-center gap-2.5 rounded-[12px] bg-[#111111] text-white hover:bg-[#111111] font-extrabold text-[14px] border-2 border-[#111111] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 shrink-0 shadow-hard-sm">
+                {/* CTA Button: Lifts 2px on hover, arrow translates 4px */}
+                <div className="flex items-center sm:shrink-0 w-full sm:w-auto pt-1 sm:pt-0">
+                  <div className="group/btn w-full sm:w-auto h-[48px] px-6 flex items-center justify-center gap-3 rounded-[12px] bg-[#111111] text-white font-extrabold text-[14px] border-2 border-[#111111] shadow-hard-sm hover:-translate-y-[2px] active:translate-y-0 transition-transform duration-200 shrink-0 cursor-pointer">
                     <span>{githubConnected ? 'Sync Workspace' : 'Connect Account'}</span>
-                    <ArrowRight className="w-4 h-4 stroke-[2.5px] text-white transition-all duration-150 group-hover/btn:text-[#C8F31D] group-hover/card:text-[#C8F31D] group-hover/btn:translate-x-0.5" />
+                    <ArrowRight className="w-4 h-4 stroke-[2.5px] text-white transition-all duration-200 group-hover/btn:text-[#C8F31D] group-hover/card:text-[#C8F31D] group-hover/btn:translate-x-[4px] group-hover/card:translate-x-[4px]" />
                   </div>
                 </div>
               </div>
@@ -190,9 +204,6 @@ export default function OverviewPage() {
         <div className="relative z-1 pb-10 lg:pb-14">
           <ZorqenChecksSection />
         </div>
-
-        {/* Bottom-right corner subtle dot accent */}
-        <PageCornerDotAccent />
 
       </div>
     );
