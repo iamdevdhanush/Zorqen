@@ -77,12 +77,17 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            {/* Headline: 2–3 lines, max-width 780px, clamp(64px, 6vw, 96px), line-height 0.92, weight 900, 28px space to body */}
+            {/* Headline: 2–3 lines, max-width: 760–820px, clamp(64px, 6vw, 96px), line-height 0.92, weight 900, 28px space to body */}
             <div className="relative z-1 mb-[28px]">
-              <h1 className="text-[#111111] font-[900] text-[40px] sm:text-[52px] md:text-[66px] lg:text-[clamp(64px,6vw,96px)] leading-[0.92] tracking-[-0.055em] max-w-[780px]">
-                Autonomous Security Validation
+              <h1
+                className="text-[#111111] font-[900] text-[38px] sm:text-[50px] md:text-[64px] lg:text-[clamp(64px,6vw,96px)] leading-[0.92] max-w-[820px]"
+                style={{ letterSpacing: '-0.065em' }}
+              >
+                <span className="inline-block sm:whitespace-nowrap">Autonomous Security</span>
                 <br />
-                <span className="text-[#3E3E3E]">for AI-built software.</span>
+                <span className="inline-block sm:whitespace-nowrap">Validation for</span>
+                <br />
+                <span className="text-[#3E3E3E] inline-block sm:whitespace-nowrap">AI-built software.</span>
               </h1>
             </div>
 
