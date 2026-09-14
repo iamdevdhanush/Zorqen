@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { RefreshCw, Check, ArrowRight } from 'lucide-react';
+import { RefreshCw, Check, ArrowRight, ExternalLink } from 'lucide-react';
 import GithubIcon from './GithubIcon';
 import { EmptyStateIllustrationDotAccent } from './SelectiveDotGrid';
 
@@ -114,29 +114,124 @@ export const EmptyStateView = memo(function EmptyStateView({
 
   if (type === 'auth') {
     return (
-      <div className={`p-8 sm:p-12 text-center space-y-6 bg-white border-2 border-[#111111] rounded-[20px] shadow-hard ${className}`}>
-        <SecurityIllustration />
-        
-        <div className="space-y-2 max-w-[460px] mx-auto">
-          <h3 className="text-2xl font-extrabold text-[#111111] tracking-tight">
-            {title || 'GitHub connection required.'}
-          </h3>
-          <p className="text-[14.5px] text-[#525252] font-medium leading-relaxed">
-            {subtitle || 'Connect your GitHub account with read-only permissions to list and validate your repositories.'}
-          </p>
-        </div>
+      <div
+        className={`relative overflow-hidden rounded-[20px] bg-white border-2 border-[#111111] shadow-hard transition-all duration-[180ms] ${className}`}
+        style={{ minHeight: '420px' }}
+      >
+        {/* Subtle dotted pattern — top-right corner only */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 right-0 w-[260px] h-[260px]"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #111111 1px, transparent 1px)',
+            backgroundSize: '18px 18px',
+            opacity: 0.05,
+            maskImage: 'radial-gradient(ellipse 100% 100% at 100% 0%, black 20%, transparent 75%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 100% 0%, black 20%, transparent 75%)',
+          }}
+        />
 
-        {onAction && (
-          <div className="pt-2">
-            <button
-              onClick={onAction}
-              className="btn btn-accent px-8 h-[48px] text-[14px] font-extrabold gap-2.5 inline-flex shadow-hard-sm min-h-[44px]"
-            >
-              <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
-              <span>{actionLabel || 'Connect GitHub Account'}</span>
-            </button>
+        {/* Layout: two columns on desktop */}
+        <div className="relative z-10 flex flex-col lg:flex-row h-full">
+
+          {/* ── Left Column ─────────────────────────────────────── */}
+          <div className="flex-1 p-8 sm:p-10 lg:p-12 flex flex-col justify-between gap-8">
+
+            {/* Top: label + heading + description */}
+            <div className="space-y-6">
+              {/* Eyebrow label */}
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="inline-block w-2 h-2 rounded-full bg-[#C8F31D] border border-[#111111]"
+                  aria-hidden="true"
+                />
+                <span className="mono text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#525252]">
+                  GitHub Authorization Required
+                </span>
+              </div>
+
+              {/* Heading */}
+              <div className="space-y-3">
+                <h2 className="text-[28px] sm:text-[34px] font-extrabold text-[#111111] tracking-tight leading-[1.05]">
+                  Connect GitHub<br />Workspace
+                </h2>
+                <p className="text-[15px] text-[#525252] font-medium leading-[1.65] max-w-[520px]">
+                  Authorize your GitHub account to analyze repositories with static AST analysis, AI threat reasoning, and sandbox verification.
+                </p>
+              </div>
+
+              {/* Trust indicators */}
+              <div className="space-y-3 pt-1">
+                {[
+                  'Read-only repository access',
+                  'No code modifications without approval',
+                  'Encrypted repository metadata',
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <span
+                      className="flex-shrink-0 w-[7px] h-[7px] rounded-full bg-[#C8F31D] border border-[#111111]"
+                      aria-hidden="true"
+                    />
+                    <span className="text-[13.5px] text-[#333333] font-semibold">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom: CTA cluster */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
+              {onAction && (
+                <button
+                  id="connect-github-cta"
+                  onClick={onAction}
+                  className="group inline-flex items-center justify-center gap-2.5 h-[52px] px-7 rounded-[14px] bg-[#111111] text-white text-[14px] font-extrabold border-2 border-[#111111] shadow-hard-sm transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-hard active:translate-y-0 active:shadow-hard-sm w-full sm:w-auto"
+                >
+                  <GithubIcon className="w-[18px] h-[18px] text-white" aria-label="GitHub" />
+                  <span>{actionLabel || 'Connect GitHub'}</span>
+                  <ArrowRight className="w-4 h-4 stroke-[2.5px] transition-transform duration-[180ms] group-hover:translate-x-0.5" />
+                </button>
+              )}
+              <button
+                onClick={() => window.open('https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps', '_blank', 'noopener')}
+                className="inline-flex items-center justify-center gap-1.5 h-[52px] px-5 rounded-[14px] bg-transparent text-[#525252] text-[13.5px] font-semibold border-2 border-transparent hover:border-[#111111]/20 hover:text-[#111111] transition-all duration-[180ms] w-full sm:w-auto"
+              >
+                <ExternalLink className="w-3.5 h-3.5 stroke-[2px]" />
+                <span>Learn how permissions work</span>
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* ── Right Column — info cards ────────────────────────── */}
+          <div className="lg:w-[220px] xl:w-[240px] flex-shrink-0 border-t-2 lg:border-t-0 lg:border-l-2 border-[#111111]/10 p-6 lg:p-8 flex flex-row lg:flex-col gap-3 overflow-x-auto lg:overflow-visible lg:justify-start">
+            {[
+              {
+                label: 'READ-ONLY',
+                desc: 'Repository metadata only.',
+              },
+              {
+                label: 'AST',
+                desc: 'Static code analysis.',
+              },
+              {
+                label: 'SANDBOX',
+                desc: 'Isolated validation.',
+              },
+            ].map(({ label, desc }) => (
+              <div
+                key={label}
+                className="flex-shrink-0 w-[160px] lg:w-auto p-4 rounded-[14px] border-2 border-[#111111]/15 bg-[#F9F8F5] hover:border-[#111111]/40 hover:-translate-y-0.5 hover:shadow-hard-sm transition-all duration-[180ms] cursor-default"
+              >
+                <div className="mono text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#111111] mb-1.5">
+                  {label}
+                </div>
+                <div className="text-[12.5px] text-[#525252] font-medium leading-snug">
+                  {desc}
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
       </div>
     );
   }
