@@ -1,175 +1,180 @@
-# ZORQEN — AI-Powered Autonomous Security Validation & Vulnerability Remediation Platform
+# ZORQEN
 
-> **"Find it. Fix it. Prove it."**
+**Autonomous Security Validation for AI-built Software.**
 
----
-
-## 🚀 Quick Start (Demo Mode — No Setup Required)
-
-Demo Mode works **without** GitHub OAuth or Groq API key.
-
-### 1. Start the Backend
-
-```powershell
-cd "d:\ZORQEN AI\backend"
-pip install fastapi "uvicorn[standard]" pydantic pydantic-settings sqlalchemy aiosqlite greenlet httpx "python-jose[cryptography]" "passlib[bcrypt]" groq python-dotenv aiofiles structlog sse-starlette python-multipart cryptography gitpython pygments pyyaml
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### 2. Start the Frontend
-
-```powershell
-cd "d:\ZORQEN AI\frontend"
-npm install
-npm run dev
-```
-
-### 3. Open the App
-
-Visit **http://localhost:5173** and click **"Try Demo Mode"**.
+ZORQEN continuously analyzes your repositories using static AST analysis, LLM-powered threat reasoning, and isolated sandbox verification — then delivers findings that are confirmed, prioritized, and explained. Not just flagged.
 
 ---
 
-## 🔑 Configuration
+## Platform Preview
 
-Copy `.env.example` to `.env` in the project root and fill in your values.
-
-### Required for Full Features
-
-| Variable | Description | Get it at |
-|---|---|---|
-| `GROQ_API_KEY` | AI reasoning & copilot | https://console.groq.com |
-| `GITHUB_CLIENT_ID` | GitHub OAuth | https://github.com/settings/applications/new |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth | Same as above |
-
-### GitHub OAuth App Setup
-
-1. Go to https://github.com/settings/applications/new
-2. **Homepage URL**: `http://localhost:5173`
-3. **Authorization callback URL**: `http://localhost:8000/api/auth/github/callback`
-4. Copy Client ID and Client Secret to `.env`
+> *The ZORQEN investigation console — severity-ranked findings with AI reasoning, sandbox evidence, and one-click patch review.*
 
 ---
 
-## 🏗️ Architecture
+## What ZORQEN Does
+
+### Static AST Analysis
+Parses your repository at the syntax level. No runtime required. ZORQEN detects injection vectors, hardcoded secrets, authentication gaps, and misconfigured infrastructure before a single line of code executes.
+
+### AI Threat Reasoning
+Every candidate finding passes through an LLM investigation layer. ZORQEN explains the attack path, assesses exploitability in context, and eliminates false positives before they reach your team.
+
+### Sandbox Verification
+High-confidence findings are validated in isolated, disposable containers. ZORQEN doesn't just claim a SQL injection exists — it demonstrates the payload, captures the evidence, and then verifies the patch.
+
+---
+
+## Why ZORQEN
+
+AI-assisted development has compressed the time from idea to deployment. Security review has not kept pace.
+
+Traditional static analyzers were designed for human-written codebases. They generate findings in volume, offer minimal context, and produce noise at scale. Teams spend more time triaging alerts than resolving them.
+
+ZORQEN is built for the current reality: repositories that move fast, contain AI-generated patterns, and need findings that are already investigated — not just reported.
+
+- **Validation over volume.** Every finding is confirmed before it surfaces.
+- **Context-aware reasoning.** The AI layer understands your codebase's architecture, not just its syntax.
+- **Evidence by default.** Sandbox output, attack paths, and patch diffs are included in every critical finding.
+
+---
+
+## Core Workflow
 
 ```
-ZORQEN/
-├── frontend/          # React + TypeScript + Vite + Tailwind v4
-│   ├── src/
-│   │   ├── pages/     # LandingPage, DemoPage, DashboardPage
-│   │   ├── components/ # SecurityScore, ArchitectureMap, SecurityCopilot, DiffViewer
-│   │   └── services/  # api.ts — Axios API client
-│   └── Dockerfile
-│
-├── backend/           # Python + FastAPI
-│   ├── main.py        # FastAPI app entry point
-│   ├── core/          # Config, Database, Security utilities
-│   ├── models/        # SQLAlchemy ORM (User, Repository, Assessment, Finding, etc.)
-│   ├── routers/       # auth, demo, api (repos, assessments, findings, copilot)
-│   ├── agents/        # orchestrator, architecture_analyst, security_reasoner, remediation_agent
-│   ├── security/      # semgrep_runner, secret_detector, custom_checks
-│   ├── github/        # oauth, client
-│   ├── demo/          # fixtures.py (pre-loaded demo data)
-│   └── Dockerfile
-│
-└── docker-compose.yml
+Repository Connected
+        ↓
+   AST Analysis
+        ↓
+  AI Investigation
+        ↓
+ Sandbox Validation
+        ↓
+ Actionable Findings
 ```
 
 ---
 
-## 🎭 Demo Flow (Hackathon Presentation)
+## Platform Highlights
 
-The full DETECT → REASON → VALIDATE → REMEDIATE → VERIFY story:
-
-1. **Click "Try Demo Mode"** → No GitHub account needed
-2. **Dashboard** → Security Score: 38/100, 3 Critical, 2 High findings
-3. **Architecture Map** → Flask + SQLite + Docker detected
-4. **Assessment Timeline** → All 6 pipeline steps completed
-5. **View Findings** → 10 realistic vulnerabilities with full AI reasoning
-6. **Finding Detail: SQL Injection** →
-   - Attack path visualization
-   - Vulnerable code highlighted
-   - AI reasoning: "CONFIRMED — f-string SQL interpolation"
-   - Sandbox validation: "REPRODUCED — payload returned all 47 user records"
-7. **Review Fix** → Unified diff: f-string → parameterized query
-8. **Verify Patch** → "PATCH VERIFIED — same payload now blocked"
-9. **Score jumps: 38 → 74**
+- **Repository intelligence** — framework detection, dependency mapping, architecture profiling
+- **AI investigation console** — LLM reasoning on every finding, with attack path visualization
+- **Severity prioritization** — critical, high, medium, low — scored by exploitability, not pattern count
+- **Sandbox verification** — live payload testing in isolated Docker containers
+- **Read-only GitHub integration** — OAuth-based, zero write permissions, no repository access beyond analysis
+- **Security copilot** — conversational interface for querying findings and understanding vulnerabilities
+- **Enterprise-ready UX** — monochrome interface, high-contrast typography, distraction-free investigation workflow
 
 ---
 
-## 🤖 Agent Architecture
+## Architecture
 
-| Agent | Responsibility |
+```mermaid
+graph TD
+    A[Frontend<br/>React · TypeScript · Vite] -->|API Requests| B[Backend<br/>FastAPI · Python]
+    B --> C[AST Engine<br/>Semgrep · Custom Checks]
+    B --> D[AI Layer<br/>Groq LLM · Security Reasoner]
+    B --> E[Sandbox<br/>Isolated Docker Containers]
+    B --> F[GitHub Integration<br/>OAuth · Read-only API]
+    C --> G[(Assessment Store<br/>SQLite · SQLAlchemy)]
+    D --> G
+    E --> G
+    G --> A
+```
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
 |---|---|
-| `orchestrator.py` | Controls the full pipeline state machine |
-| `architecture_analyst.py` | Detects frameworks, builds architecture map |
-| `security_reasoner.py` | Groq LLM reasoning over tool findings |
-| `remediation_agent.py` | Generates minimal code patches |
-| `semgrep_runner.py` | Async Semgrep static analysis |
-| `secret_detector.py` | 16-pattern secret detection with redaction |
-| `custom_checks.py` | 8 deterministic security check categories |
+| Frontend | React 19, TypeScript, Vite |
+| Styling | Tailwind CSS v4 |
+| Deployment | Cloudflare Pages |
+| Backend | Python, FastAPI, Uvicorn |
+| AI Reasoning | Groq API (Llama 3) |
+| Static Analysis | Semgrep, Custom AST Checks |
+| Sandbox | Docker (isolated containers) |
+| Database | SQLite via SQLAlchemy |
+| Auth | GitHub OAuth 2.0 |
 
 ---
 
-## 🐳 Docker Deployment
+## Design Philosophy
 
-```bash
-# Copy and fill in your .env
-cp .env.example .env
+ZORQEN uses a monochrome foundation with a lime accent — a deliberate choice for a security context where cognitive load matters. High-contrast typography keeps findings readable under pressure. Every interface decision prioritizes the investigation workflow over visual decoration.
 
-# Start the full stack
-docker-compose up --build
-```
-
-Frontend: http://localhost:5173  
-Backend: http://localhost:8000/api/docs
+The goal is an environment where a security engineer can move from repository overview to confirmed findings to patch review without friction or distraction.
 
 ---
 
-## ⚠️ Safety Boundaries
+## Vulnerability Coverage
 
-- **Only** analyzes repositories the user is authorized to assess
-- **Never** scans arbitrary external targets
-- **Never** executes repository code directly on the host
-- All dynamic testing happens in **isolated, disposable Docker containers**
-- Secrets found in code are **redacted** before display
-- Every finding backed by **evidence**, not just AI claims
-
----
-
-## 📊 Vulnerability Coverage
-
-| Category | Tool | CWE |
+| Category | Method | CWE |
 |---|---|---|
 | SQL Injection | Semgrep + Custom | CWE-89 |
 | Command Injection | Semgrep + Custom | CWE-78 |
 | Path Traversal | Custom | CWE-22 |
-| XSS | Semgrep | CWE-79 |
+| Cross-Site Scripting | Semgrep | CWE-79 |
 | Hardcoded Secrets | Secret Detector | CWE-798 |
 | Missing Authentication | Custom | CWE-306 |
 | IDOR | Custom | CWE-639 |
 | CORS Misconfiguration | Custom | CWE-942 |
 | Insecure Deserialization | Custom | CWE-502 |
-| Insecure Cryptography | Custom | CWE-338 |
+| Weak Cryptography | Custom | CWE-338 |
 | Docker Misconfiguration | Custom | CWE-250 |
 | Vulnerable Dependencies | Custom | CWE-1035 |
 
 ---
 
-## 📋 API Documentation
+## Roadmap
 
-Interactive docs available at: http://localhost:8000/api/docs
-
-Key endpoints:
-- `POST /api/auth/demo-login` — Start demo session
-- `GET /api/demo/assessment` — Get demo assessment data
-- `GET /api/demo/findings` — Get all demo findings
-- `GET /api/demo/findings/{id}` — Get finding detail
-- `POST /api/demo/simulate-remediation/{id}` — Simulate patch verification
-- `POST /api/copilot/chat` — AI Security Copilot
+- [x] Repository Intelligence
+- [x] AI Investigation Console
+- [x] Security Findings Dashboard
+- [x] Sandbox Verification Engine
+- [x] Security Copilot
+- [x] Patch Diff Viewer
+- [ ] Live Repository Sync
+- [ ] Collaborative Investigations
+- [ ] Enterprise Policy Engine
+- [ ] CI/CD Pipeline Integration
+- [ ] Multi-repository Portfolio View
 
 ---
 
-*Assessment performed only against the authorized repository and isolated test environment.*  
+## Contributing
+
+We welcome thoughtful contributions that improve security validation, developer experience, and platform quality.
+
+Open an issue to discuss significant changes before submitting a pull request. For smaller improvements, a focused PR with clear context is the fastest path to review.
+
+---
+
+## License
+
+Licensed under the [Apache License 2.0](./LICENSE).
+
+---
+
+## Local Development
+
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` and use **Demo Mode** to explore the platform without credentials.
+
+For full GitHub integration, configure `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GROQ_API_KEY` in your `.env` file. See `.env.example` for reference.
+
+---
+
 *ZORQEN — Find it. Fix it. Prove it.*
