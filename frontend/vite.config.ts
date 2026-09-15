@@ -8,8 +8,15 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
+    // Explicitly name the assets directory so _headers rules can match /assets/*
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
+        // Content-hashed filenames — these are the cache-bust mechanism.
+        // NEVER disable hashing: Cloudflare caches /assets/* for 1 year (immutable).
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks(id) {
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
             return 'vendor-react';
@@ -34,3 +41,4 @@ export default defineConfig({
     },
   },
 });
+

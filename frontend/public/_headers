@@ -1,0 +1,41 @@
+# ZORQEN — Cloudflare Workers Static Assets header rules
+# These rules are applied by the Cloudflare runtime and act as a declarative
+# fallback that reinforces the Cache-Control values set by the Worker.
+#
+# Rule evaluation order: top-to-bottom, first match wins.
+#
+# ── Hashed Vite assets (/assets/*) ──────────────────────────────────────────
+# All JS chunks, CSS bundles, and other files emitted by Vite into /assets/
+# carry a content hash in their filename (e.g. index-ByMDR_RU.js).
+# It is safe to cache these for 1 year. The hash is the cache-bust mechanism.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── Root HTML (index.html) ───────────────────────────────────────────────────
+# The SPA entry point must always be revalidated so a new deploy is
+# immediately visible without a manual browser cache clear.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# ── Public static files without a content hash ──────────────────────────────
+# These files sit in /public/ and are served from the root with their
+# original names. A 5-minute TTL is short enough for updates to propagate
+# quickly and long enough to avoid per-request Cloudflare hits.
+/favicon.svg
+  Cache-Control: public, max-age=300
+/logo.png
+  Cache-Control: public, max-age=300
+/banner.svg
+  Cache-Control: public, max-age=300
+/zorqen-banner.svg
+  Cache-Control: public, max-age=300
+/icons.svg
+  Cache-Control: public, max-age=300
+/robots.txt
+  Cache-Control: public, max-age=300
+/sitemap.xml
+  Cache-Control: public, max-age=300
+/404.html
+  Cache-Control: public, max-age=0, must-revalidate
+/banner.html
+  Cache-Control: public, max-age=0, must-revalidate
