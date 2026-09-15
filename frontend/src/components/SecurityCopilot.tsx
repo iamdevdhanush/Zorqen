@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUp, Shield, X } from 'lucide-react';
@@ -282,10 +282,10 @@ const SecurityCopilot = memo(function SecurityCopilot({
   }, []);
 
   // Smooth slide-out on close
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setMounted(false);
     setTimeout(onClose, 250);
-  };
+  }, [onClose]);
 
   // Escape key closes panel
   useEffect(() => {
@@ -296,7 +296,7 @@ const SecurityCopilot = memo(function SecurityCopilot({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [handleClose]);
 
   // Scroll to bottom on new messages or loading
   useEffect(() => {
