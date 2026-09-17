@@ -71,6 +71,7 @@ async def list_repositories(
 @repos_router.get("/github")
 @_limiter.limit("30/minute")
 async def list_github_repos(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1406,6 +1407,7 @@ copilot_router = APIRouter(prefix="/copilot", tags=["copilot"])
 @_limiter.limit("10/minute")
 async def copilot_chat(
     req: CopilotRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
