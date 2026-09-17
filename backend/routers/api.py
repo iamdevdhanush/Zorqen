@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import httpx
+import re
 import structlog
 import uuid
 from datetime import datetime, timezone
@@ -13,7 +14,9 @@ from typing import Optional
 from core.config import settings
 from core.errors import structured_error
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,6 +41,14 @@ from services.findings import find_by_slug, search_findings
 from services.grok import GrokAPIError, GrokConfigurationError
 from services.serializers import finding_contract, remediation_contract, repo_meta, run_contract
 
+# Rate limiter for this module — uses the same key function (remote address)
+# as the app-level limiter in main.py, so limits apply consistently.
+_limiter = Limiter(key_func=get_remote_address)
+
+# Safe identifier pattern: GitHub owner/repo names may only contain
+# alphanumerics, hyphens, underscores, and dots.
+_SAFE_IDENT = re.compile(r'^[a-zA-Z0-9_.-]{1,100}$')
+
 # ── Repositories ────────────────────────────────────────────────────────────
 
 repos_router = APIRouter(prefix="/repositories", tags=["repositories"])
@@ -58,6 +69,7 @@ async def list_repositories(
 
 
 @repos_router.get("/github")
+@_limiter.limit("30/minute")
 async def list_github_repos(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -140,6 +152,27 @@ class ConnectRepoRequest(BaseModel):
     clone_url: Optional[str] = None
     github_repo_id: Optional[int] = None
     stars: int = 0
+
+    @field_validator("owner", "name")
+    @classmethod
+    def validate_safe_identifier(cls, v: str) -> str:
+        """Reject owner/name values that don't match GitHub's identifier rules.
+        This prevents path traversal and injection via repository identifiers."""
+        if not _SAFE_IDENT.match(v):
+            raise ValueError(
+                f"Invalid identifier '{v}'. Only alphanumerics, hyphens, underscores and dots are allowed."
+            )
+        return v
+
+    @field_validator("description")
+    @classmethod
+    def sanitize_description(cls, v: Optional[str]) -> Optional[str]:
+        """Strip any HTML tags from description to prevent stored XSS."""
+        if v is None:
+            return v
+        # Simple HTML tag stripping — sufficient for a metadata field
+        import re as _re
+        return _re.sub(r'<[^>]+>', '', v)[:500]
 
 
 @repos_router.post("")
@@ -1007,6 +1040,7 @@ def _github_error(exc: httpx.HTTPError, *, stage: str, context: str) -> HTTPExce
 
 
 @assessments_router.post("")
+@_limiter.limit("2/minute")
 async def start_assessment(
     req: StartAssessmentRequest,
     background_tasks: BackgroundTasks,
@@ -1369,6 +1403,7 @@ copilot_router = APIRouter(prefix="/copilot", tags=["copilot"])
 
 
 @copilot_router.post("/chat")
+@_limiter.limit("10/minute")
 async def copilot_chat(
     req: CopilotRequest,
     current_user: User = Depends(get_current_user),
