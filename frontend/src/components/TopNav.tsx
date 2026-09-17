@@ -71,6 +71,7 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         : 'text-[#555555] font-semibold hover:text-[#111111] hover:bg-[#F4F2EC]'
                     }`
                   }
+                  aria-current={undefined}
                 >
                   {({ isActive }) => (
                     <span className="relative flex flex-col items-center justify-center h-full">
@@ -79,7 +80,6 @@ const TopNav = memo(function TopNav({ onOpenCmd }: TopNavProps) {
                         <motion.div
                           layoutId="topNavActiveUnderline"
                           className="absolute bottom-[2px] w-[calc(100%+6px)] left-1/2 -translate-x-1/2 h-[3px] bg-[#C8F31D] rounded-full border border-[#111111]/20"
-                          style={{ boxShadow: '0 0 8px rgba(200,243,29,0.7)' }}
                           transition={{
                             duration: 0.2,
                             ease: [0.16, 1, 0.3, 1],

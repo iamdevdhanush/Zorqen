@@ -8,6 +8,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
+  /* ── Color Palette ─────────────────────────────────────── */
   --color-base: #ECEAE4;        /* Warm off-white background */
   --color-panel: #FFFFFF;       /* Crisp white card surface */
   --color-panel-2: #F9F8F5;     /* Secondary light surface */
@@ -25,9 +26,26 @@
   --color-medium: #D97706;      /* Amber */
   --color-low: #2563EB;         /* Blue */
 
+  /* ── Typography ─────────────────────────────────────────── */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
   --font-serif-luxury: 'Bodoni Moda', 'Cormorant Garamond', 'Newsreader', 'Didot', 'Bodoni MT', Georgia, serif;
+
+  /* ── 8px Spacing System ──────────────────────────────────── */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-10: 80px;
+
+  /* ── Border Radius Tokens ────────────────────────────────── */
+  --radius-sm: 12px;   /* Buttons, chips, badges */
+  --radius-md: 18px;   /* Cards, panels */
+  --radius-lg: 24px;   /* Modals, drawers */
+  --radius-full: 9999px;
 }
 
 /* ── Global Precision Base ──────────────────────────────────────────────── */
@@ -133,7 +151,7 @@ svg {
   color: #525252;
 }
 
-/* ── Elevation & Brutalist Offset Shadows ────────────────────────────── */
+/* ── Elevation & Brutalist Offset Shadows ────────────────────────── */
 .shadow-hard {
   box-shadow: 3px 3px 0px #111111;
 }
@@ -146,8 +164,20 @@ svg {
 .shadow-hard-xl {
   box-shadow: 7px 7px 0px #111111;
 }
+/* Lime accent ring — solid double border, no glow */
 .shadow-hard-lime {
   box-shadow: 0 0 0 2px #111111, 0 0 0 4px #C8F31D;
+}
+
+/* ── Enterprise Soft Shadows (non-glow, subtle depth) ────────── */
+.shadow-enterprise {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06);
+}
+.shadow-enterprise-md {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+}
+.shadow-enterprise-lg {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 16px 40px rgba(0,0,0,0.08);
 }
 
 /* ── Industrial Module Badge System ──────────────────────────────────── */
@@ -707,15 +737,11 @@ kbd {
   }
 }
 
-@keyframes cyberLimeGlow {
-  0%, 100% {
-    filter: drop-shadow(0 0 6px rgba(200, 255, 26, 0.45));
-    transform: scale(1);
-  }
-  50% {
-    filter: drop-shadow(0 0 14px rgba(200, 255, 26, 0.75));
-    transform: scale(1.04);
-  }
+/* cyberLimeGlow removed — glow filters not permitted in UI elements.
+   SVG ambient backgrounds use scale-only animation instead. */
+@keyframes cyberLimeScale {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%       { transform: scale(1.04); opacity: 1; }
 }
 
 .ambient-float {
@@ -744,10 +770,11 @@ kbd {
   animation: cyberNodePulse 3.5s ease-in-out infinite;
 }
 
+/* Formerly cyberLimeGlow — now scale-only, no filter/glow */
 .animate-cyber-lime {
   transform-box: fill-box;
   transform-origin: center;
-  animation: cyberLimeGlow 4s ease-in-out infinite;
+  animation: cyberLimeScale 4s ease-in-out infinite;
 }
 
 /* ── Accessibility: Prefers Reduced Motion ─────────────────────────────── */
@@ -757,8 +784,8 @@ kbd {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-    transform: none !important;
   }
+  /* Suppress all named animations without forcing transform: none on layout */
   .animate-radar-sweep,
   .animate-signal-pulse,
   .fade-in,
@@ -771,6 +798,7 @@ kbd {
   .animate-cyber-node,
   .animate-cyber-lime {
     animation: none !important;
+    opacity: 1 !important;
   }
 }
 
@@ -820,4 +848,106 @@ kbd {
 
 .animate-terminal-fade {
   animation: terminalFade 0.18s ease-out forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZORQEN — Skeleton Loader System
+   Pulse on the warm beige background, matching the panel surface
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.skeleton {
+  background-color: #EAE8E0;
+  border-radius: 6px;
+  animation: skeletonPulse 1.6s ease-in-out infinite;
+}
+
+.skeleton-text {
+  background-color: #EAE8E0;
+  border-radius: 4px;
+  height: 14px;
+  animation: skeletonPulse 1.6s ease-in-out infinite;
+}
+
+.skeleton-card {
+  background-color: #FFFFFF;
+  border: 2px solid #E8E6DF;
+  border-radius: 20px;
+  padding: 24px;
+  animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+/* Stagger skeleton children for a wave effect */
+.skeleton-card > *:nth-child(1) { animation-delay: 0ms; }
+.skeleton-card > *:nth-child(2) { animation-delay: 80ms; }
+.skeleton-card > *:nth-child(3) { animation-delay: 160ms; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZORQEN — Accessibility Utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Screen-reader only — visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link */
+.skip-nav {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 9999;
+  background: #C8F31D;
+  color: #111111;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid #111111;
+  text-decoration: none;
+  transition: top 120ms ease;
+}
+.skip-nav:focus {
+  top: 16px;
+}
+
+/* Enterprise focus ring — lime outline, no glow */
+.focus-ring:focus-visible {
+  outline: 2px solid #C8F31D;
+  outline-offset: 3px;
+  border-radius: inherit;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZORQEN — Page Transition Utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: pageEnter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZORQEN — Overflow Safety
+   Prevent horizontal scroll at any viewport width
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.overflow-safe {
+  max-width: 100%;
+  overflow-x: hidden;
 }

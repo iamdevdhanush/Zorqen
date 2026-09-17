@@ -18,6 +18,7 @@ from core.database import init_db
 from core.errors import register_error_handlers
 from core.logging import configure_logging
 from core.middleware import RequestContextMiddleware
+from core.security_headers import SecurityHeadersMiddleware
 from routers.auth import router as auth_router
 from routers.api import (
     repos_router,
@@ -31,6 +32,8 @@ from routers.activity import router as activity_router
 
 configure_logging()
 log = structlog.get_logger()
+
+__version__ = "1.1.0"
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -156,7 +159,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ZORQEN API",
     description="AI-Powered Autonomous Security Validation & Vulnerability Remediation Platform",
-    version="1.1.0",
+    version=__version__,
     lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -180,17 +183,33 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 
-# ── Middleware ───────────────────────────────────────────────────────────────
+# ── Middleware ─────────────────────────────────────────────────────────────────────────────────
+
+# Security headers on every response (must be outermost so it wraps all others)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS: never mix ["*"] with allow_credentials=True (browsers reject it).
 # In development, cors_origins includes http://localhost:5173 and :3000.
 # In production, set CORS_ORIGINS env var to the Vercel origin.
+# allow_headers is an explicit allowlist — never use ["*"] in production.
+_ALLOWED_HEADERS = [
+    "Accept",
+    "Accept-Language",
+    "Authorization",
+    "Content-Type",
+    "Origin",
+    "X-Requested-With",
+    "X-CSRF-Token",
+    "Cache-Control",
+    "Pragma",
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=_ALLOWED_HEADERS,
 )
 app.add_middleware(
     TrustedHostMiddleware,
@@ -288,7 +307,7 @@ async def health():
         content={
             "status": overall,
             "app": settings.app_name,
-            "version": "1.1.0",
+            "version": __version__,
             "environment": settings.app_env,
             "database": db_status,
             "github": github_status,

@@ -44,7 +44,10 @@ function AppShellInner() {
   const isScanning = currentAssessment?.status === 'RUNNING' || currentAssessment?.status === 'IDLE';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)]">
+    <div className="min-h-screen flex flex-col bg-[var(--color-base)] text-[var(--color-ink)] overflow-x-hidden">
+      {/* Skip to main content — keyboard navigation accessibility */}
+      <a href="#main-content" className="skip-nav">Skip to main content</a>
+
       {/* Console SEO settings */}
       <Seo
         title="ZORQEN — Security Operations Console"
@@ -59,9 +62,14 @@ function AppShellInner() {
       {/* Top Header Navigation */}
       <TopNav onOpenCmd={handleOpenCmd} />
 
+      {/* Aria live region for toast notifications */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only" id="toast-announcer" />
+
       {/* Main Page Area Aligned to 1440px Grid */}
       <main
-        className="flex-1 max-w-[1440px] w-full mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-7 lg:py-10 transition-all"
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 py-7 lg:py-10 transition-all focus:outline-none"
         style={{
           paddingBottom: isScanning ? 'calc(72px + env(safe-area-inset-bottom))' : 'calc(24px + env(safe-area-inset-bottom))',
         }}
@@ -78,11 +86,11 @@ function AppShellInner() {
       )}
 
       {/* Footer Aligned to 1440px Grid */}
-      <footer className="border-t border-[#111111]/15 px-6 sm:px-8 lg:px-12 xl:px-16 py-5 mt-auto bg-[var(--color-base)]">
+      <footer className="border-t border-[#111111]/15 px-4 sm:px-6 lg:px-12 xl:px-16 py-5 mt-auto bg-[var(--color-base)]">
         <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[13px] text-[#555555]">
           <div className="flex items-center gap-2 flex-wrap font-medium">
             <span className="font-extrabold text-[#111111]">ZORQEN</span>
-            <span className="text-[#111111]/30">•</span>
+            <span className="text-[#111111]/30" aria-hidden="true">•</span>
             <span>Autonomous Security Validation Platform</span>
           </div>
           <div className="mono text-[11.5px] font-semibold text-[#555555]">
