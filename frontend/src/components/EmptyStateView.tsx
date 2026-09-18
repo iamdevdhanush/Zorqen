@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { RefreshCw, Check, ArrowRight, ExternalLink } from 'lucide-react';
 import GithubIcon from './GithubIcon';
+import { AntiMetalButton } from './ui/anti-metal-button';
 import { EmptyStateIllustrationDotAccent } from './SelectiveDotGrid';
 
 interface EmptyStateViewProps {
@@ -181,15 +182,15 @@ export const EmptyStateView = memo(function EmptyStateView({
             {/* Bottom: CTA cluster */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
               {onAction && (
-                <button
+                <AntiMetalButton
                   id="connect-github-cta"
                   onClick={onAction}
-                  className="group inline-flex items-center justify-center gap-2.5 h-[52px] px-7 rounded-[14px] bg-[#111111] text-white text-[14px] font-extrabold border-2 border-[#111111] shadow-hard-sm transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-hard active:translate-y-0 active:shadow-hard-sm w-full sm:w-auto"
+                  icon={<GithubIcon className="w-[18px] h-[18px] text-white" aria-label="GitHub" />}
+                  rightIcon={<ArrowRight className="w-4 h-4 stroke-[2.5px]" />}
+                  className="w-full sm:w-auto"
                 >
-                  <GithubIcon className="w-[18px] h-[18px] text-white" aria-label="GitHub" />
-                  <span>{actionLabel || 'Connect GitHub'}</span>
-                  <ArrowRight className="w-4 h-4 stroke-[2.5px] transition-transform duration-[180ms] group-hover:translate-x-0.5" />
-                </button>
+                  {actionLabel || 'Connect GitHub'}
+                </AntiMetalButton>
               )}
               <button
                 onClick={() => window.open('https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps', '_blank', 'noopener')}

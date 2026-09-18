@@ -3,6 +3,7 @@ import { KV, KVCol, Panel } from '../components/ui';
 import { useWorkspace } from '../store/WorkspaceContext';
 import { getApiBase } from '../services/api';
 import GithubIcon from '../components/GithubIcon';
+import { AntiMetalButton } from '../components/ui/anti-metal-button';
 
 export default function SettingsPage() {
   const { user, githubConnected, connectGithub, disconnectGithub, signOut, currentRepo } = useWorkspace();
@@ -40,9 +41,14 @@ export default function SettingsPage() {
             {githubConnected ? (
               <button onClick={disconnectGithub} className="btn btn-sm w-full sm:w-auto justify-center">Disconnect</button>
             ) : (
-              <button onClick={connectGithub} className="btn btn-accent btn-sm w-full sm:w-auto justify-center flex items-center gap-2">
-                <GithubIcon className="w-4 h-4 text-[#111111]" aria-label="GitHub" /> Connect GitHub
-              </button>
+              <AntiMetalButton
+                onClick={connectGithub}
+                size="compact"
+                icon={<GithubIcon className="w-4 h-4 text-white mr-1.5" aria-label="GitHub" />}
+                className="w-full sm:w-auto justify-center"
+              >
+                Connect GitHub
+              </AntiMetalButton>
             )}
           </div>
         </div>

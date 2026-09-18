@@ -3,6 +3,8 @@ import { ArrowRight, Check, X } from 'lucide-react';
 import GithubIcon from './GithubIcon';
 import { useWorkspace } from '../store/WorkspaceContext';
 
+import { AntiMetalButton } from './ui/anti-metal-button';
+
 export default function ConnectGithubModal() {
   const { setGithubModalOpen, proceedGithubAuth } = useWorkspace();
   const primaryRef = useRef<HTMLButtonElement>(null);
@@ -54,17 +56,16 @@ export default function ConnectGithubModal() {
           </p>
 
           {/* Primary Action Button */}
-          <button
+          <AntiMetalButton
             ref={primaryRef}
             onClick={proceedGithubAuth}
-            className="w-full h-[48px] px-5 rounded-[12px] bg-[#C8F31D] hover:bg-[#B8E316] border-2 border-[#111111] text-[#111111] font-extrabold text-[15px] flex items-center justify-between transition-all duration-180 group cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111111] shadow-hard hover:-translate-y-0.5 active:translate-y-0 min-h-[44px]"
+            size="full"
+            icon={<GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-white mr-1.5" aria-label="GitHub" />}
+            rightIcon={<ArrowRight className="w-5 h-5 stroke-[2] text-white ml-auto" />}
+            className="justify-between"
           >
-            <div className="flex items-center gap-2.5">
-              <GithubIcon className="w-[18px] h-[18px] md:w-5 md:h-5 text-[#111111]" aria-label="GitHub" />
-              <span>Continue with GitHub</span>
-            </div>
-            <ArrowRight className="w-5 h-5 stroke-[2] text-[#111111] group-hover:translate-x-1 transition-transform duration-140" />
-          </button>
+            Continue with GitHub
+          </AntiMetalButton>
 
           <div className="border-t-2 border-[#111111]/10 my-4" />
 

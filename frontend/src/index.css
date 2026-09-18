@@ -404,6 +404,113 @@ svg {
   box-shadow: 2px 2px 0px #111111;
 }
 
+/* ── AntiMetalButton (Enterprise Precision High-Value CTA) ───────────── */
+.anti-metal-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #111111;
+  color: #FFFFFF;
+  border: 2px solid #111111;
+  border-radius: 18px;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0px #111111;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 180ms ease,
+              border-color 180ms ease;
+}
+
+.anti-metal-btn:hover {
+  background-color: #0A0A0A;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #111111;
+}
+
+.anti-metal-btn:active {
+  transform: translateY(0px);
+  box-shadow: 2px 2px 0px #111111;
+}
+
+.anti-metal-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ECEAE4, 0 0 0 4px #111111, 0 0 0 6px #C8F31D;
+}
+
+.anti-metal-btn:disabled,
+.anti-metal-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+  box-shadow: 2px 2px 0px #111111;
+}
+
+/* Expanding Neon Lime Accent Strip */
+.anti-metal-strip {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 3px;
+  width: 28px;
+  background-color: #C8F31D;
+  border-radius: 3px 3px 0 0;
+  pointer-events: none;
+  opacity: 0.9;
+  transition: width 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              height 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 240ms ease;
+}
+
+.anti-metal-btn:hover .anti-metal-strip,
+.anti-metal-btn:focus-visible .anti-metal-strip {
+  width: calc(100% - 24px);
+  height: 4px;
+  opacity: 1;
+}
+
+/* Compact variant adjustment for strip */
+.anti-metal-btn.anti-metal-compact .anti-metal-strip {
+  width: 20px;
+  height: 2.5px;
+}
+
+.anti-metal-btn.anti-metal-compact:hover .anti-metal-strip,
+.anti-metal-btn.anti-metal-compact:focus-visible .anti-metal-strip {
+  width: calc(100% - 16px);
+  height: 3px;
+}
+
+/* Icon / Send variant */
+.anti-metal-btn.anti-metal-icon .anti-metal-strip {
+  width: 14px;
+  height: 2.5px;
+}
+
+.anti-metal-btn.anti-metal-icon:hover .anti-metal-strip,
+.anti-metal-btn.anti-metal-icon:focus-visible .anti-metal-strip {
+  width: 22px;
+  height: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anti-metal-btn,
+  .anti-metal-strip {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 /* ── Micro-Chips & Pills (Full Radius, 1.5px Border) ─────────────────── */
 .chip {
   display: inline-flex;
