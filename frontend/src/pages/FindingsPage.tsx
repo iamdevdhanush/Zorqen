@@ -1,8 +1,9 @@
 import { memo, useDeferredValue, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react';
-import { SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
-import { useWorkspaceData, useFindings } from '../store/WorkspaceContext';
+import { SevBadge, StatusBadge, ValidationBadge, PageHeader, TechnicalMeta } from '../components/ui';
+import { useFindings, useWorkspaceData } from '../store/WorkspaceContext';
+import { AntiMetalButton } from '../components/ui/anti-metal-button';
 import type { Finding, FindingStatus, Severity } from '../lib/types';
 
 const FindingRow = memo(function FindingRow({
@@ -96,12 +97,12 @@ const FindingRow = memo(function FindingRow({
           )}
 
           <div className="pt-2 flex justify-end">
-            <button
+            <AntiMetalButton
               onClick={() => onNavigate(finding.id)}
-              className="btn btn-accent btn-sm text-[13px] font-extrabold min-h-[44px]"
+              size="compact"
             >
               Full Remediation & Diff →
-            </button>
+            </AntiMetalButton>
           </div>
         </div>
       )}

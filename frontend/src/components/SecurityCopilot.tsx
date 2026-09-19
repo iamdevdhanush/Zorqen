@@ -5,6 +5,7 @@ import { ArrowUp, Shield, X } from 'lucide-react';
 import { useWorkspaceData, useFinding } from '../store/WorkspaceContext';
 import { copilotChat, type CopilotChatContext, type CopilotSource } from '../services/api';
 import type { Finding } from '../lib/types';
+import { AntiMetalButton } from './ui/anti-metal-button';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -566,15 +567,15 @@ const SecurityCopilot = memo(function SecurityCopilot({
               className="flex-1 bg-transparent text-[#111111] text-[13.5px] sm:text-[14px] font-sans outline-none placeholder:text-[#888888]"
             />
 
-            {/* Lime Send Button with Black Arrow Icon */}
-            <button
+            {/* AntiMetalButton Send Action */}
+            <AntiMetalButton
               type="submit"
+              size="icon"
               disabled={!input.trim() || loading}
               aria-label="Send message"
-              className="w-9 h-9 rounded-full bg-[#C8F31D] text-black flex items-center justify-center hover:bg-[#B8E316] active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 shrink-0 cursor-pointer shadow-xs ml-2"
-            >
-              <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-            </button>
+              icon={<ArrowUp className="w-4 h-4 stroke-[2.5] text-white" />}
+              className="w-9 h-9 !min-w-9 !min-h-9 !rounded-[12px] ml-2 shrink-0"
+            />
           </form>
         </footer>
       </aside>

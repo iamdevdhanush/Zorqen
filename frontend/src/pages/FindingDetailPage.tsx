@@ -11,6 +11,7 @@ import { SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
 import CodeView from '../components/CodeView';
 import ThreatGraph from '../components/ThreatGraph';
 import { useFinding } from '../store/WorkspaceContext';
+import { AntiMetalButton } from '../components/ui/anti-metal-button';
 
 export default function FindingDetailPage() {
   const { id } = useParams();
@@ -65,13 +66,13 @@ export default function FindingDetailPage() {
           </div>
 
           {hasFix && (
-            <button
+            <AntiMetalButton
               onClick={() => navigate(`/remediation/${finding.id}`)}
-              className="btn btn-accent px-6 py-2.5 text-[13.5px] font-extrabold w-full sm:w-auto justify-center min-h-[44px]"
+              icon={<GitPullRequest className="w-[18px] h-[18px] stroke-[2] text-[#C8F31D]" />}
+              className="w-full sm:w-auto"
             >
-              <GitPullRequest className="w-[18px] h-[18px] stroke-[2] text-[#111111]" />
-              <span>Review Patch Proposal →</span>
-            </button>
+              Review Patch Proposal →
+            </AntiMetalButton>
           )}
         </div>
 

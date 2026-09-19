@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, GitBranch, ShieldCheck, XCircle } from 'lucide
 import { SevBadge, StatusBadge } from '../components/ui';
 import DiffPane from '../components/DiffPane';
 import { useFinding, useWorkspace } from '../store/WorkspaceContext';
+import { AntiMetalButton } from '../components/ui/anti-metal-button';
 
 export default function RemediationPage() {
   const { id } = useParams();
@@ -129,13 +130,14 @@ export default function RemediationPage() {
           <div className="space-y-2 pt-1">
             {!applied && !rejected && (
               <>
-                <button
+                <AntiMetalButton
                   onClick={() => { markFinding(finding.id, 'FIX_PENDING'); setApplied(true); }}
-                  className="btn btn-accent w-full justify-center py-2.5 text-[12.5px]"
+                  size="compact"
+                  icon={<CheckCircle2 className="w-4 h-4 text-[#C8F31D]" />}
+                  className="w-full justify-center"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
                   Approve Fix
-                </button>
+                </AntiMetalButton>
 
                 <button
                   onClick={() => setBranchCreated(true)}
@@ -161,13 +163,14 @@ export default function RemediationPage() {
                 <div className="chip ok w-full py-1.5 text-[11px] justify-center">
                   Fix approved! Ready for sandbox verification.
                 </div>
-                <button
+                <AntiMetalButton
                   onClick={() => navigate(`/verification/${finding.id}`)}
-                  className="btn btn-accent w-full justify-center py-2.5 text-[12.5px]"
+                  size="compact"
+                  icon={<ShieldCheck className="w-4 h-4 text-[#C8F31D]" />}
+                  className="w-full justify-center"
                 >
-                  <ShieldCheck className="w-4 h-4" />
                   Verify Patch →
-                </button>
+                </AntiMetalButton>
               </div>
             )}
 

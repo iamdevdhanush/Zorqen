@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Loader2, AlertCircle, Terminal } from 'lucide-react';
 import type { FindingStatus, Severity, ValidationState } from '../lib/types';
+export { AntiMetalButton, type AntiMetalButtonProps } from './ui/anti-metal-button';
 
 /* ── Severity helpers ──────────────────────────────────────────────────── */
 
