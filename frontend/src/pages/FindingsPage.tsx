@@ -1,7 +1,7 @@
 import { memo, useDeferredValue, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react';
-import { SevBadge, StatusBadge, ValidationBadge, PageHeader, TechnicalMeta } from '../components/ui';
+import { SevBadge, StatusBadge, ValidationBadge } from '../components/ui';
 import { useFindings, useWorkspaceData } from '../store/WorkspaceContext';
 import { AntiMetalButton } from '../components/ui/anti-metal-button';
 import type { Finding, FindingStatus, Severity } from '../lib/types';
