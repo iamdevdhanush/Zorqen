@@ -10,6 +10,13 @@ API keys live only in the environment and are never exposed to the frontend or
 logs. Every failure maps to a safe, loggable category; transient failures use
 bounded retry (never infinite), authentication/configuration errors are never
 retried.
+
+BYOK (Bring Your Own Key):
+  Users may supply a transient xAI API key via the X-Grok-Key request header.
+  The key is accepted by the backend for a single request, never stored, never
+  logged, and never included in error messages. Each BYOK call creates and
+  immediately closes its own httpx client so it cannot share state with other
+  requests or the singleton pool.
 """
 from __future__ import annotations
 
@@ -325,6 +332,103 @@ class GrokService:
                 raise GrokAPIError("Empty Copilot LLM response")
 
             return text
+
+
+    async def chat_with_byok(
+        self,
+        messages: list,
+        *,
+        byok_key: str,
+        max_tokens: int = 1200,
+        temperature: float = 0.2,
+    ) -> str:
+        """Call xAI Grok using a caller-supplied transient API key (BYOK).
+
+        The key is used only for this call.  A fresh httpx client is created
+        and closed immediately — it shares no state with the singleton pool or
+        any other concurrent request.  The key is NEVER logged, stored, echoed
+        in error messages or returned to callers.
+        """
+        if not byok_key or not byok_key.strip():
+            raise GrokConfigurationError("BYOK key is empty")
+
+        payload = {
+            "model": settings.grok_model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        headers = {"Authorization": f"Bearer {byok_key}"}
+
+        async with httpx.AsyncClient(
+            base_url=settings.grok_api_base,
+            timeout=settings.grok_timeout_seconds,
+        ) as client:
+            try:
+                resp = await client.post(
+                    "/chat/completions",
+                    json=payload,
+                    headers=headers,
+                )
+            except httpx.TimeoutException:
+                log.warning("[GROK] byok request timed out", provider="grok_byok")
+                raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
+            except httpx.HTTPError:
+                log.warning("[GROK] byok transport error", provider="grok_byok")
+                raise GrokAPIError("ASK ZORQEN unavailable")
+
+        if resp.status_code in (401, 403):
+            log.warning("[GROK] byok authentication rejected", provider="grok_byok", status=resp.status_code)
+            raise GrokAPIError("xAI API key authentication failed", status=resp.status_code, code="GROK_AUTH_ERROR")
+        if resp.status_code == 429:
+            log.warning("[GROK] byok rate limited", provider="grok_byok")
+            raise GrokAPIError("xAI rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
+        if resp.status_code == 404:
+            log.warning("[GROK] byok model unavailable", provider="grok_byok", model=settings.grok_model)
+            raise GrokAPIError("xAI model unavailable", status=404, code="GROK_API_ERROR")
+        if resp.status_code >= 500:
+            log.warning("[GROK] byok provider error", provider="grok_byok", status=resp.status_code)
+            raise GrokAPIError("xAI provider error", status=resp.status_code, code="GROK_API_ERROR")
+        if resp.status_code != 200:
+            log.warning("[GROK] byok unexpected status", provider="grok_byok", status=resp.status_code)
+            raise GrokAPIError("xAI API error", status=resp.status_code, code="GROK_API_ERROR")
+
+        try:
+            data = resp.json()
+        except Exception:
+            log.warning("[GROK] byok malformed response", provider="grok_byok")
+            raise GrokAPIError("Malformed xAI response")
+
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError):
+            log.warning("[GROK] byok missing choices", provider="grok_byok")
+            raise GrokAPIError("Malformed xAI response")
+
+        if not isinstance(content, str) or not content.strip():
+            log.warning("[GROK] byok empty response", provider="grok_byok")
+            raise GrokAPIError("Empty xAI response")
+
+        return content
+
+    async def test_connection(self, *, byok_key: str) -> dict:
+        """Probe the xAI API with a minimal request to verify the key.
+
+        Returns {"ok": True, "model": <model_name>} on success.
+        Raises GrokAPIError with a user-facing message on any failure.
+        The key is NEVER logged or included in error messages.
+        """
+        probe_messages = [
+            {"role": "user", "content": "Respond with the single word: connected"}
+        ]
+        # test with a tiny token budget to minimise cost
+        await self.chat_with_byok(
+            probe_messages,
+            byok_key=byok_key,
+            max_tokens=10,
+            temperature=0.0,
+        )
+        return {"ok": True, "model": settings.grok_model}
 
 
 # Singleton — reused across requests (httpx pool is safe for concurrent use)

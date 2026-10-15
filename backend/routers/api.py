@@ -1403,6 +1403,67 @@ async def _resolve_finding(db: AsyncSession, user: User, ref: str) -> Finding:
 copilot_router = APIRouter(prefix="/copilot", tags=["copilot"])
 
 
+class GrokTestRequest(BaseModel):
+    """BYOK connection-test body.  The key arrives in the JSON body so it
+    never touches URLs, query strings, or server access logs."""
+
+    api_key: str
+
+    @field_validator("api_key")
+    @classmethod
+    def _no_empty_key(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("api_key must not be empty")
+        return v.strip()
+
+
+@copilot_router.post("/grok-test")
+@_limiter.limit("5/minute")
+async def test_grok_connection(
+    body: GrokTestRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """Test a BYOK xAI Grok key with a real minimal API request.
+
+    The key is accepted in the JSON body (never in a URL or query param),
+    used for a single small probe, and discarded immediately.  The key is
+    never stored, never logged, and never included in any response or error.
+
+    Returns: {"ok": true, "model": "<model>"}
+    Errors:  {"detail": {"code": "...", "message": "..."}} with appropriate status.
+    """
+    from services.grok import grok, GrokAPIError as _GrokAPIError, GrokConfigurationError as _GrokCfgError
+
+    # Strip and immediately dereference — we hold only the stripped value
+    byok_key = body.api_key  # already stripped by the validator
+    try:
+        result = await grok.test_connection(byok_key=byok_key)
+        log.info("[COPILOT] byok_test_ok", provider="grok_byok", model=result.get("model"))
+        return result
+    except _GrokAPIError as e:
+        code = getattr(e, "code", "GROK_API_ERROR")
+        status_http = 401 if e.status in (401, 403) else (429 if e.status == 429 else 503)
+        log.warning("[COPILOT] byok_test_failed", provider="grok_byok", error_code=code, status=e.status)
+        raise structured_error(
+            status_code=status_http,
+            stage="copilot",
+            code=code,
+            message=str(e),
+        )
+    except _GrokCfgError as e:
+        log.warning("[COPILOT] byok_test_config_error", provider="grok_byok")
+        raise structured_error(
+            status_code=400,
+            stage="copilot",
+            code="GROK_CONFIGURATION_ERROR",
+            message=str(e),
+        )
+    finally:
+        # Ensure the key reference is released even if an exception is raised
+        del byok_key
+
+
 @copilot_router.post("/chat")
 @_limiter.limit("10/minute")
 async def copilot_chat(
@@ -1413,17 +1474,37 @@ async def copilot_chat(
 ):
     """Evidence-grounded ASK ZORQEN: targeted retrieval → Grok → grounded answer + sources.
 
-    Grok runs server-side only. The frontend sends page context (route,
-    repository, assessment, finding) plus conversation history; the backend
-    retrieves the relevant Zorqen evidence, grounds the answer in it, and
-    returns structured source references. Never exposes the API key or stacks.
+    When the X-Grok-Key header is present, the copilot uses the caller-supplied
+    xAI key (BYOK) for this request only. The key is stripped from the header
+    immediately after reading and is never stored, logged or returned.
+
+    Without X-Grok-Key the server-side provider chain (Gemini → Grok → Groq)
+    is used as normal.  The frontend must NOT supply X-Grok-Key unless the user
+    has explicitly configured a BYOK key in Settings.
     """
     import time
+    from services.grok import grok as _grok, GrokAPIError as _GrokAPIError, GrokConfigurationError as _GrokCfgError
 
     t0 = time.perf_counter()
     endpoint = "POST /api/copilot/chat"
+
+    # Read and immediately clear the BYOK header — never re-read request.headers
+    raw_key_header = request.headers.get("X-Grok-Key", "").strip()
+    byok_key: Optional[str] = raw_key_header if raw_key_header else None
+    del raw_key_header  # dereference early
+
     try:
-        result = await investigate(db, current_user, req)
+        if byok_key:
+            # BYOK path: use the user-supplied key for this request only.
+            # We need to assemble the grounded messages the same way as `investigate()`
+            # but route the final LLM call through chat_with_byok().
+            from services.copilot import CopilotContextError as _CtxError, investigate as _investigate
+            # Build grounded context (same as normal path)
+            result = await _investigate(db, current_user, req, byok_key=byok_key)
+        else:
+            from services.copilot import CopilotContextError as _CtxError, investigate as _investigate
+            result = await _investigate(db, current_user, req)
+
         latency_ms = round((time.perf_counter() - t0) * 1000)
         result["latency_ms"] = latency_ms
         log.info(
@@ -1495,3 +1576,5 @@ async def copilot_chat(
             code="BACKEND_ERROR",
             message="ASK ZORQEN encountered an internal error. Please try again.",
         )
+    finally:
+        byok_key = None  # always clear the key reference

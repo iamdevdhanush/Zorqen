@@ -489,7 +489,13 @@ def build_sources(context: dict) -> list:
 
 # ── Investigation entry point ────────────────────────────────────────────────
 
-async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> dict:
+async def investigate(
+    db: AsyncSession,
+    user: User,
+    request: CopilotRequest,
+    *,
+    byok_key: Optional[str] = None,
+) -> dict:
     import time
 
     t0 = time.perf_counter()
@@ -518,7 +524,15 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
         messages.append({"role": turn.role, "content": turn.content[:MAX_MESSAGE_CHARS]})
     messages.append({"role": "user", "content": request.message[:MAX_MESSAGE_CHARS]})
 
-    answer = await grok.chat(messages, max_tokens=1200, temperature=0.2)
+    if byok_key:
+        # BYOK path: isolated per-request client, key used once then discarded.
+        answer = await grok.chat_with_byok(messages, byok_key=byok_key, max_tokens=1200, temperature=0.2)
+        provider_name = "grok_byok"
+        byok_key = None  # discard immediately after use
+    else:
+        answer = await grok.chat(messages, max_tokens=1200, temperature=0.2)
+        provider_name = getattr(grok, "last_provider", None)
+
     answer = sanitize_response(answer)
     latency_ms = round((time.perf_counter() - t0) * 1000)
 
@@ -528,6 +542,6 @@ async def investigate(db: AsyncSession, user: User, request: CopilotRequest) -> 
         "response": answer,  # legacy alias for in-flight frontend/backend deploys
         "sources": build_sources(zorqen_context),
         "latency_ms": latency_ms,
-        "provider": getattr(grok, "last_provider", None),
+        "provider": provider_name,
         "context_loaded": bool(zorqen_context.get("retrieved")),
     }
