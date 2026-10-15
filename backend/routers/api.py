@@ -1,7 +1,6 @@
 """ZORQEN — Repositories, Assessments, Findings, Remediation, Copilot routers
 Console contract (frontend/src/lib/types.ts) via services.serializers.
 """
-from __future__ import annotations
 
 import asyncio
 import httpx

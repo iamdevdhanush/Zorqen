@@ -52,6 +52,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["X-Request-ID"] = str(request_id)
 
         # Remove the Server header to avoid fingerprinting
-        response.headers.pop("Server", None)
+        if "server" in response.headers:
+            del response.headers["server"]
 
         return response

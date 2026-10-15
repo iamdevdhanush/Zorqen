@@ -281,10 +281,22 @@ class TestStartAssessmentRouter:
             user, repo = _seed_user_repo(db)
             await db.commit()
 
+        from starlette.requests import Request
+
+        def _make_request(request_id: str, client_ip: str = "127.0.0.1") -> Request:
+            req_obj = Request({
+                "type": "http",
+                "method": "POST",
+                "path": "/api/assessments",
+                "headers": [(b"x-request-id", request_id.encode())],
+                "client": (client_ip, 12345),
+                "app": None,
+            })
+            req_obj.state.request_id = request_id
+            return req_obj
+
         req = StartAssessmentRequest(repository_id=repo.id, branch="main")
-        fake_request = MagicMock()
-        fake_request.state.request_id = "req-1"
-        fake_request.headers = {"X-Request-ID": "req-1"}
+        request_obj = _make_request("req-1")
 
         tasks = BackgroundTasks()
 
@@ -292,7 +304,7 @@ class TestStartAssessmentRouter:
             with patch("routers.api.GitHubClient") as gh:
                 gh.return_value.resolve_commit_sha = AsyncMock(return_value="a" * 40)
                 first = await start_assessment(
-                    req, tasks, fake_request, current_user=user, db=db
+                    req, tasks, request_obj, current_user=user, db=db
                 )
         assert len(tasks.tasks) == 1, "first POST must launch exactly one worker"
 
@@ -300,7 +312,7 @@ class TestStartAssessmentRouter:
             with patch("routers.api.GitHubClient") as gh:
                 gh.return_value.resolve_commit_sha = AsyncMock(return_value="a" * 40)
                 second = await start_assessment(
-                    req, tasks, fake_request, current_user=user, db=db
+                    req, tasks, request_obj, current_user=user, db=db
                 )
         # The duplicate POST returned the existing run and scheduled NO worker.
         assert len(tasks.tasks) == 1, "duplicate POST must NOT launch a worker"
@@ -310,6 +322,19 @@ class TestStartAssessmentRouter:
     async def test_sequential_posts_schedule_exactly_one_worker(self, concurrency_db):
         from routers.api import start_assessment, StartAssessmentRequest
         from starlette.background import BackgroundTasks
+        from starlette.requests import Request
+
+        def _make_request(request_id: str, client_ip: str = "127.0.0.1") -> Request:
+            req_obj = Request({
+                "type": "http",
+                "method": "POST",
+                "path": "/api/assessments",
+                "headers": [(b"x-request-id", request_id.encode())],
+                "client": (client_ip, 12345),
+                "app": None,
+            })
+            req_obj.state.request_id = request_id
+            return req_obj
 
         _, session_factory = concurrency_db
         async with session_factory() as db:
@@ -317,16 +342,14 @@ class TestStartAssessmentRouter:
             await db.commit()
 
         req = StartAssessmentRequest(repository_id=repo.id, branch="main")
-        fake_request = MagicMock()
-        fake_request.state.request_id = "req-2"
-        fake_request.headers = {"X-Request-ID": "req-2"}
         tasks = BackgroundTasks()
 
-        for _ in range(3):
+        for i in range(3):
+            request_obj = _make_request("req-2", client_ip=f"127.0.0.{i+1}")
             async with session_factory() as db:
                 with patch("routers.api.GitHubClient") as gh:
                     gh.return_value.resolve_commit_sha = AsyncMock(return_value="a" * 40)
-                    await start_assessment(req, tasks, fake_request, current_user=user, db=db)
+                    await start_assessment(req, tasks, request_obj, current_user=user, db=db)
 
         assert len(tasks.tasks) == 1
         assert await _count_assessments(session_factory, repo.id) == 1
