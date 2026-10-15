@@ -304,7 +304,7 @@ export default function FindingsPage() {
               <div className="p-4 rounded-[14px] bg-[#F9F8F5] border-2 border-[#111111] space-y-1">
                 <div className="text-metadata text-[11px]">MODULES CHECKED</div>
                 <div className="mono text-[22px] font-extrabold text-[#111111] tabular-nums">4</div>
-                <div className="text-[12px] text-[#525252] font-medium">AST, AI, Secrets, Sandbox</div>
+                <div className="text-[12px] text-[#525252] font-medium">AST, AI, Secrets, Dependencies</div>
               </div>
 
               <div className="p-4 rounded-[14px] bg-[#F9F8F5] border-2 border-[#111111] space-y-1">

@@ -91,8 +91,6 @@ def _validation_state(finding: Finding, validation: Optional[ValidationResult],
             return "UNVALIDATED"
     if remediation and remediation.verification_status == "verified":
         return "VALIDATED"
-    if finding.is_exploitable:
-        return "CONFIRMED"
     return "STATIC"
 
 

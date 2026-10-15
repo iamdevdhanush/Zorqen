@@ -21,18 +21,29 @@ class CustomFinding:
     line_number: int
     code_snippet: str
     description: str
-    source_tool: str = "custom"
+    source_tool: str = "custom_regex"
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _is_comment(line: str, file_path: str) -> bool:
+    stripped = line.strip()
+    if file_path.endswith((".py", ".rb", ".sh", ".yaml", ".yml")):
+        return stripped.startswith("#")
+    if file_path.endswith((".js", ".ts", ".jsx", ".tsx", ".go", ".java", ".c", ".cpp", ".cs")):
+        return stripped.startswith(("//", "/*", "*"))
+    return stripped.startswith(("#", "//"))
+
+
 def _line_findings(lines: List[str], file_path: str, pattern: str, flags: int,
                    check_name: str, vtype: str, severity: str, confidence: str,
                    cwe_id: str, owasp: str, description: str) -> List[CustomFinding]:
     results = []
     for i, line in enumerate(lines, start=1):
+        if _is_comment(line, file_path):
+            continue
         if re.search(pattern, line, flags):
             results.append(CustomFinding(
                 check_name=check_name,
@@ -45,6 +56,7 @@ def _line_findings(lines: List[str], file_path: str, pattern: str, flags: int,
                 line_number=i,
                 code_snippet=line.strip()[:300],
                 description=description,
+                source_tool="custom_regex",
             ))
     return results
 
@@ -103,16 +115,23 @@ def check_sql_string_formatting(content: str, file_path: str, lines: List[str]) 
         return []
     results = []
     patterns = [
-        r'(execute|query)\s*\(\s*[f"\'].*%s',                    # % formatting
-        r'(execute|query)\s*\(\s*f["\'].*\{',                    # f-string in SQL
-        r'(execute|query)\s*\(\s*["\'].*\+\s*\w',               # string concat
-        r'cursor\.execute\s*\(\s*["\'][^"\']*"\s*\+',
-        r'\.format\s*\([^)]+\)[^#\n]*#?\s*(sql|query)',
+        # Python % operator on string: e.g. execute("... %s" % (val))
+        r'(execute|query)\s*\(\s*["\'].*%s["\']\s*%',
+        r'(sql|query)\s*=\s*["\'].*%s["\']\s*%',
+        # Python f-string in SQL query: execute(f"SELECT ... {var}")
+        r'(execute|query)\s*\(\s*f["\'].*\{',
+        r'(sql|query)\s*=\s*f["\'].*\{',
+        # String concatenation: execute("SELECT ... " + var)
+        r'(execute|query)\s*\(\s*["\'][^"\']*["\']\s*\+\s*\w',
+        r'cursor\.execute\s*\(\s*["\'][^"\']*["\']\s*\+\s*\w',
+        # .format() in SQL: execute("SELECT ... {}".format(var))
+        r'(execute|query)\s*\(\s*["\'].*["\']\.format\s*\(',
+        r'(sql|query)\s*=\s*["\'].*["\']\.format\s*\(',
     ]
     for pat in patterns:
         results.extend(_line_findings(
             lines, file_path, pat, re.IGNORECASE,
-            "sql_string_formatting", "SQL Injection", "critical", "likely",
+            "sql_string_formatting", "SQL Injection (Regex Heuristic)", "critical", "likely",
             "CWE-89", "A03:2021",
             "User-controlled data may be interpolated into a SQL query string."
         ))
@@ -124,27 +143,29 @@ def check_command_injection(content: str, file_path: str, lines: List[str]) -> L
     results = []
     if file_path.endswith(".py"):
         patterns = [
-            r'os\.system\s*\(',
+            r'os\.system\s*\(\s*f["\']',
+            r'os\.system\s*\(\s*["\'][^"\']*["\']\s*\+',
+            r'os\.system\s*\(\s*[a-zA-Z_]\w*\s*\)',
             r'subprocess\.(call|run|Popen|check_output)\s*\([^)]*shell\s*=\s*True',
-            r'eval\s*\(\s*(request|input|data)',
-            r'exec\s*\(\s*(request|input|data)',
+            r'eval\s*\(\s*(request|input|data|req|user_)',
+            r'exec\s*\(\s*(request|input|data|req|user_)',
         ]
         for pat in patterns:
             results.extend(_line_findings(
                 lines, file_path, pat, re.IGNORECASE,
-                "command_injection", "Command Injection", "critical", "likely",
+                "command_injection", "Command Injection (Regex Heuristic)", "critical", "likely",
                 "CWE-78", "A03:2021",
                 "Potential command injection via shell execution or eval with user-controlled input."
             ))
     if file_path.endswith((".js", ".ts")):
         patterns = [
-            r'child_process\.(exec|execSync|spawn)\s*\(',
+            r'child_process\.(exec|execSync)\s*\([^)]*[\$\+\`]',
             r'eval\s*\(\s*(req\.|request\.|input)',
         ]
         for pat in patterns:
             results.extend(_line_findings(
                 lines, file_path, pat, re.IGNORECASE,
-                "command_injection", "Command Injection", "critical", "likely",
+                "command_injection", "Command Injection (Regex Heuristic)", "critical", "likely",
                 "CWE-78", "A03:2021",
                 "Potential command injection via child_process or eval."
             ))
@@ -176,17 +197,29 @@ def check_path_traversal(content: str, file_path: str, lines: List[str]) -> List
     results = []
     if file_path.endswith(".py"):
         patterns = [
-            r'open\s*\(\s*(request\.|req\.|args\[|form\[|data\[)',
-            r'os\.path\.(join|abspath)\s*\(\s*(request\.|req\.)',
-            r'send_file\s*\(\s*(request\.|req\.|args\[)',
+            r'\bopen\s*\(\s*(request|req|args|form|data|filename|user_path|doc_path)',
+            r'\bsend_file\s*\(\s*(request|req|args|doc_path)',
         ]
         for pat in patterns:
-            results.extend(_line_findings(
-                lines, file_path, pat, re.IGNORECASE,
-                "path_traversal", "Path Traversal", "high", "likely",
-                "CWE-22", "A01:2021",
-                "User-controlled input used in file path operations without sanitization."
-            ))
+            for i, line in enumerate(lines, start=1):
+                if _is_comment(line, file_path):
+                    continue
+                if re.search(r'basename|secure_filename', line):
+                    continue
+                if re.search(pat, line, re.IGNORECASE):
+                    results.append(CustomFinding(
+                        check_name="path_traversal",
+                        vulnerability_type="Path Traversal (Regex Heuristic)",
+                        severity="high",
+                        confidence="likely",
+                        cwe_id="CWE-22",
+                        owasp_category="A01:2021",
+                        file_path=file_path,
+                        line_number=i,
+                        code_snippet=line.strip()[:300],
+                        description="User-controlled input used in file path operations without sanitization.",
+                        source_tool="custom_regex",
+                    ))
     return results
 
 

@@ -435,26 +435,17 @@ async def run_assessment(
                         "rule_id": sf.rule_id,
                     })
             except SemgrepError as e:
-                if e.kind == "not_installed":
-                    # Optional scanner missing — degrade to the deterministic
-                    # scanners instead of killing the whole assessment.
-                    log.warning("Semgrep not installed — static analysis degraded", error=str(e))
-                    await _update_assessment(
-                        assessment_id, "security_scan", 70,
-                        semgrep_note="Semgrep not installed — custom static checks applied only.",
-                    )
-                else:
-                    # Never silently convert a real Semgrep failure into a clean run.
-                    await _update_assessment(
-                        assessment_id,
-                        "failed",
-                        0,
-                        status=AssessmentStatus.FAILED,
-                        error_message=f"Semgrep scan failed: {e}",
-                        error_code="SEMGREP_FAILED",
-                    )
-                    log.error("Semgrep scan failed — assessment failed", error=str(e))
-                    return
+                # Never silently convert an incomplete or failed Semgrep scan into a clean run.
+                await _update_assessment(
+                    assessment_id,
+                    "failed",
+                    0,
+                    status=AssessmentStatus.FAILED,
+                    error_message=f"Semgrep scan failed: {e}",
+                    error_code="SEMGREP_FAILED",
+                )
+                log.error("Semgrep scan failed — assessment failed", error=str(e), kind=e.kind)
+                return
             except Exception as e:
                 log.warning("Semgrep scan raised unexpected error", error=str(e))
             finally:

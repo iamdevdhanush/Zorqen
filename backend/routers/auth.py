@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
+from jose import JWTError, jwt
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
@@ -19,8 +20,38 @@ from models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# In-memory state store (use Redis in production)
+# In-memory state store for legacy/test compatibility
 _oauth_states: dict[str, str] = {}
+
+
+def generate_oauth_state() -> str:
+    """Generate a tamper-proof, time-bound OAuth CSRF state token that works across multiple workers."""
+    now = datetime.now(timezone.utc)
+    payload = {
+        "nonce": secrets.token_hex(16),
+        "purpose": "github_oauth_csrf",
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(minutes=15)).timestamp()),
+    }
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
+
+
+def validate_oauth_state(state: Optional[str]) -> bool:
+    """Validate OAuth CSRF state across distributed worker processes."""
+    if not state:
+        return False
+    if state in _oauth_states:
+        del _oauth_states[state]
+        return True
+    try:
+        payload = jwt.decode(
+            state,
+            settings.secret_key,
+            algorithms=[settings.jwt_algorithm],
+        )
+        return payload.get("purpose") == "github_oauth_csrf"
+    except (JWTError, Exception):
+        return False
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
@@ -55,8 +86,7 @@ async def github_login(request: Request):
                 "GITHUB_CLIENT_SECRET to enable sign-in."
             ),
         )
-    state = secrets.token_urlsafe(32)
-    _oauth_states[state] = "pending"
+    state = generate_oauth_state()
     redirect_url = github_oauth.get_oauth_redirect_url(state)
     return RedirectResponse(url=redirect_url)
 
@@ -75,9 +105,8 @@ async def github_callback(
     if not code or not state:
         return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?error=missing_params")
 
-    if state not in _oauth_states:
+    if not validate_oauth_state(state):
         return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?error=invalid_state")
-    del _oauth_states[state]
 
     try:
         access_token = await github_oauth.exchange_code_for_token(code)

@@ -76,6 +76,22 @@ def _pick_rulesets(languages: Optional[List[str]]) -> List[str]:
     return rulesets
 
 
+import shutil
+import sys
+from pathlib import Path
+
+def _find_semgrep_bin() -> str:
+    """Resolve the semgrep executable path across environments."""
+    which = shutil.which("semgrep")
+    if which:
+        return which
+    scripts_dir = Path(sys.prefix) / ("Scripts" if sys.platform == "win32" else "bin")
+    candidate = scripts_dir / ("semgrep.exe" if sys.platform == "win32" else "semgrep")
+    if candidate.exists():
+        return str(candidate)
+    return "semgrep"
+
+
 async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> List[SemgrepFinding]:
     """Run semgrep on a repository directory. Returns list of findings.
 
@@ -83,13 +99,14 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
     """
     run_id = uuid.uuid4().hex[:8]
     rulesets = _pick_rulesets(languages)
+    semgrep_bin = _find_semgrep_bin()
 
     ruleset_args = []
     for rs in rulesets:
         ruleset_args.extend(["--config", rs])
 
     cmd = [
-        "semgrep",
+        semgrep_bin,
         "--json",
         "--no-git-ignore",
         "--timeout", "60",
@@ -119,7 +136,7 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
         )
         try:
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, TimeoutError):
             proc.kill()
             try:
                 await proc.wait()
@@ -139,9 +156,15 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
     except FileNotFoundError:
         log.error("Semgrep binary not found in PATH", semgrep_run_id=run_id)
         raise SemgrepError(
-            "Semgrep is not installed in this environment — cannot run static "
-            "analysis.",
+            "Semgrep binary not found in PATH or environment — cannot run static analysis.",
             kind="not_installed",
+        )
+    except OSError as e:
+        log.error("Semgrep OS execution failed", semgrep_run_id=run_id, error=str(e))
+        raise SemgrepError(
+            f"Semgrep cannot execute on this host architecture: {e}. "
+            "(Semgrep engine requires Linux container/WSL runtime environment on Windows hosts).",
+            kind="os_incompatible",
         )
 
     if not stdout:
@@ -152,20 +175,22 @@ async def run_semgrep(repo_path: str, languages: Optional[List[str]] = None) -> 
             stderr=stderr_text,
         )
         raise SemgrepError(
-            "Semgrep exited without producing results.",
+            f"Semgrep exited without producing results (code {proc.returncode if proc else 'N/A'}): {stderr_text}",
             kind="empty_output",
         )
 
     try:
         data = json.loads(stdout.decode())
     except json.JSONDecodeError as e:
+        stderr_text = (stderr or b"").decode(errors="replace")[:500]
         log.error(
             "Failed to parse semgrep JSON output",
             semgrep_run_id=run_id,
             error=str(e),
+            stderr=stderr_text,
         )
         raise SemgrepError(
-            "Semgrep returned unparsable output.",
+            f"Semgrep returned unparsable output: {stderr_text}",
             kind="bad_json",
         )
 

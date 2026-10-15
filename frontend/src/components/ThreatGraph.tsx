@@ -11,7 +11,7 @@ export const ThreatGraph = memo(function ThreatGraph({
   finding,
   className = '',
 }: ThreatGraphProps) {
-  const isVerified = finding?.validation === 'CONFIRMED' || finding?.validation === 'VALIDATED';
+  const hasRuntimeReproduction = finding?.evidence?.runtime_result === 'REPRODUCED';
   const cweLabel = finding?.cwe_id || 'CWE-89';
   const fileBasename = finding?.file_path ? finding.file_path.split('/').pop() : 'auth.py';
   const lineNo = finding?.line_number ?? 42;
@@ -50,9 +50,13 @@ export const ThreatGraph = memo(function ThreatGraph({
     {
       step: '05',
       label: 'PROBE RESULT',
-      subtext: isVerified ? 'Sandbox Exploited' : 'Static Match Only',
+      subtext: hasRuntimeReproduction
+        ? 'Payload Reproduced'
+        : finding?.evidence?.runtime_result === 'NOT_REPRODUCED'
+        ? 'Not Reproduced'
+        : 'Sandbox Not Run',
       type: 'result',
-      verified: isVerified,
+      verified: hasRuntimeReproduction,
       active: true,
     },
   ];

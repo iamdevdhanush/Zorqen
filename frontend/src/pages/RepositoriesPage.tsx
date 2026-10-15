@@ -203,7 +203,7 @@ export default function RepositoriesPage() {
             <span className="text-[#525252] font-semibold">Not connected</span>
           )}
           <span className="hidden sm:inline text-[#111111]/25" aria-hidden="true">•</span>
-          <span className="mono text-[11px] font-extrabold text-[#525252] uppercase tracking-wider">READ-ONLY ACCESS</span>
+          <span className="mono text-[11px] font-extrabold text-[#525252] uppercase tracking-wider">READ-ONLY ANALYSIS WORKFLOW</span>
         </div>
 
         <button

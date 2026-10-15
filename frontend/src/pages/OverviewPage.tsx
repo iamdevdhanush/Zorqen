@@ -35,12 +35,15 @@ export default function OverviewPage() {
   const running = useAssessmentActive();
   const navigate = useNavigate();
 
-  const activityFeedItems = [
-    { time: '2m ago', event: 'Assessment pipeline initialized on main', type: 'info' },
-    { time: '1m ago', event: '153 codebase files indexed & mapped to AST', type: 'info' },
-    { time: '45s ago', event: '42 static HTTP routes & endpoints extracted', type: 'info' },
-    { time: '12s ago', event: 'Isolated sandbox container environment ready', type: 'success' },
-  ];
+  const activityFeedItems = (currentAssessment?.logs && currentAssessment.logs.length > 0)
+    ? currentAssessment.logs.slice(-4).map((l) => ({
+        time: l.time || '—',
+        event: l.text,
+        type: l.tone === 'ok' ? 'success' : l.tone === 'err' ? 'error' : 'info',
+      }))
+    : [
+        { time: '—', event: 'Assessment pipeline idle. No scan in progress.', type: 'info' },
+      ];
 
   /* ── 1. LANDING PAGE VIEWPORT (When No Active Target Repo Selected) ───── */
   if (!currentRepo) {
@@ -127,7 +130,7 @@ export default function OverviewPage() {
                       </span>
                     </div>
                     <div className="mono text-[11px] font-semibold text-[#737373] tracking-wider">
-                      READ-ONLY INTEGRATION // ENCRYPTED
+                      OAUTH ACCESS (READ-ONLY ANALYSIS WORKFLOW) // ENCRYPTED
                     </div>
                   </div>
                 </div>
@@ -195,10 +198,10 @@ export default function OverviewPage() {
               </div>
               <div>
                 <h3 className="font-extrabold text-[16px] text-[#111111] tracking-tight leading-snug">Sandbox Verification</h3>
-                <div className="mono text-[11px] text-[#525252] font-semibold mt-0.5">MODULE // SANDBOX</div>
+                <div className="mono text-[11px] text-[#525252] font-semibold mt-0.5">MODULE // SANDBOX (PLANNED)</div>
               </div>
               <p className="text-[13.5px] text-[#525252] leading-relaxed font-medium">
-                Safe isolated container reproduction verifying exploits and generating automated pull request patches.
+                Safe isolated container reproduction verifying exploits and generating automated pull request patches (Infrastructure pending).
               </p>
             </div>
           </div>

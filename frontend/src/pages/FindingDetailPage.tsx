@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  AlertCircle,
   CheckCircle2,
   ChevronDown,
   FileCode,
@@ -145,17 +146,29 @@ export default function FindingDetailPage() {
                   Static Analysis Match
                 </div>
                 <p className="text-[12.5px] text-[#525252] font-medium leading-snug">
-                  Semgrep rule <span className="mono text-[11px] font-bold text-[#0A0A0A]">python.sql.injection</span> matched statement at line {finding.line_number}.
+                  {finding.evidence?.static_analysis ? (
+                    finding.evidence.static_analysis
+                  ) : (
+                    <>Rule <span className="mono text-[11px] font-bold text-[#0A0A0A]">{finding.cwe_id}</span> matched statement at line {finding.line_number}.</>
+                  )}
                 </p>
               </div>
 
               <div className="p-4 rounded-[14px] border-2 border-[#111111] bg-[#F7F5F0] space-y-1">
                 <div className="flex items-center gap-2 font-extrabold text-[13px] text-[#0A0A0A]">
-                  <CheckCircle2 className="w-4 h-4 stroke-[2] text-[#111111]" />
+                  {finding.evidence?.runtime_result === 'REPRODUCED' ? (
+                    <CheckCircle2 className="w-4 h-4 stroke-[2] text-[#111111]" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 stroke-[2] text-[#737373]" />
+                  )}
                   Runtime Reproduction
                 </div>
                 <p className="text-[12.5px] text-[#525252] font-medium leading-snug">
-                  Exploit probe verified via sandboxed container execution probe #0242.
+                  {finding.evidence?.runtime_result === 'REPRODUCED' ? (
+                    finding.evidence.runtime || 'Exploit confirmed through runtime execution.'
+                  ) : (
+                    'Runtime exploit verification not executed. Sandbox infrastructure unavailable.'
+                  )}
                 </p>
               </div>
             </div>
@@ -175,9 +188,11 @@ export default function FindingDetailPage() {
 
         {showAdvanced && (
           <div className="mt-3 p-4 rounded-[14px] bg-[#F7F5F0] border-2 border-[#111111] mono text-[11px] text-[#333333] space-y-2 fade-in">
-            <div>AST Node: FunctionDef login (line {finding.line_number})</div>
+            <div>Target: {finding.endpoint || finding.file_path} (line {finding.line_number})</div>
             <div>Confidence score: {finding.confidence_pct}%</div>
             <div>Rule ID: {finding.cwe_id}</div>
+            <div>Source tool: {finding.source_tool || 'Semgrep'}</div>
+            <div>Attack vector: {finding.attack_path?.[0] || 'HTTP parameters'}</div>
           </div>
         )}
       </div>

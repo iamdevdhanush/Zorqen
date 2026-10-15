@@ -46,8 +46,8 @@ const CHECKS_DATA = [
     icon: Terminal,
     num: '06',
     title: 'Sandbox Verification',
-    subtitle: 'Containerized exploit probes',
-    desc: 'Executes automated exploit probes in ephemeral container sandboxes to prove impact.',
+    subtitle: 'Containerized exploit probes (Pending)',
+    desc: 'Future isolated container sandbox for automated exploit verification (Infrastructure pending).',
     badgeVariant: 'inverted' as const,
     isValidation: true,
   },
@@ -67,7 +67,7 @@ export default function ZorqenChecksSection() {
             </h2>
           </div>
           <span className="mono text-[11px] font-bold text-[#525252] shrink-0 hidden sm:block">
-            6 Active Modules
+            5 Active • 1 Planned Module
           </span>
         </div>
       </div>

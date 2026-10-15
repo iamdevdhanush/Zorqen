@@ -168,45 +168,20 @@ class GitHubClient:
         return None
 
     async def create_branch(self, owner: str, repo: str, branch_name: str, from_sha: str) -> dict:
-        async with httpx.AsyncClient(base_url=self.BASE, timeout=30) as client:
-            resp = await client.post(
-                f"/repos/{owner}/{repo}/git/refs",
-                headers=self._headers,
-                json={"ref": f"refs/heads/{branch_name}", "sha": from_sha},
-            )
-            resp.raise_for_status()
-            return resp.json()
+        """Disabled: ZORQEN performs read-only analysis and does not mutate repository state."""
+        raise PermissionError("Write operations are disabled. ZORQEN operates in read-only analysis mode.")
 
     async def create_or_update_file(
         self, owner: str, repo: str, path: str, message: str, content: str, branch: str, sha: Optional[str] = None
     ) -> dict:
-        payload: Dict[str, Any] = {
-            "message": message,
-            "content": base64.b64encode(content.encode()).decode(),
-            "branch": branch,
-        }
-        if sha:
-            payload["sha"] = sha
-        async with httpx.AsyncClient(base_url=self.BASE, timeout=30) as client:
-            resp = await client.put(
-                f"/repos/{owner}/{repo}/contents/{path}",
-                headers=self._headers,
-                json=payload,
-            )
-            resp.raise_for_status()
-            return resp.json()
+        """Disabled: ZORQEN performs read-only analysis and does not mutate repository state."""
+        raise PermissionError("Write operations are disabled. ZORQEN operates in read-only analysis mode.")
 
     async def create_pull_request(
         self, owner: str, repo: str, title: str, head: str, base: str, body: str
     ) -> dict:
-        async with httpx.AsyncClient(base_url=self.BASE, timeout=30) as client:
-            resp = await client.post(
-                f"/repos/{owner}/{repo}/pulls",
-                headers=self._headers,
-                json={"title": title, "head": head, "base": base, "body": body},
-            )
-            resp.raise_for_status()
-            return resp.json()
+        """Disabled: ZORQEN performs read-only analysis and does not mutate repository state."""
+        raise PermissionError("Write operations are disabled. ZORQEN operates in read-only analysis mode.")
 
     async def get_rate_limit(self) -> dict:
         return await self._get("/rate_limit")

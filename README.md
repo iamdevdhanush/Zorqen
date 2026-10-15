@@ -127,12 +127,27 @@ The goal is an environment where a security engineer can move from repository ov
 
 ---
 
+---
+
+## GitHub Permissions & Least Privilege
+
+ZORQEN performs **read-only analysis** of connected codebases. It fetches repository metadata, trees, file blobs, and language statistics to generate vulnerability findings.
+
+- **Workflow Model**: All write operations in the GitHub client (`create_branch`, `create_or_update_file`, `create_pull_request`) are strictly disabled and reject mutation requests.
+- **Classic OAuth App**: GitHub's OAuth 2.0 system lacks a granular `repo:read` scope. Accessing private repositories under a classic OAuth App requires the standard `repo` scope, which GitHub provides as a read/write permission.
+- **GitHub App (Recommended for Production)**: For strict least privilege, deploy ZORQEN as a GitHub App with granular permissions:
+  - `Contents: Read-only`
+  - `Metadata: Read-only`
+  - `Email addresses: Read-only`
+
+---
+
 ## Roadmap
 
 - [x] Repository Intelligence
 - [x] AI Investigation Console
 - [x] Security Findings Dashboard
-- [x] Sandbox Verification Engine
+- [ ] Sandbox Verification Engine (Infrastructure Pending)
 - [x] Security Copilot
 - [x] Patch Diff Viewer
 - [ ] Live Repository Sync

@@ -249,7 +249,7 @@ export default function SettingsPage() {
         <div className="p-4 space-y-3">
           <KVCol k="API Endpoint" v={<span className="mono text-[11.5px] text-[#0F8A5A]">{getApiBase()}</span>} />
           <KVCol k="Runtime Stack" v={<span className="mono text-[11.5px]">React 19 • Vite • Monaco Code Viewer</span>} />
-          <KVCol k="Security Policy" v={<span className="mono text-[11.5px]">Assessment artifacts are processed inside isolated sandboxes; exports generated client-side.</span>} />
+          <KVCol k="Security Policy" v={<span className="mono text-[11.5px]">Assessment artifacts are processed locally; exports generated client-side.</span>} />
         </div>
       </Panel>
 
