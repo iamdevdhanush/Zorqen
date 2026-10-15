@@ -154,6 +154,33 @@ export interface CopilotChatContext {
 export const copilotChat = (message: string, context: CopilotChatContext) =>
   api.post('/copilot/chat', { message, context }, { timeout: 90000 });
 
+/**
+ * Test a BYOK xAI Grok key by sending a real minimal probe to the backend.
+ * The key is sent in the JSON body (never in a URL or query param).
+ * Returns { ok: true, model: string } on success.
+ */
+export const testGrokKey = (apiKey: string) =>
+  api.post('/copilot/grok-test', { api_key: apiKey }, { timeout: 30000 });
+
+/**
+ * Send a copilot chat message using a caller-supplied BYOK xAI key.
+ * The key travels in the X-Grok-Key header for this request only;
+ * it is never stored in localStorage or the application DB.
+ */
+export const copilotChatWithKey = (
+  message: string,
+  context: CopilotChatContext,
+  byokKey: string,
+) =>
+  api.post(
+    '/copilot/chat',
+    { message, context },
+    {
+      timeout: 90000,
+      headers: { 'X-Grok-Key': byokKey },
+    },
+  );
+
 // ── Health ──────────────────────────────────────────────────────────────────
 export const getHealth = () => api.get('/health');
 

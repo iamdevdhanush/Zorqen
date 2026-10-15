@@ -8,6 +8,7 @@ import {
   getAssessment,
   startAssessment as apiStartAssessment,
   subscribeToAssessmentEvents,
+  testGrokKey,
 } from '../services/api';
 import type { AuthUser } from '../App';
 import type { ProgressEvent } from '../lib/types';
@@ -33,6 +34,13 @@ function hasValidToken(): boolean {
   }
 }
 
+/** BYOK xAI Grok key status — lives in memory only, never persisted. */
+export type GrokKeyStatus =
+  | { state: 'idle' }
+  | { state: 'testing' }
+  | { state: 'connected'; model: string }
+  | { state: 'error'; message: string };
+
 export interface WorkspaceUIState {
   copilotOpen: boolean;
   setCopilotOpen: (open: boolean) => void;
@@ -56,6 +64,10 @@ export interface WorkspaceDataState {
   activity: ActivityItem[];
   notifications: LogLine[];
 
+  /** BYOK xAI Grok key — memory only, never persisted */
+  grokKey: string | null;
+  grokStatus: GrokKeyStatus;
+
   signInGithub: (user: AuthUser) => void;
   signOut: () => void;
   connectGithub: () => void;
@@ -66,6 +78,12 @@ export interface WorkspaceDataState {
   loadRepo: (repo: RepoMeta) => void;
   startAssessment: () => Promise<void>;
   markFinding: (findingId: string, status: FindingStatus) => void;
+  /** Set the BYOK xAI key in memory (never persisted) */
+  setGrokKey: (key: string) => void;
+  /** Clear the BYOK xAI key and reset status */
+  clearGrokKey: () => void;
+  /** Fire a real connection test against the xAI API */
+  testGrokConnection: () => Promise<void>;
 }
 
 export type WorkspaceState = WorkspaceDataState & WorkspaceUIState;
@@ -88,6 +106,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [currentAssessment, setCurrentAssessment] = useState<AssessmentRun | null>(null);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [notifications, setNotifications] = useState<LogLine[]>([]);
+
+  // BYOK xAI Grok key — lives in React state (memory) only, never persisted
+  const [grokKey, setGrokKeyState] = useState<string | null>(null);
+  const [grokStatus, setGrokStatus] = useState<GrokKeyStatus>({ state: 'idle' });
+  // Stable ref so callbacks can read latest key without being in their deps
+  const grokKeyRef = useRef<string | null>(null);
+  grokKeyRef.current = grokKey;
 
   // authReady: true once session restore has run (whether authenticated or not).
   // All auth-gated API calls MUST wait for authReady before firing.
@@ -528,6 +553,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setNotifications([]);
     assessmentsFetchedForRef.current = null;
     assessmentsInFlightRef.current = false;
+    // Clear BYOK key from memory on sign-out
+    setGrokKeyState(null);
+    setGrokStatus({ state: 'idle' });
   }, [stopPolling]);
 
   const connectGithub = useCallback(() => setGithubModalOpen(true), []);
@@ -545,7 +573,51 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setRepos([]);
     localStorage.removeItem('zorqen_repo');
     assessmentsFetchedForRef.current = null;
+    // Clear BYOK key from memory on disconnect
+    setGrokKeyState(null);
+    setGrokStatus({ state: 'idle' });
   }, [stopPolling]);
+
+  /* ── BYOK xAI Grok key actions ───────────────────────────────────────── */
+
+  /** Store the API key in React memory only — never in localStorage or DB. */
+  const setGrokKey = useCallback((key: string) => {
+    const trimmed = key.trim();
+    setGrokKeyState(trimmed || null);
+    setGrokStatus({ state: 'idle' });
+  }, []);
+
+  /** Wipe the key and reset status. */
+  const clearGrokKey = useCallback(() => {
+    setGrokKeyState(null);
+    setGrokStatus({ state: 'idle' });
+  }, []);
+
+  /**
+   * Test the in-memory BYOK key against the real xAI API.
+   * The key is read from grokKeyRef so this callback never needs grokKey in deps.
+   */
+  const testGrokConnection = useCallback(async () => {
+    const key = grokKeyRef.current;
+    if (!key) {
+      setGrokStatus({ state: 'error', message: 'No API key configured.' });
+      return;
+    }
+    setGrokStatus({ state: 'testing' });
+    try {
+      const { data } = await testGrokKey(key);
+      setGrokStatus({ state: 'connected', model: data.model ?? 'grok' });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: { message?: string } | string } } })?.response?.data?.detail;
+      const msg =
+        typeof detail === 'object' && detail !== null && 'message' in detail
+          ? (detail as { message: string }).message
+          : typeof detail === 'string'
+          ? detail
+          : 'Connection failed. Check your API key and try again.';
+      setGrokStatus({ state: 'error', message: msg });
+    }
+  }, []);
 
   /* Derive activity from the current assessment's logs */
   useEffect(() => {
@@ -650,6 +722,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('zorqen:401', handle);
   }, [stopPolling]);
 
+  /* Clear BYOK key when session expires (zorqen:401) */
+  useEffect(() => {
+    const handle = () => {
+      setGrokKeyState(null);
+      setGrokStatus({ state: 'idle' });
+    };
+    window.addEventListener('zorqen:401', handle);
+    return () => window.removeEventListener('zorqen:401', handle);
+  }, []);
+
   const uiValue = useMemo<WorkspaceUIState>(
     () => ({
       copilotOpen,
@@ -675,6 +757,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       currentAssessment,
       activity,
       notifications,
+      grokKey,
+      grokStatus,
       signInGithub,
       signOut,
       connectGithub,
@@ -685,8 +769,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       loadRepo,
       startAssessment,
       markFinding,
+      setGrokKey,
+      clearGrokKey,
+      testGrokConnection,
     }),
-    [user, githubConnected, authReady, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, signInGithub, signOut, connectGithub, proceedGithubAuth, disconnectGithub, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding]
+    [user, githubConnected, authReady, repos, reposLoading, reposError, currentRepo, branch, commit, assessments, currentAssessment, activity, notifications, grokKey, grokStatus, signInGithub, signOut, connectGithub, proceedGithubAuth, disconnectGithub, refreshRepos, selectRepo, loadRepo, startAssessment, markFinding, setGrokKey, clearGrokKey, testGrokConnection]
   );
 
   return (

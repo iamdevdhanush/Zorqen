@@ -1483,7 +1483,6 @@ async def copilot_chat(
     has explicitly configured a BYOK key in Settings.
     """
     import time
-    from services.grok import grok as _grok, GrokAPIError as _GrokAPIError, GrokConfigurationError as _GrokCfgError
 
     t0 = time.perf_counter()
     endpoint = "POST /api/copilot/chat"
@@ -1495,15 +1494,11 @@ async def copilot_chat(
 
     try:
         if byok_key:
-            # BYOK path: use the user-supplied key for this request only.
-            # We need to assemble the grounded messages the same way as `investigate()`
-            # but route the final LLM call through chat_with_byok().
-            from services.copilot import CopilotContextError as _CtxError, investigate as _investigate
-            # Build grounded context (same as normal path)
-            result = await _investigate(db, current_user, req, byok_key=byok_key)
+            # BYOK path: isolated per-request client, key forwarded to investigate()
+            result = await investigate(db, current_user, req, byok_key=byok_key)
         else:
-            from services.copilot import CopilotContextError as _CtxError, investigate as _investigate
-            result = await _investigate(db, current_user, req)
+            result = await investigate(db, current_user, req)
+
 
         latency_ms = round((time.perf_counter() - t0) * 1000)
         result["latency_ms"] = latency_ms
