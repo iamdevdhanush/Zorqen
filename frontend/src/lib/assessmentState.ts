@@ -11,7 +11,7 @@ export type AssessmentStageId =
 export interface StageStatusItem {
   id: AssessmentStageId;
   label: string;
-  status: 'completed' | 'running' | 'pending' | 'failed';
+  status: 'completed' | 'running' | 'pending' | 'failed' | 'unavailable';
 }
 
 export interface AssessmentStateMachine {
@@ -36,7 +36,7 @@ export function getAssessmentStateMachine(run?: AssessmentRun | null): Assessmen
       stages: [
         { id: 'STATIC_ANALYSIS', label: 'Static Analysis', status: 'pending' },
         { id: 'AI_REASONING', label: 'AI Reasoning', status: 'pending' },
-        { id: 'SANDBOX_VALIDATION', label: 'Sandbox Validation', status: 'pending' },
+        { id: 'SANDBOX_VALIDATION', label: 'Sandbox Validation', status: 'unavailable' },
         { id: 'REMEDIATION', label: 'Remediation', status: 'pending' },
       ],
       isRunning: false,
@@ -45,16 +45,19 @@ export function getAssessmentStateMachine(run?: AssessmentRun | null): Assessmen
     };
   }
 
+  const hasSandboxEvidence = run.findings?.some((f) => f.evidence?.runtime_result === 'REPRODUCED') ?? false;
+  const hasRemediations = run.findings?.some((f) => !!f.remediation) ?? false;
+
   if (run.status === 'COMPLETED') {
     return {
       currentStage: 'COMPLETED',
-      currentStageLabel: 'Completed',
+      currentStageLabel: 'Scan Completed',
       overallProgress: 100,
       stages: [
         { id: 'STATIC_ANALYSIS', label: 'Static Analysis', status: 'completed' },
         { id: 'AI_REASONING', label: 'AI Reasoning', status: 'completed' },
-        { id: 'SANDBOX_VALIDATION', label: 'Sandbox Validation', status: 'completed' },
-        { id: 'REMEDIATION', label: 'Remediation', status: 'completed' },
+        { id: 'SANDBOX_VALIDATION', label: 'Sandbox Validation', status: hasSandboxEvidence ? 'completed' : 'unavailable' },
+        { id: 'REMEDIATION', label: 'Remediation', status: hasRemediations ? 'completed' : 'pending' },
       ],
       isRunning: false,
       isCompleted: true,
@@ -65,12 +68,12 @@ export function getAssessmentStateMachine(run?: AssessmentRun | null): Assessmen
   if (run.status === 'FAILED') {
     return {
       currentStage: 'STATIC_ANALYSIS',
-      currentStageLabel: 'Validation Failed',
+      currentStageLabel: 'Scan Failed',
       overallProgress: run.progress ?? 0,
       stages: [
         { id: 'STATIC_ANALYSIS', label: 'Static Analysis', status: 'failed' },
         { id: 'AI_REASONING', label: 'AI Reasoning', status: 'pending' },
-        { id: 'SANDBOX_VALIDATION', label: 'Sandbox Validation', status: 'pending' },
+        { id: 'SANDBOX_VALIDATION', label: 'Sandbox Validation', status: 'unavailable' },
         { id: 'REMEDIATION', label: 'Remediation', status: 'pending' },
       ],
       isRunning: false,
@@ -83,41 +86,32 @@ export function getAssessmentStateMachine(run?: AssessmentRun | null): Assessmen
   const rawProgress = run.progress ?? 0;
   
   // Calculate individual stage status based on steps or overall progress
-  const aiStep = run.steps?.find((s) => s.id === 'ai_reasoning');
-  const sandboxStep = run.steps?.find((s) => s.id === 'report_generated' || s.id === 'sandbox');
+  const aiStep = run.steps?.find((s) => s.id === 'ai_reasoning' || s.id === 'reasoning');
+  const reportStep = run.steps?.find((s) => s.id === 'report_generated' || s.id === 'report');
 
   let staticStatus: 'completed' | 'running' | 'pending' | 'failed' = 'running';
   let aiStatus: 'completed' | 'running' | 'pending' | 'failed' = 'pending';
-  let sandboxStatus: 'completed' | 'running' | 'pending' | 'failed' = 'pending';
-  let remediationStatus: 'completed' | 'running' | 'pending' | 'failed' = 'pending';
+  const sandboxStatus: 'completed' | 'running' | 'pending' | 'failed' | 'unavailable' = hasSandboxEvidence ? 'completed' : 'unavailable';
+  const remediationStatus: 'completed' | 'running' | 'pending' | 'failed' = hasRemediations ? 'completed' : 'pending';
 
   if (rawProgress >= 40 || aiStep?.status === 'running' || aiStep?.status === 'completed') {
     staticStatus = 'completed';
-    aiStatus = rawProgress >= 70 || sandboxStep?.status === 'running' || sandboxStep?.status === 'completed' ? 'completed' : 'running';
+    aiStatus = rawProgress >= 70 || reportStep?.status === 'running' || reportStep?.status === 'completed' ? 'completed' : 'running';
   }
 
-  if (rawProgress >= 70 || sandboxStep?.status === 'running' || sandboxStep?.status === 'completed') {
+  if (rawProgress >= 70 || reportStep?.status === 'running' || reportStep?.status === 'completed') {
     aiStatus = 'completed';
-    sandboxStatus = rawProgress >= 90 ? 'completed' : 'running';
-  }
-
-  if (rawProgress >= 90) {
-    sandboxStatus = 'completed';
-    remediationStatus = 'running';
   }
 
   let activeStage: AssessmentStageId = 'STATIC_ANALYSIS';
   let activeStageLabel = 'Static Analysis';
 
-  if (remediationStatus === 'running') {
-    activeStage = 'REMEDIATION';
-    activeStageLabel = 'Remediation';
-  } else if (sandboxStatus === 'running') {
-    activeStage = 'SANDBOX_VALIDATION';
-    activeStageLabel = 'Sandbox Validation';
-  } else if (aiStatus === 'running') {
+  if (aiStatus === 'running') {
     activeStage = 'AI_REASONING';
     activeStageLabel = 'AI Reasoning';
+  } else if (aiStatus === 'completed') {
+    activeStage = 'AI_REASONING';
+    activeStageLabel = 'AI Reasoning Completed';
   }
 
   return {

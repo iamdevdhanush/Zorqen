@@ -294,7 +294,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
 
     # Docker Sandbox
-    sandbox_enabled: bool = True
+    sandbox_enabled: bool = False
     sandbox_network: str = "none"
     sandbox_memory_limit: str = "512m"
     sandbox_cpu_limit: float = 0.5

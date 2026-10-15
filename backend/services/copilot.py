@@ -210,8 +210,6 @@ def _validation_label(finding: Finding) -> str:
             return "UNVALIDATED"
     if remediation and remediation.verification_status == "verified":
         return "VALIDATED"
-    if finding.is_exploitable:
-        return "CONFIRMED"
     return "STATIC"
 
 

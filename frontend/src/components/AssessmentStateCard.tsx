@@ -51,7 +51,7 @@ export const AssessmentStateCard = memo(function AssessmentStateCard({
         <div>
           {isCompleted ? (
             <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111]">
-              ✓ VERIFIED
+              ✓ COMPLETED
             </span>
           ) : isRunning ? (
             <span className="mono text-[10px] font-extrabold text-[#111111] bg-[#C8F31D] px-3 py-1 rounded-full border-[1.5px] border-[#111111] animate-pulse flex items-center gap-1.5">
@@ -71,6 +71,7 @@ export const AssessmentStateCard = memo(function AssessmentStateCard({
         {stages.map((stage) => {
           const isDone = stage.status === 'completed';
           const isRun = stage.status === 'running';
+          const isUnavailable = stage.status === 'unavailable';
 
           return (
             <div
@@ -97,6 +98,10 @@ export const AssessmentStateCard = memo(function AssessmentStateCard({
                   <span className="flex items-center gap-1.5 text-[#111111] bg-[#C8F31D] px-2 py-0.5 rounded border border-[#111111]">
                     <Loader2 className="w-3 h-3 animate-spin text-[#111111]" />
                     <span>Running</span>
+                  </span>
+                ) : isUnavailable ? (
+                  <span className="mono text-[10px] font-bold text-[#737373] bg-[#EFEFEF] px-1.5 py-0.5 rounded border border-[#CCCCCC]">
+                    Unavailable
                   </span>
                 ) : (
                   <span className="text-[#525252]/60">
