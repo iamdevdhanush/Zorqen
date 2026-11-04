@@ -202,6 +202,8 @@ _ALLOWED_HEADERS = [
     "X-CSRF-Token",
     "Cache-Control",
     "Pragma",
+    "X-Grok-Key",
+    "X-Request-ID",
 ]
 
 app.add_middleware(
