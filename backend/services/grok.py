@@ -1,30 +1,20 @@
-"""ZORQEN — Copilot LLM client for the ASK ZORQEN investigation copilot.
+"""ZORQEN — Groq Copilot LLM Service.
 
-Provider-first strategy (server-side ONLY):
-  1. GEMINI_API_KEY set     → Google Gemini (google.generativeai)
-  2. GROK_API_KEY set       → xAI Grok via https://api.x.ai/v1 (OpenAI-compatible)
-  3. GROQ_API_KEY set       → Groq via the shared agents.llm_client (settings.groq_model)
-  4. none set               → GrokConfigurationError (GROK_CONFIGURATION_ERROR)
+Standardized exclusively on Groq API for:
+  - ASK ZORQEN investigation copilot
+  - Repository security assessments
+  - AI-powered vulnerability analysis
+  - Security recommendations and remediation
 
-API keys live only in the environment and are never exposed to the frontend or
-logs. Every failure maps to a safe, loggable category; transient failures use
-bounded retry (never infinite), authentication/configuration errors are never
-retried.
-
-BYOK (Bring Your Own Key):
-  Users may supply a transient xAI API key via the X-Grok-Key request header.
-  The key is accepted by the backend for a single request, never stored, never
-  logged, and never included in error messages. Each BYOK call creates and
-  immediately closes its own httpx client so it cannot share state with other
-  requests or the singleton pool.
+Server-side ONLY:
+  GROQ_API_KEY lives in the server environment. Keys are never exposed to
+  the frontend, never sent in request headers, and never written to logs.
 """
 from __future__ import annotations
 
 import asyncio
-import json
 from typing import Any, Dict, List, Optional
 
-import httpx
 import structlog
 
 from core.config import settings
@@ -46,30 +36,24 @@ except ImportError:  # pragma: no cover — groq SDK is a declared dependency
     PermissionDeniedError = Exception
     RateLimitError = Exception
 
-try:  # pragma: no cover — SDK availability varies by environment
-    from google.api_core import exceptions as google_api_exceptions
-    import google.generativeai as genai
-
-    GEMINI_SDK_AVAILABLE = True
-except ImportError:
-    google_api_exceptions = None
-    genai = None
-    GEMINI_SDK_AVAILABLE = False
-
 log = structlog.get_logger()
 
 
 class GrokConfigurationError(RuntimeError):
-    """Raised when no copilot LLM is configured (no GROK_API_KEY / GROQ_API_KEY)."""
+    """Raised when no copilot LLM is configured (GROQ_API_KEY missing)."""
 
-    code = "GROK_CONFIGURATION_ERROR"
+    code = "GROQ_CONFIGURATION_ERROR"
+
+
+# Alias for explicit Groq naming
+GroqConfigurationError = GrokConfigurationError
 
 
 class GrokAPIError(RuntimeError):
     """Raised when the LLM provider rejects or fails to produce a usable answer.
 
     `code` is a safe, loggable category (never contains secrets or provider
-    payloads): GROK_AUTH_ERROR | GROK_RATE_LIMIT | GROK_TIMEOUT | GROK_API_ERROR.
+    payloads): GROQ_AUTH_ERROR | GROQ_RATE_LIMIT | GROQ_TIMEOUT | GROQ_API_ERROR | GROQ_MODEL_ERROR.
     """
 
     def __init__(
@@ -77,32 +61,26 @@ class GrokAPIError(RuntimeError):
         message: str,
         *,
         status: Optional[int] = None,
-        code: str = "GROK_API_ERROR",
+        code: str = "GROQ_API_ERROR",
     ):
         super().__init__(message)
         self.status = status
         self.code = code
 
 
+# Alias for explicit Groq naming
+GroqAPIError = GrokAPIError
+
+
 class GrokService:
-    """Thin async wrapper around the copilot LLM providers (xAI Grok → Groq)."""
+    """Async wrapper around Groq API for the ASK ZORQEN copilot."""
 
     def __init__(self) -> None:
-        self._client: Optional[httpx.AsyncClient] = None
-        self.last_provider: Optional[str] = None
-
-    def _get_client(self) -> httpx.AsyncClient:
-        if self._client is None:
-            self._client = httpx.AsyncClient(
-                base_url=settings.grok_api_base,
-                timeout=settings.grok_timeout_seconds,
-            )
-        return self._client
+        self.last_provider: str = "groq"
 
     async def aclose(self) -> None:
-        if self._client is not None:
-            await self._client.aclose()
-            self._client = None
+        """Cleanup handler (Groq client lifecycle is handled by llm_client)."""
+        pass
 
     async def chat(
         self,
@@ -112,324 +90,101 @@ class GrokService:
         temperature: float = 0.2,
         _retries: int = 1,
     ) -> str:
-        """Return a grounded answer from the best configured copilot provider.
-
-        Priority: Google Gemini when GEMINI_API_KEY is set, otherwise xAI Grok
-        when GROK_API_KEY is set, otherwise Groq when GROQ_API_KEY is set,
-        otherwise GrokConfigurationError.
+        """Return a grounded answer from the server-side Groq provider.
 
         Bounded retry: transient failures (timeout, transport, 5xx) are retried
         at most `_retries` times with a short backoff. Authentication (401/403),
         configuration, rate-limit (429), and model-unavailable (404) responses are
-        NEVER retried — the copilot never hammers the provider on a permanent
-        condition.
+        NEVER retried.
 
         Raises GrokConfigurationError or GrokAPIError on failure. Never leaks
         API keys or raw provider details to callers or logs.
         """
-        if settings.gemini_configured:
-            self.last_provider = "gemini"
-            return await self._chat_gemini(
-                messages,
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
-        if settings.grok_configured:
-            self.last_provider = "grok"
-            return await self._chat_xai(
-                messages,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                retries=_retries,
-            )
-        if settings.groq_configured:
-            self.last_provider = "groq"
-            log.info("[GROK] using groq fallback", model=settings.groq_model)
-            return await self._chat_groq(
-                messages,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                retries=_retries,
-            )
-        raise GrokConfigurationError("Neither GEMINI_API_KEY, GROK_API_KEY nor GROQ_API_KEY is configured")
+        if not settings.groq_configured:
+            raise GrokConfigurationError("GROQ_API_KEY is not configured on the server")
 
-    async def _chat_gemini(
-        self,
-        messages: List[Dict[str, str]],
-        *,
-        max_tokens: int,
-        temperature: float,
-    ) -> str:
-        """Call Google Gemini (generativelanguage API) and return the assistant text."""
-        if not GEMINI_SDK_AVAILABLE:
-            log.warning("[GROK] gemini sdk missing", provider="gemini")
-            raise GrokAPIError("Gemini SDK is not installed", code="GROK_API_ERROR")
+        from agents.llm_client import llm as groq_llm, ModelNotFoundError, sanitize_secret_str
 
-        system = next((m["content"] for m in messages if m["role"] == "system"), "")
-        transcript = "\n\n".join(
-            f"{m['role'].upper()}: {m['content']}" for m in messages if m["role"] != "system"
-        )
+        self.last_provider = "groq"
 
-        def _call() -> str:
-            genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel(
-                settings.gemini_model,
-                system_instruction=system or None,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=max_tokens,
-                    temperature=temperature,
-                ),
-            )
-            resp = model.generate_content(transcript or "Hello")
-            return resp.text or ""
-
-        try:
-            text = await asyncio.to_thread(_call)
-        except (google_api_exceptions.PermissionDenied, google_api_exceptions.Unauthenticated):
-            log.warning("[GROK] gemini authentication rejected", provider="gemini")
-            raise GrokAPIError("Gemini authentication failed", status=401, code="GROK_AUTH_ERROR")
-        except google_api_exceptions.ResourceExhausted:
-            log.warning("[GROK] gemini rate limited", provider="gemini")
-            raise GrokAPIError("Gemini rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
-        except google_api_exceptions.NotFound:
-            log.warning("[GROK] gemini model unavailable", provider="gemini", model=settings.gemini_model)
-            raise GrokAPIError("Gemini model unavailable", status=404, code="GROK_API_ERROR")
-        except (google_api_exceptions.ServiceUnavailable, google_api_exceptions.InternalServerError):
-            log.warning("[GROK] gemini provider error", provider="gemini")
-            raise GrokAPIError("Gemini provider error", status=503, code="GROK_API_ERROR")
-        except (google_api_exceptions.DeadlineExceeded, google_api_exceptions.RetryError):
-            log.warning("[GROK] gemini request timed out", provider="gemini", timeout=settings.gemini_timeout_seconds)
-            raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
-        except Exception as e:  # noqa: BLE001
-            log.warning("[GROK] gemini unexpected error", provider="gemini", error_type=type(e).__name__)
-            raise GrokAPIError("Gemini API error")
-
-        if not isinstance(text, str) or not text.strip():
-            log.warning("[GROK] gemini empty response", provider="gemini")
-            raise GrokAPIError("Empty Gemini response")
-
-        return text
-
-    async def _chat_xai(
-        self,
-        messages: List[Dict[str, str]],
-        *,
-        max_tokens: int,
-        temperature: float,
-        retries: int,
-    ) -> str:
-        """Call xAI Grok (official endpoint) and return the assistant text."""
-        payload: Dict[str, Any] = {
-            "model": settings.grok_model,
-            "messages": messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-
-        client = self._get_client()
-        for attempt in range(retries + 1):
+        for attempt in range(_retries + 1):
             try:
-                resp = await client.post("/chat/completions", json=payload)
-            except httpx.TimeoutException:
-                if attempt < retries:
-                    await asyncio.sleep(0.5 * (attempt + 1))
-                    continue
-                log.warning("[GROK] request timed out", provider="grok", timeout=settings.grok_timeout_seconds)
-                raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
-            except httpx.HTTPError as e:
-                if attempt < retries:
-                    await asyncio.sleep(0.5 * (attempt + 1))
-                    continue
-                log.warning("[GROK] transport error", provider="grok", error_type=type(e).__name__)
-                raise GrokAPIError("ASK ZORQEN unavailable")
-
-            if resp.status_code in (401, 403):
-                log.warning("[GROK] authentication rejected", provider="grok", status=resp.status_code)
-                raise GrokAPIError("Grok API authentication failed", status=resp.status_code, code="GROK_AUTH_ERROR")
-            if resp.status_code == 404:
-                log.warning("[GROK] model unavailable", provider="grok", model=settings.grok_model)
-                raise GrokAPIError("Grok model unavailable", status=404, code="GROK_API_ERROR")
-            if resp.status_code == 429:
-                log.warning("[GROK] rate limited", provider="grok")
-                raise GrokAPIError("Grok rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
-            if resp.status_code >= 500:
-                if attempt < retries:
-                    await asyncio.sleep(1.0)
-                    continue
-                log.warning("[GROK] provider error", provider="grok", status=resp.status_code)
-                raise GrokAPIError("Grok provider error", status=resp.status_code, code="GROK_API_ERROR")
-            if resp.status_code != 200:
-                log.warning("[GROK] unexpected status", provider="grok", status=resp.status_code)
-                raise GrokAPIError("Grok API error", status=resp.status_code, code="GROK_API_ERROR")
-
-            try:
-                data = resp.json()
-            except json.JSONDecodeError:
-                log.warning("[GROK] malformed response body", provider="grok")
-                raise GrokAPIError("Malformed Grok response")
-
-            try:
-                content = data["choices"][0]["message"]["content"]
-            except (KeyError, IndexError, TypeError):
-                log.warning("[GROK] missing choices in response", provider="grok")
-                raise GrokAPIError("Malformed Grok response")
-
-            if not isinstance(content, str) or not content.strip():
-                log.warning("[GROK] empty response", provider="grok")
-                raise GrokAPIError("Empty Grok response")
-
-            return content
-
-    async def _chat_groq(
-        self,
-        messages: List[Dict[str, str]],
-        *,
-        max_tokens: int,
-        temperature: float,
-        retries: int,
-    ) -> str:
-        """Fallback: call Groq with the same grounded messages."""
-        from agents.llm_client import llm as groq_llm
-
-        system = next((m["content"] for m in messages if m["role"] == "system"), "")
-        transcript = "\n".join(
-            f"{m['role'].upper()}: {m['content']}" for m in messages if m["role"] != "system"
-        )
-
-        for attempt in range(retries + 1):
-            try:
-                text = await groq_llm.complete(
-                    system,
-                    transcript,
+                text = await groq_llm.chat(
+                    messages,
                     max_tokens=max_tokens,
                     temperature=temperature,
                 )
-            except (APITimeoutError, APIConnectionError):
-                if attempt < retries:
+            except ModelNotFoundError as e:
+                msg = f"Configured Groq model '{e.model}' is unavailable. Please check GROQ_MODEL in deployment settings."
+                log.warning("[GROQ] model not found", provider="groq", model=e.model, status=404)
+                raise GrokAPIError(msg, status=404, code="GROQ_MODEL_ERROR") from e
+            except (APITimeoutError,):
+                if attempt < _retries:
                     await asyncio.sleep(0.5 * (attempt + 1))
                     continue
-                log.warning("[GROK] groq timeout", provider="groq")
-                raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
-            except (AuthenticationError, PermissionDeniedError):
-                log.warning("[GROK] groq authentication rejected", provider="groq")
-                raise GrokAPIError("Copilot LLM authentication failed", status=401, code="GROK_AUTH_ERROR")
-            except RateLimitError:
-                log.warning("[GROK] groq rate limited", provider="groq")
-                raise GrokAPIError("Copilot LLM rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
+                log.warning("[GROQ] timeout", provider="groq", timeout=settings.groq_timeout_seconds)
+                raise GrokAPIError("ASK ZORQEN request to Groq timed out. Please try again.", status=504, code="GROQ_TIMEOUT")
+            except (APIConnectionError,):
+                if attempt < _retries:
+                    await asyncio.sleep(0.5 * (attempt + 1))
+                    continue
+                log.warning("[GROQ] connection error", provider="groq")
+                raise GrokAPIError("Unable to reach Groq API. Please check network connectivity.", status=502, code="GROQ_NETWORK_ERROR")
+            except (AuthenticationError, PermissionDeniedError) as e:
+                log.warning("[GROQ] authentication rejected", provider="groq", status=401)
+                raise GrokAPIError("Groq API authentication failed. Verify GROQ_API_KEY in deployment settings.", status=401, code="GROQ_AUTH_ERROR") from e
+            except RateLimitError as e:
+                log.warning("[GROQ] rate limited", provider="groq", status=429)
+                raise GrokAPIError("Groq rate limit or quota exceeded. Please wait a moment and try again.", status=429, code="GROQ_RATE_LIMIT") from e
             except GroqAPIErrorCls as e:
                 status = getattr(e, "status_code", None)
-                if status is not None and status >= 500 and attempt < retries:
+                if status is not None and status >= 500 and attempt < _retries:
                     await asyncio.sleep(1.0)
                     continue
-                log.warning("[GROK] groq api error", provider="groq", status=status)
-                raise GrokAPIError("Copilot LLM error", status=status, code="GROK_API_ERROR")
-            except Exception as e:  # noqa: BLE001
-                log.warning("[GROK] groq unexpected error", provider="groq", error_type=type(e).__name__)
-                raise GrokAPIError("Copilot LLM error")
+                err_msg = sanitize_secret_str(str(e))
+                log.warning("[GROQ] api error", provider="groq", status=status, error=err_msg)
+                if status == 400:
+                    raise GrokAPIError(f"Groq API rejected request: {err_msg}", status=400, code="GROQ_REQUEST_ERROR") from e
+                code = "GROQ_API_ERROR"
+                raise GrokAPIError(f"Groq provider error (HTTP {status}): {err_msg}", status=status or 502, code=code) from e
+            except Exception as e:
+                err_msg = sanitize_secret_str(str(e))
+                log.warning("[GROQ] unexpected error", provider="groq", error_type=type(e).__name__, error=err_msg)
+                raise GrokAPIError(f"Groq LLM error: {err_msg}", status=503, code="GROQ_API_ERROR") from e
 
             if not isinstance(text, str) or not text.strip():
-                log.warning("[GROK] groq empty response", provider="groq")
-                raise GrokAPIError("Empty Copilot LLM response")
+                log.warning("[GROQ] empty response", provider="groq")
+                raise GrokAPIError("Groq returned an empty response. Please retry.", status=502, code="GROQ_API_ERROR")
 
             return text
 
+    async def test_connection(self) -> dict:
+        """Probe the server-side Groq API with a minimal request to verify configuration.
 
-    async def chat_with_byok(
-        self,
-        messages: list,
-        *,
-        byok_key: str,
-        max_tokens: int = 1200,
-        temperature: float = 0.2,
-    ) -> str:
-        """Call xAI Grok using a caller-supplied transient API key (BYOK).
-
-        The key is used only for this call.  A fresh httpx client is created
-        and closed immediately — it shares no state with the singleton pool or
-        any other concurrent request.  The key is NEVER logged, stored, echoed
-        in error messages or returned to callers.
+        Returns {"ok": True, "provider": "groq", "model": <model_name>} on success.
+        Raises GrokConfigurationError if GROQ_API_KEY is not configured.
+        Raises GrokAPIError on any failure.
+        The API key is NEVER logged or included in error messages.
         """
-        if not byok_key or not byok_key.strip():
-            raise GrokConfigurationError("BYOK key is empty")
+        if not settings.groq_configured:
+            raise GrokConfigurationError("GROQ_API_KEY is not configured on the server")
 
-        payload = {
-            "model": settings.grok_model,
-            "messages": messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-        headers = {"Authorization": f"Bearer {byok_key}"}
-
-        async with httpx.AsyncClient(
-            base_url=settings.grok_api_base,
-            timeout=settings.grok_timeout_seconds,
-        ) as client:
-            try:
-                resp = await client.post(
-                    "/chat/completions",
-                    json=payload,
-                    headers=headers,
-                )
-            except httpx.TimeoutException:
-                log.warning("[GROK] byok request timed out", provider="grok_byok")
-                raise GrokAPIError("ASK ZORQEN timed out", code="GROK_TIMEOUT")
-            except httpx.HTTPError:
-                log.warning("[GROK] byok transport error", provider="grok_byok")
-                raise GrokAPIError("ASK ZORQEN unavailable")
-
-        if resp.status_code in (401, 403):
-            log.warning("[GROK] byok authentication rejected", provider="grok_byok", status=resp.status_code)
-            raise GrokAPIError("xAI API key authentication failed", status=resp.status_code, code="GROK_AUTH_ERROR")
-        if resp.status_code == 429:
-            log.warning("[GROK] byok rate limited", provider="grok_byok")
-            raise GrokAPIError("xAI rate limit exceeded", status=429, code="GROK_RATE_LIMIT")
-        if resp.status_code == 404:
-            log.warning("[GROK] byok model unavailable", provider="grok_byok", model=settings.grok_model)
-            raise GrokAPIError("xAI model unavailable", status=404, code="GROK_API_ERROR")
-        if resp.status_code >= 500:
-            log.warning("[GROK] byok provider error", provider="grok_byok", status=resp.status_code)
-            raise GrokAPIError("xAI provider error", status=resp.status_code, code="GROK_API_ERROR")
-        if resp.status_code != 200:
-            log.warning("[GROK] byok unexpected status", provider="grok_byok", status=resp.status_code)
-            raise GrokAPIError("xAI API error", status=resp.status_code, code="GROK_API_ERROR")
-
-        try:
-            data = resp.json()
-        except Exception:
-            log.warning("[GROK] byok malformed response", provider="grok_byok")
-            raise GrokAPIError("Malformed xAI response")
-
-        try:
-            content = data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, TypeError):
-            log.warning("[GROK] byok missing choices", provider="grok_byok")
-            raise GrokAPIError("Malformed xAI response")
-
-        if not isinstance(content, str) or not content.strip():
-            log.warning("[GROK] byok empty response", provider="grok_byok")
-            raise GrokAPIError("Empty xAI response")
-
-        return content
-
-    async def test_connection(self, *, byok_key: str) -> dict:
-        """Probe the xAI API with a minimal request to verify the key.
-
-        Returns {"ok": True, "model": <model_name>} on success.
-        Raises GrokAPIError with a user-facing message on any failure.
-        The key is NEVER logged or included in error messages.
-        """
         probe_messages = [
-            {"role": "user", "content": "Respond with the single word: connected"}
+            {"role": "user", "content": "Respond: connected"}
         ]
-        # test with a tiny token budget to minimise cost
-        await self.chat_with_byok(
+        # Minimal probe to verify authentication and model availability
+        await self.chat(
             probe_messages,
-            byok_key=byok_key,
-            max_tokens=10,
+            max_tokens=5,
             temperature=0.0,
+            _retries=0,
         )
-        return {"ok": True, "model": settings.grok_model}
+        return {"ok": True, "provider": "groq", "model": settings.groq_model}
 
 
-# Singleton — reused across requests (httpx pool is safe for concurrent use)
+# Aliases
+GroqService = GrokService
+
+# Singleton — reused across requests
 grok = GrokService()
+groq = grok

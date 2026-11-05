@@ -95,6 +95,8 @@ def detect_intent(message: str) -> str:
     def has(*kws: str) -> bool:
         return any(kw in m for kw in kws)
 
+    if any(m.startswith(g) or m == g for g in ("hi", "hello", "hey", "hey boi", "hey boy", "yo", "sup", "howdy", "good morning", "good evening", "good afternoon")):
+        return "greeting"
     if has("security score", "security posture", "current posture", "current score",
            "what's the score", "what is the score"):
         return "score"
@@ -278,7 +280,27 @@ async def build_zorqen_context(
 
     if ctx.repository_id:
         repo = await db.get(Repository, ctx.repository_id)
-        if repo and repo.user_id != user.id:
+        if not repo:
+            if ctx.repository_id.isdigit():
+                stmt = select(Repository).where(
+                    (Repository.user_id == user.id)
+                    & (
+                        (Repository.github_repo_id == int(ctx.repository_id))
+                        | (Repository.id == ctx.repository_id)
+                    )
+                )
+            else:
+                stmt = select(Repository).where(
+                    (Repository.user_id == user.id)
+                    & (
+                        (Repository.full_name == ctx.repository_id)
+                        | (Repository.name == ctx.repository_id)
+                        | (Repository.id == ctx.repository_id)
+                    )
+                )
+            res = await db.execute(stmt)
+            repo = res.scalar_one_or_none()
+        elif repo.user_id != user.id:
             repo = None
     if ctx.assessment_id:
         assessment = await _resolve_owned_assessment(db, user, ctx.assessment_id)
@@ -388,7 +410,11 @@ HARD RULES — never invent anything that is not in the supplied ZORQEN CONTEXT:
 - repository statistics, security scores, validation results, remediation evidence
 - Finding IDs, CWE mappings, files, lines, commits, repository names
 
-If the supplied ZORQEN CONTEXT does not contain enough evidence to answer a question, explicitly say:
+If the user greets you (e.g. "Hey Boi", "hello", "hi") or asks general introductory questions:
+- Warmly acknowledge the greeting, introduce yourself as ASK ZORQEN (the security investigation copilot), and briefly explain how you can assist (e.g. investigating security findings, explaining exploitability, summarizing scan results, reviewing remediation advice).
+- Do not demand that an assessment must exist simply to acknowledge a greeting.
+
+If the user asks a specific security or assessment question and the supplied ZORQEN CONTEXT does not contain enough evidence to answer it, explicitly say:
 
 "I don't have enough evidence in the current Zorqen assessment to confirm that."
 
@@ -491,8 +517,6 @@ async def investigate(
     db: AsyncSession,
     user: User,
     request: CopilotRequest,
-    *,
-    byok_key: Optional[str] = None,
 ) -> dict:
     import time
 
@@ -522,14 +546,11 @@ async def investigate(
         messages.append({"role": turn.role, "content": turn.content[:MAX_MESSAGE_CHARS]})
     messages.append({"role": "user", "content": request.message[:MAX_MESSAGE_CHARS]})
 
-    if byok_key:
-        # BYOK path: isolated per-request client, key used once then discarded.
-        answer = await grok.chat_with_byok(messages, byok_key=byok_key, max_tokens=1200, temperature=0.2)
-        provider_name = "grok_byok"
-        byok_key = None  # discard immediately after use
-    else:
-        answer = await grok.chat(messages, max_tokens=1200, temperature=0.2)
-        provider_name = getattr(grok, "last_provider", None)
+    intent = detect_intent(request.message)
+    token_budget = 300 if intent == "greeting" else 1200
+
+    answer = await grok.chat(messages, max_tokens=token_budget, temperature=0.2)
+    provider_name = getattr(grok, "last_provider", "groq")
 
     answer = sanitize_response(answer)
     latency_ms = round((time.perf_counter() - t0) * 1000)

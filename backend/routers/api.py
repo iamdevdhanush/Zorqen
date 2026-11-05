@@ -35,7 +35,7 @@ from models.repository import Repository
 from models.user import User
 from routers.deps import get_current_user
 from services.assessments import create_assessment, get_run, list_user_runs, resolve_assessment, _findings_for
-from services.copilot import CopilotRequest, CopilotContextError, investigate
+from services.copilot import CopilotRequest, CopilotContextError, investigate, sanitize_response
 from services.findings import find_by_slug, search_findings
 from services.grok import GrokAPIError, GrokConfigurationError
 from services.serializers import finding_contract, remediation_contract, repo_meta, run_contract
@@ -1402,48 +1402,31 @@ async def _resolve_finding(db: AsyncSession, user: User, ref: str) -> Finding:
 copilot_router = APIRouter(prefix="/copilot", tags=["copilot"])
 
 
-class GrokTestRequest(BaseModel):
-    """BYOK connection-test body.  The key arrives in the JSON body so it
-    never touches URLs, query strings, or server access logs."""
-
-    api_key: str
-
-    @field_validator("api_key")
-    @classmethod
-    def _no_empty_key(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("api_key must not be empty")
-        return v.strip()
-
-
-@copilot_router.post("/grok-test")
+@copilot_router.post("/test-connection")
+@copilot_router.post("/grok-test")  # legacy route alias
 @_limiter.limit("5/minute")
-async def test_grok_connection(
-    body: GrokTestRequest,
+async def test_groq_connection(
     request: Request,
     current_user: User = Depends(get_current_user),
 ):
-    """Test a BYOK xAI Grok key with a real minimal API request.
+    """Test the server-side Groq API connection with a minimal probe request.
 
-    The key is accepted in the JSON body (never in a URL or query param),
-    used for a single small probe, and discarded immediately.  The key is
-    never stored, never logged, and never included in any response or error.
+    Verifies GROQ_API_KEY is configured and that the Groq API accepts requests
+    for the configured model. No API keys are received, stored, or returned.
 
-    Returns: {"ok": true, "model": "<model>"}
+    Returns: {"ok": true, "provider": "groq", "model": "<model>"}
     Errors:  {"detail": {"code": "...", "message": "..."}} with appropriate status.
     """
     from services.grok import grok, GrokAPIError as _GrokAPIError, GrokConfigurationError as _GrokCfgError
 
-    # Strip and immediately dereference — we hold only the stripped value
-    byok_key = body.api_key  # already stripped by the validator
     try:
-        result = await grok.test_connection(byok_key=byok_key)
-        log.info("[COPILOT] byok_test_ok", provider="grok_byok", model=result.get("model"))
+        result = await grok.test_connection()
+        log.info("[COPILOT] test_connection_ok", provider="groq", model=result.get("model"))
         return result
     except _GrokAPIError as e:
-        code = getattr(e, "code", "GROK_API_ERROR")
-        status_http = 401 if e.status in (401, 403) else (429 if e.status == 429 else 503)
-        log.warning("[COPILOT] byok_test_failed", provider="grok_byok", error_code=code, status=e.status)
+        code = getattr(e, "code", "GROQ_API_ERROR")
+        status_http = e.status if (e.status and e.status in (400, 401, 403, 404, 429, 502, 503, 504)) else 503
+        log.warning("[COPILOT] test_connection_failed", provider="groq", error_code=code, status=e.status)
         raise structured_error(
             status_code=status_http,
             stage="copilot",
@@ -1451,16 +1434,13 @@ async def test_grok_connection(
             message=str(e),
         )
     except _GrokCfgError as e:
-        log.warning("[COPILOT] byok_test_config_error", provider="grok_byok")
+        log.warning("[COPILOT] test_connection_config_error", provider="groq")
         raise structured_error(
-            status_code=400,
+            status_code=503,
             stage="copilot",
-            code="GROK_CONFIGURATION_ERROR",
+            code="GROQ_CONFIGURATION_ERROR",
             message=str(e),
         )
-    finally:
-        # Ensure the key reference is released even if an exception is raised
-        del byok_key
 
 
 @copilot_router.post("/chat")
@@ -1471,33 +1451,18 @@ async def copilot_chat(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Evidence-grounded ASK ZORQEN: targeted retrieval → Grok → grounded answer + sources.
+    """Evidence-grounded ASK ZORQEN: targeted retrieval → Groq → grounded answer + sources.
 
-    When the X-Grok-Key header is present, the copilot uses the caller-supplied
-    xAI key (BYOK) for this request only. The key is stripped from the header
-    immediately after reading and is never stored, logged or returned.
-
-    Without X-Grok-Key the server-side provider chain (Gemini → Grok → Groq)
-    is used as normal.  The frontend must NOT supply X-Grok-Key unless the user
-    has explicitly configured a BYOK key in Settings.
+    Groq is the single unified LLM provider. The server-side GROQ_API_KEY is used
+    exclusively. Secrets are never exposed to callers, logs, or responses.
     """
     import time
 
     t0 = time.perf_counter()
     endpoint = "POST /api/copilot/chat"
 
-    # Read and immediately clear the BYOK header — never re-read request.headers
-    raw_key_header = request.headers.get("X-Grok-Key", "").strip()
-    byok_key: Optional[str] = raw_key_header if raw_key_header else None
-    del raw_key_header  # dereference early
-
     try:
-        if byok_key:
-            # BYOK path: isolated per-request client, key forwarded to investigate()
-            result = await investigate(db, current_user, req, byok_key=byok_key)
-        else:
-            result = await investigate(db, current_user, req)
-
+        result = await investigate(db, current_user, req)
 
         latency_ms = round((time.perf_counter() - t0) * 1000)
         result["latency_ms"] = latency_ms
@@ -1506,38 +1471,42 @@ async def copilot_chat(
             endpoint=endpoint,
             latency_ms=latency_ms,
             status=200,
-            provider=result.get("provider"),
+            provider=result.get("provider", "groq"),
         )
         return result
     except GrokAPIError as e:
         latency_ms = round((time.perf_counter() - t0) * 1000)
+        status_code = e.status if (e.status and e.status in (400, 401, 403, 404, 429, 502, 503, 504)) else 503
+        code = getattr(e, "code", "GROQ_API_ERROR")
+        safe_message = sanitize_response(str(e)) if str(e) else "ASK ZORQEN is temporarily unavailable. Please try again."
         log.warning(
-            "[COPILOT] grok_error",
+            "[COPILOT] groq_error",
             endpoint=endpoint,
             latency_ms=latency_ms,
-            status=e.status,
-            error_code=getattr(e, "code", "GROK_API_ERROR"),
+            status=status_code,
+            error_code=code,
+            error_message=safe_message,
         )
         raise structured_error(
-            status_code=429 if e.status == 429 else 503,
+            status_code=status_code,
             stage="copilot",
-            code="GROK_RATE_LIMIT" if e.status == 429 else getattr(e, "code", "GROK_API_ERROR"),
-            message="ASK ZORQEN is temporarily unavailable. Please try again.",
+            code=code,
+            message=safe_message,
         )
     except GrokConfigurationError:
         latency_ms = round((time.perf_counter() - t0) * 1000)
         log.warning(
-            "[COPILOT] grok_not_configured",
+            "[COPILOT] groq_not_configured",
             endpoint=endpoint,
             latency_ms=latency_ms,
             status=503,
-            error_code="GROK_CONFIGURATION_ERROR",
+            error_code="GROQ_CONFIGURATION_ERROR",
         )
         raise structured_error(
             status_code=503,
             stage="copilot",
-            code="GROK_CONFIGURATION_ERROR",
-            message="ASK ZORQEN is not configured. Set GEMINI_API_KEY, GROK_API_KEY, or GROQ_API_KEY to enable it.",
+            code="GROQ_CONFIGURATION_ERROR",
+            message="ASK ZORQEN is not configured. Set GROQ_API_KEY in deployment settings.",
         )
     except CopilotContextError:
         latency_ms = round((time.perf_counter() - t0) * 1000)
@@ -1570,5 +1539,3 @@ async def copilot_chat(
             code="BACKEND_ERROR",
             message="ASK ZORQEN encountered an internal error. Please try again.",
         )
-    finally:
-        byok_key = None  # always clear the key reference

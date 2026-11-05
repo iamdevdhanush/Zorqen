@@ -1,43 +1,180 @@
-# ── Environment ─────────────────────────────────────────────────────────────
-# Never commit real secrets. Use .env.example files as templates.
+# ── Environment & Secrets ─────────────────────────────────────────────────────
+# Never commit real secrets, private keys, or environment files.
+# Use .env.example files as templates.
 .env
 .env.*
+*.env
+*.env.*
+*.local
 !.env.example
-frontend/.env
-frontend/.env.*
+!**/.env.example
 !frontend/.env.example
+!backend/.env.example
+!cloudflare/.env.example
 
-# ── Node / Frontend ─────────────────────────────────────────────────────────
-node_modules
-dist
-dist-ssr
+# Private keys, certificates, credentials
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.pub
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*credentials*.json
+client_secret*.json
 
-# ── Cloudflare (local Wrangler dev state) ───────────────────────────────────
-cloudflare/.wrangler/
+# ── Cloudflare Worker & Wrangler ──────────────────────────────────────────────
+.wrangler/
+**/.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 
-# ── Python / Backend ────────────────────────────────────────────────────────
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+.turbo/
+.parcel-cache/
+.cache/
+**/.cache/
+.eslintcache
+.stylelintcache
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Python / Backend ──────────────────────────────────────────────────────────
 __pycache__/
+**/__pycache__/
 *.py[cod]
-.venv/
-venv/
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
+*$py.class
+*.so
 
-# ── Local databases & artifacts ─────────────────────────────────────────────
+# Virtual environments
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+ENV/
+env.bak/
+venv.bak/
+
+# Packaging and distribution
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+**/*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+**/.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Type checking & Linting caches
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Jupyter / IPython
+.ipynb_checkpoints
+
+# ── Databases & Local Storage ─────────────────────────────────────────────────
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
+*.sqlite3-journal
 
-# ── Logs ────────────────────────────────────────────────────────────────────
+# ── Logs & Runtime Artifacts ──────────────────────────────────────────────────
 *.log
 logs/
+**/logs/
+*.pid
+*.seed
+*.pid.lock
+tmp/
+/tmp/
 
-# ── OS / Editor / IDE ───────────────────────────────────────────────────────
+# ── OS Generated Files ────────────────────────────────────────────────────────
+# macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Windows
 Thumbs.db
-.idea/
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ── IDEs & Editors ────────────────────────────────────────────────────────────
+# Visual Studio Code
 .vscode/
+**/.vscode/
+
+# JetBrains (PyCharm, WebStorm, IDEA)
+.idea/
+**/.idea/
+*.iws
+*.iml
+*.ipr
+
+# Vim / Emacs
 *.swp
 *.swo
+*~
+.#*
+#*#
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project

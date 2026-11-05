@@ -334,7 +334,7 @@ const SecurityCopilot = memo(function SecurityCopilot({
 
     const context: CopilotChatContext = {
       page,
-      repositoryId: currentRepo?.id,
+      repositoryId: currentRepo?.zorqenId || currentRepo?.id,
       assessmentId: currentAssessment?.id ?? assessmentId,
       findingId: finding?.id,
       history,

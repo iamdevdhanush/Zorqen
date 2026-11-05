@@ -586,16 +586,27 @@ async def _fetch_repo_files(
             assessment_id, "Repository Indexed", 12, None, 0, total, started_at
         )
 
-    for index, path in enumerate(important_paths, start=1):
-        content = await client.get_file_content(owner, repo, path, ref)
-        if isinstance(content, str) and len(content) <= MAX_FILE_SIZE:
-            file_contents[path] = content
-        if assessment_id:
-            progress = 12 + int(3 * (index / max(total, 1)))  # 12 → 15
-            await _emit_file_progress(
-                assessment_id, "Repository Indexed", progress,
-                path, index, total, started_at,
-            )
+    sem = asyncio.Semaphore(8)
+    completed_count = 0
+
+    async def fetch_one(path: str) -> None:
+        nonlocal completed_count
+        async with sem:
+            try:
+                content = await client.get_file_content(owner, repo, path, ref)
+                if isinstance(content, str) and len(content) <= MAX_FILE_SIZE:
+                    file_contents[path] = content
+            except Exception as e:
+                log.warning("file_fetch_failed", path=path, error=str(e)[:100])
+            completed_count += 1
+            if assessment_id:
+                progress = 12 + int(3 * (completed_count / max(total, 1)))
+                await _emit_file_progress(
+                    assessment_id, "Repository Indexed", progress,
+                    path, completed_count, total, started_at,
+                )
+
+    await asyncio.gather(*(fetch_one(p) for p in important_paths))
 
     return file_tree, file_contents
 

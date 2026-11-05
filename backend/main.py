@@ -202,7 +202,6 @@ _ALLOWED_HEADERS = [
     "X-CSRF-Token",
     "Cache-Control",
     "Pragma",
-    "X-Grok-Key",
     "X-Request-ID",
 ]
 
@@ -288,17 +287,13 @@ async def health():
             "message": "GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET not set",
         }
 
-    if settings.gemini_configured:
-        ai_status: dict = {"status": "ok", "provider": "gemini", "model": settings.gemini_model, "configured": True}
-    elif settings.grok_configured:
-        ai_status = {"status": "ok", "provider": "xai", "model": settings.grok_model, "configured": True}
-    elif settings.groq_configured:
-        ai_status = {"status": "ok", "provider": "groq", "model": settings.groq_model, "configured": True}
+    if settings.groq_configured:
+        ai_status: dict = {"status": "ok", "provider": "groq", "model": settings.groq_model, "configured": True}
     else:
         ai_status = {
             "status": "degraded",
             "configured": False,
-            "message": "None of GEMINI_API_KEY / GROK_API_KEY / GROQ_API_KEY is set — ASK ZORQEN unavailable",
+            "message": "GROQ_API_KEY is not set — ASK ZORQEN unavailable",
         }
 
     # Database failure is fatal; everything else is degraded but functional.
@@ -314,11 +309,7 @@ async def health():
             "database": db_status,
             "github": github_status,
             "ai": ai_status,
-            "gemini": {
-                "status": "ok" if settings.gemini_configured else "not_configured",
-                "configured": settings.gemini_configured,
-                "model": settings.gemini_model if settings.gemini_configured else None,
-            },
+            "groq": ai_status,
         },
     )
 
@@ -348,20 +339,18 @@ async def health_github():
     }
 
 
+@app.get("/api/health/groq")
+@app.get("/health/groq")
 @app.get("/api/health/grok")
 @app.get("/health/grok")
-async def health_grok():
-    """AI provider configuration health check (Gemini → Grok → Groq)."""
-    if settings.gemini_configured:
-        return {"status": "ok", "configured": True, "provider": "gemini", "model": settings.gemini_model}
-    if settings.grok_configured:
-        return {"status": "ok", "configured": True, "provider": "xai", "model": settings.grok_model}
+async def health_groq():
+    """AI provider configuration health check (Groq API)."""
     if settings.groq_configured:
         return {"status": "ok", "configured": True, "provider": "groq", "model": settings.groq_model}
     return {
         "status": "degraded",
         "configured": False,
-        "message": "Set GEMINI_API_KEY, GROK_API_KEY, or GROQ_API_KEY to enable ASK ZORQEN",
+        "message": "Set GROQ_API_KEY in deployment environment to enable ASK ZORQEN",
     }
 
 
@@ -370,30 +359,25 @@ async def health_grok():
 async def health_ai():
     """AI + database liveness for uptime monitors.
 
-    Example: {"status": "healthy", "gemini": "connected", "database": "connected"}
+    Example: {"status": "healthy", "groq": "connected", "database": "connected"}
     """
     from fastapi.responses import JSONResponse
 
     db_status = await _probe_database()
-
-    if settings.gemini_configured:
-        gemini_status = "connected"
-    elif settings.grok_configured or settings.groq_configured:
-        gemini_status = "fallback"
-    else:
-        gemini_status = "not_configured"
+    groq_status = "connected" if settings.groq_configured else "not_configured"
 
     overall = "healthy"
     if db_status["status"] != "ok":
         overall = "degraded"
-    elif gemini_status == "not_configured":
+    elif not settings.groq_configured:
         overall = "degraded"
 
     return JSONResponse(
         status_code=200 if overall == "healthy" else 503,
         content={
             "status": overall,
-            "gemini": gemini_status,
+            "groq": groq_status,
+            "ai": groq_status,
             "database": "connected" if db_status["status"] == "ok" else "degraded",
         },
     )

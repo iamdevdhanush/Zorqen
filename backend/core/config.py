@@ -263,18 +263,18 @@ class Settings(BaseSettings):
     github_api_base: str = "https://api.github.com"
     github_oauth_base: str = "https://github.com"
 
-    # Groq LLM — used for architecture analysis, security reasoning, remediation
+    # Groq LLM — unified AI provider for ASK ZORQEN, architecture analysis,
+    # security reasoning, and remediation.
     groq_api_key: str = ""
-    # Free, Groq-hosted OSS model. Overridable via GROQ_MODEL env var. The old
-    # llama-3.3-70b-versatile deployment value is deprecated and no longer
-    # served by the Groq API (model_not_found).
     groq_model: str = "openai/gpt-oss-20b"
+    groq_timeout_seconds: int = 30
 
-    # Grok (xAI) — ASK ZORQEN investigation copilot (backend only, never exposed)
-    grok_api_key: str = ""
-    grok_model: str = "grok-4-latest"
-    grok_api_base: str = "https://api.x.ai/v1"
-    grok_timeout_seconds: int = 60
+    @field_validator("groq_api_key", mode="before")
+    @classmethod
+    def clean_groq_api_key(cls, v: Any) -> str:
+        if isinstance(v, str):
+            v = v.strip().strip("'\"").strip()
+        return v or ""
 
     # Gemini (Google AI Studio) — ASK ZORQEN primary copilot provider.
     # Takes priority over Grok/Groq when GEMINI_API_KEY is set.
@@ -375,11 +375,11 @@ class Settings(BaseSettings):
 
     @property
     def groq_configured(self) -> bool:
-        return bool(self.groq_api_key)
+        return bool(self.groq_api_key and self.groq_api_key.strip())
 
     @property
     def grok_configured(self) -> bool:
-        return bool(self.grok_api_key)
+        return False
 
     @property
     def gemini_configured(self) -> bool:
